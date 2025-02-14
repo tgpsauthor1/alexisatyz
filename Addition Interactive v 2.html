@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Shifted Carries Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .input-section, .step-section {
+      margin: 20px 0;
+    }
+    /* The container for the carry row & number rows */
+    .addition-container {
+      display: inline-block;
+      text-align: right;
+    }
+
+    /* CARRY ROW */
+    .carry {
+      display: block;
+      height: 1.6em;
+      margin-bottom: 5px;
+      text-align: right;
+    }
+    .carry-digit {
+      display: inline-block;
+      width: 1.6em;
+      text-align: center;
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+      position: relative;
+      left: -0.2em;  
+    }
+
+    /* MAIN DIGITS */
+    .digit {
+      display: inline-block;
+      width: 1.6em;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Step-by-Step Long Addition (Shifted Carries)</h1>
+
+  <div class="input-section">
+    <label>Enter First Number (1–9999): </label>
+    <input type="number" id="num1" min="1" max="9999">
+    <br><br>
+    <label>Enter Second Number (1–9999): </label>
+    <input type="number" id="num2" min="1" max="9999">
+    <br><br>
+    <button onclick="startAddition()">Start</button>
+  </div>
+
+  <div class="step-section" id="steps" style="display: none;">
+    <div class="addition-container">
+      <div class="carry" id="carryDisplay"></div>
+      <div id="numberDisplay"></div>
+    </div>
+    <p id="question"></p>
+    <input type="number" id="firstAnswer" min="0" placeholder="">
+    <input type="number" id="secondAnswer" min="0" placeholder="">
+    <button onclick="checkAnswer()">Submit</button>
+    <p id="feedback"></p>
+  </div>
+
+  <script>
+    let num1, num2;
+    let num1Digits, num2Digits;
+    let sumDigits; // will contain digits or null for underscores
+    let carries;   // one carry per column
+    let step;      // 0..3 => ones, tens, hundreds, thousands
+
+    function startAddition() {
+      num1 = parseInt(document.getElementById('num1').value);
+      num2 = parseInt(document.getElementById('num2').value);
+      if (isNaN(num1) || isNaN(num2) || num1 < 1 || num1 > 9999 || num2 < 1 || num2 > 9999) {
+        alert("Please enter numbers between 1 and 9999.");
+        return;
+      }
+
+      // Convert each to a 4-digit array
+      num1Digits = String(num1).padStart(4, '0').split('').map(Number);
+      num2Digits = String(num2).padStart(4, '0').split('').map(Number);
+
+      // CHANGED: Initialize sum digits to null => we will display them as underscores
+      sumDigits = [null, null, null, null];
+      // Our carry array still has 4 columns (ones, tens, hundreds, thousands)
+      carries   = [0, 0, 0, 0];
+
+      step = 0;
+      document.getElementById('steps').style.display = 'block';
+      updateDisplay();
+      askNextStep();
+    }
+
+    function askNextStep() {
+      // If we've already done all four columns, we are done
+      if (step > 3) {
+        document.getElementById('question').innerText = "Addition complete!";
+        return;
+      }
+      const idx = 3 - step;  // index in num1Digits, num2Digits, etc.
+      const colSum = num1Digits[idx] + num2Digits[idx] + carries[idx];
+
+      // We'll describe the place values for the user
+      const placeNames = ["thousands", "hundreds", "tens", "ones"];
+
+      // If step < 3, we have to ask for "two digit" answer for that column
+      if (step < 3) {
+        let nextPlace    = placeNames[idx - 1] || "thousands";
+        let currentPlace = placeNames[idx];
+        let questionText = `How many ${nextPlace} and ${currentPlace} is `;
+        if (carries[idx] > 0) {
+          questionText += `${carries[idx]} ${currentPlace} (regrouped) + `;
+        }
+        questionText += `${num1Digits[idx]} ${currentPlace} + ${num2Digits[idx]} ${currentPlace}?`;
+        document.getElementById('question').innerText = questionText;
+        document.getElementById('firstAnswer').placeholder = nextPlace;
+        document.getElementById('secondAnswer').placeholder = currentPlace;
+        document.getElementById('secondAnswer').style.display = 'inline';
+
+      } else {
+        // step === 3 => the thousands column
+        let questionText = `How many thousands is `;
+        if (carries[idx] > 0) {
+          questionText += `${carries[idx]} thousands (regrouped) + `;
+        }
+        questionText += `${num1Digits[idx]} thousands + ${num2Digits[idx]} thousands?`;
+        document.getElementById('question').innerText = questionText;
+        document.getElementById('firstAnswer').placeholder = "thousands";
+        // We only need one input for the final step
+        document.getElementById('secondAnswer').style.display = 'none';
+      }
+
+      document.getElementById('firstAnswer').value = '';
+      document.getElementById('secondAnswer').value = '';
+      document.getElementById('feedback').innerText = '';
+      document.getElementById('firstAnswer').focus();
+    }
+
+    function checkAnswer() {
+      if (step > 3) return;  // No more steps after thousands
+
+      const idx = 3 - step;
+      const colSum = num1Digits[idx] + num2Digits[idx] + carries[idx];
+
+      let firstVal = parseInt(document.getElementById('firstAnswer').value) || 0;
+      let secondVal = parseInt(document.getElementById('secondAnswer').value) || 0;
+
+      // For ones/tens/hundreds columns, user can give a two-digit answer.
+      // For thousands (step===3), we only have one input.
+      let userSum = (step < 3) ? (firstVal * 10 + secondVal) : firstVal;
+
+      // Check if userSum is correct for that column
+      if (userSum !== colSum) {
+        document.getElementById('feedback').innerText = "Incorrect. Try again.";
+        return;
+      }
+
+      // The ones digit of colSum goes into sumDigits[idx].
+      sumDigits[idx] = colSum % 10;
+
+      // The carry out is the tens digit of colSum
+      let carryOut = Math.floor(colSum / 10);
+
+      // If we're not at the leftmost column yet, just add any carryOut to the next column
+      if (idx > 0) {
+        carries[idx - 1] += carryOut;
+      } else {
+        // idx===0 => we are adding in the thousands place. If there's an overflow,
+        // we add a new digit to the left of sumDigits.
+        if (carryOut > 0) {
+          // unshift the leftover digit
+          sumDigits.unshift(carryOut); 
+        }
+      }
+
+      updateDisplay();
+      step++;
+      askNextStep();
+    }
+
+    function updateDisplay() {
+      // Render the carry row
+      let carryRow = "";
+      for (let i = 0; i < 4; i++) {
+        // If carry is 0, display a blank (&nbsp;). Otherwise display the carry digit
+        if (carries[i] === 0) {
+          carryRow += `<span class="carry-digit">&nbsp;</span>`;
+        } else {
+          carryRow += `<span class="carry-digit">${carries[i]}</span>`;
+        }
+      }
+      document.getElementById('carryDisplay').innerHTML = carryRow;
+
+      // Render the two numbers
+      let row1 = "", row2 = "";
+      for (let i = 0; i < 4; i++) {
+        row1 += `<span class="digit">${num1Digits[i]}</span>`;
+        row2 += `<span class="digit">${num2Digits[i]}</span>`;
+      }
+
+      // Render the sum row
+      // Note: sumDigits may now have 4 or 5 elements if there's an overflow
+      let rowSum = "";
+      for (let i = 0; i < sumDigits.length; i++) {
+        // CHANGED: If sumDigits[i] is null, display '_', else display the digit
+        if (sumDigits[i] === null) {
+          rowSum += `<span class="digit">_</span>`;
+        } else {
+          rowSum += `<span class="digit">${sumDigits[i]}</span>`;
+        }
+      }
+
+      document.getElementById('numberDisplay').innerHTML = `
+        <div>${row1}</div>
+        <div>+ ${row2}</div>
+        <hr>
+        <div>${rowSum}</div>
+      `;
+    }
+  </script>
+</body>
+</html>
