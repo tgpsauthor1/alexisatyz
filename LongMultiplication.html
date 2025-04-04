@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Multiplication Tutorial (Aligned Columns)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    .red {
+      color: red;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    /* Monospaced font + fixed column width help alignment */
+    td {
+      font-family: "Courier New", Courier, monospace;
+      width: 50px;         /* Increase if digits overlap */
+      text-align: center;
+      vertical-align: middle;
+      font-size: 24px;
+    }
+    #tutorialContainer {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Multiplication Tutorial</h1>
+
+  <!-- Step 1: Enter a two-digit or three-digit number -->
+  <div id="numberInputContainer">
+    <p>Please enter a two-digit or three-digit number:</p>
+    <input type="text" id="multiDigitInput">
+    <button id="multiDigitSubmit">Submit</button>
+    <p id="multiDigitError" style="color:red;"></p>
+  </div>
+  
+  <!-- Step 2: Enter a single digit multiplier -->
+  <div id="singleDigitContainer" class="hidden">
+    <p>Please enter a single digit number (non-zero):</p>
+    <input type="text" id="singleDigitInput">
+    <button id="singleDigitSubmit">Submit</button>
+    <p id="singleDigitError" style="color:red;"></p>
+  </div>
+  
+  <!-- The table for our problem -->
+  <div id="multiplicationSetup" class="hidden">
+    <table id="multiplicationTable">
+      <tr id="regroupRow"></tr>        <!-- Carry row (red digits) -->
+      <tr id="topNumberRow"></tr>      <!-- Multi-digit number -->
+      <tr id="bottomNumberRow"></tr>   <!-- Single-digit multiplier -->
+      <tr><td colspan="999"><hr></td></tr>
+      <tr id="answerLineRow"></tr>     <!-- Final answer row -->
+    </table>
+  </div>
+  
+  <!-- Step-by-step tutorial container -->
+  <div id="tutorialContainer" class="hidden">
+    <div id="questionArea" style="margin-bottom: 10px; font-size: 20px;"></div>
+    <input type="text" id="stepAnswer">
+    <button id="stepSubmit">Submit Answer</button>
+    <p id="stepError" style="color:red;"></p>
+  </div>
+  
+  <script>
+    // Speak text aloud
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    // Greet on page load
+    window.addEventListener("load", function() {
+      speak("Please enter a two-digit or three-digit number.");
+    });
+
+    // Globals
+    let multiDigitNumber = "";
+    let singleDigitNumber = "";
+    let digits = [];
+    let currentStep = 0;
+    let carry = 0;
+    let steps = [];
+
+    // Step 1: Validate multi-digit number
+    document.getElementById("multiDigitSubmit").addEventListener("click", function() {
+      const input = document.getElementById("multiDigitInput").value.trim();
+      if (!/^\d{2,3}$/.test(input)) {
+        document.getElementById("multiDigitError").textContent = "Please enter a valid two or three digit number.";
+        speak("Please enter a valid two or three digit number.");
+      } else {
+        multiDigitNumber = input;
+        document.getElementById("multiDigitError").textContent = "";
+        document.getElementById("numberInputContainer").classList.add("hidden");
+        document.getElementById("singleDigitContainer").classList.remove("hidden");
+        speak("Now, please enter a single digit number that is not zero.");
+      }
+    });
+
+    // Step 2: Validate single digit multiplier
+    document.getElementById("singleDigitSubmit").addEventListener("click", function() {
+      const input = document.getElementById("singleDigitInput").value.trim();
+      if (!/^\d$/.test(input) || input === "0") {
+        document.getElementById("singleDigitError").textContent = "Please enter a valid single digit number that is not zero.";
+        speak("Please enter a valid single digit number that is not zero.");
+      } else {
+        singleDigitNumber = input;
+        document.getElementById("singleDigitError").textContent = "";
+        document.getElementById("singleDigitContainer").classList.add("hidden");
+        setupMultiplicationDisplay();
+        startTutorial();
+      }
+    });
+
+    // Create the table rows with a fixed number of columns: digits.length + 1
+    function setupMultiplicationDisplay() {
+      document.getElementById("multiplicationSetup").classList.remove("hidden");
+      // Clear existing
+      document.getElementById("regroupRow").innerHTML = "";
+      document.getElementById("topNumberRow").innerHTML = "";
+      document.getElementById("bottomNumberRow").innerHTML = "";
+      document.getElementById("answerLineRow").innerHTML = "";
+
+      // Determine how many columns we need: digits + 1 for possible overflow
+      const colCount = multiDigitNumber.length + 1;
+
+      // Build empty cells in each row
+      for (let c = 0; c < colCount; c++) {
+        let rgCell = document.createElement("td");
+        rgCell.id = "regroupCell" + c; // for carry
+        document.getElementById("regroupRow").appendChild(rgCell);
+
+        let topCell = document.createElement("td");
+        topCell.id = "topCell" + c;
+        document.getElementById("topNumberRow").appendChild(topCell);
+
+        let bottomCell = document.createElement("td");
+        bottomCell.id = "bottomCell" + c;
+        document.getElementById("bottomNumberRow").appendChild(bottomCell);
+
+        let ansCell = document.createElement("td");
+        ansCell.id = "answerCell" + c;
+        document.getElementById("answerLineRow").appendChild(ansCell);
+      }
+
+      // Fill the top row (right-aligned)
+      // Example: if digits = 3, we have 4 columns, so place them in columns 1..3, leaving col 0 empty
+      for (let i = 0; i < multiDigitNumber.length; i++) {
+        // The rightmost digit goes in colCount-1, next in colCount-2, etc.
+        let colIndex = (colCount - 1) - i; 
+        let topCell = document.getElementById("topCell" + colIndex);
+        topCell.textContent = multiDigitNumber[multiDigitNumber.length - 1 - i];
+      }
+
+      // Fill the bottom row with the single digit in the rightmost column
+      // i.e. bottomCell colCount-1
+      document.getElementById("bottomCell" + (colCount - 1)).textContent = singleDigitNumber;
+    }
+
+    // Start the guided multiplication
+    function startTutorial() {
+      document.getElementById("tutorialContainer").classList.remove("hidden");
+      digits = multiDigitNumber.split("").map(Number);
+      currentStep = 0;
+      carry = 0;
+      steps = [];
+
+      // Process from right to left (ones, tens, hundreds)
+      // We'll keep track of column indexes similarly: ones digit is at colCount-1, tens at colCount-2, etc.
+      const colCount = digits.length + 1;
+      
+      // ONES
+      const onesDigit = digits[digits.length - 1]; 
+      const onesProduct = onesDigit * Number(singleDigitNumber);
+      steps.push({
+        questionFunc: () => `How many ones is ${onesDigit} ones multiplied by ${singleDigitNumber}?`,
+        answerFunc: () => onesProduct,
+        action: function() {
+          // Place the ones digit of onesProduct in the rightmost answer cell
+          let onesAnswerDigit = onesProduct % 10;
+          let answerCell = document.getElementById("answerCell" + (colCount - 1));
+          answerCell.textContent = onesAnswerDigit;
+          
+          // Show carry (if any) above the tens column
+          carry = Math.floor(onesProduct / 10);
+          if (carry > 0 && digits.length > 1) {
+            let regroupCellIndex = (colCount - 2); // the tens column
+            document.getElementById("regroupCell" + regroupCellIndex).innerHTML = `<span class='red'>${carry}</span>`;
+          }
+        }
+      });
+
+      // TENS (if we have at least 2 digits)
+      if (digits.length >= 2) {
+        const tensDigit = digits[digits.length - 2];
+        const tensProduct = tensDigit * Number(singleDigitNumber);
+
+        // Multiply tens digit
+        steps.push({
+          questionFunc: () => `How many tens is ${tensDigit} tens multiplied by ${singleDigitNumber}?`,
+          answerFunc: () => tensProduct,
+          action: function() {
+            // No side notes, just do the product
+          }
+        });
+
+        // Add carry
+        steps.push({
+          questionFunc: () => `How many tens is ${tensProduct} tens plus ${carry} tens?`,
+          answerFunc: () => (tensProduct + carry),
+          action: function() {
+            let sum = tensProduct + carry;
+            let tensAnswerDigit = sum % 10;
+            // Place it in the tens column (colCount - 2)
+            let answerCell = document.getElementById("answerCell" + (colCount - 2));
+            answerCell.textContent = tensAnswerDigit;
+
+            // New carry for hundreds
+            carry = Math.floor(sum / 10);
+            if (carry > 0 && digits.length >= 3) {
+              // Put carry in regroup cell above the hundreds column
+              let regroupCellIndex = (colCount - 3);
+              document.getElementById("regroupCell" + regroupCellIndex).innerHTML = `<span class='red'>${carry}</span>`;
+            }
+          }
+        });
+      }
+
+      // HUNDREDS (if we have 3 digits)
+      if (digits.length === 3) {
+        const hundredsDigit = digits[0];
+        const hundredsProduct = hundredsDigit * Number(singleDigitNumber);
+
+        // Multiply hundreds digit
+        steps.push({
+          questionFunc: () => `How many hundreds is ${hundredsDigit} hundreds multiplied by ${singleDigitNumber}?`,
+          answerFunc: () => hundredsProduct,
+          action: function() {
+            // No side notes
+          }
+        });
+
+        // Add carry
+        steps.push({
+          questionFunc: () => `How many hundreds is ${hundredsProduct} hundreds plus ${carry} hundreds?`,
+          answerFunc: () => (hundredsProduct + carry),
+          action: function() {
+            let sum = hundredsProduct + carry;
+            // sum might be 2 digits (e.g. 31)
+            let sumStr = String(sum);
+
+            // The hundreds column is colCount - 3
+            // If sum has 2 digits, we place them in colCount - 3 and colCount - 4
+            // For example, if sum=31, '3' goes in colCount-4, '1' in colCount-3
+            for (let i = sumStr.length - 1; i >= 0; i--) {
+              let colIndex = (colCount - 3) - (sumStr.length - 1 - i);
+              let cell = document.getElementById("answerCell" + colIndex);
+              cell.textContent = sumStr[i];
+            }
+          }
+        });
+      }
+
+      // Final step
+      steps.push({
+        questionFunc: () => "Final Step",
+        answerFunc: () => null,
+        action: function() {
+          speak("Yay! You found your answer!");
+          alert("Yay! You found your answer!");
+        }
+      });
+
+      // Begin
+      currentStep = 0;
+      presentStep();
+    }
+
+    // Show current step question
+    function presentStep() {
+      if (currentStep >= steps.length) return;
+      const current = steps[currentStep];
+      let questionText = current.questionFunc ? current.questionFunc() : "";
+      let correctAnswerValue = current.answerFunc ? current.answerFunc() : null;
+      current._questionText = questionText;
+      current._correctAnswer = correctAnswerValue;
+
+      document.getElementById("questionArea").textContent = questionText;
+      speak(questionText);
+      document.getElementById("stepAnswer").value = "";
+      document.getElementById("stepError").textContent = "";
+    }
+
+    // Submit answer
+    document.getElementById("stepSubmit").addEventListener("click", function() {
+      if (currentStep >= steps.length) return;
+      const current = steps[currentStep];
+      const answer = document.getElementById("stepAnswer").value.trim();
+
+      if (current._correctAnswer === null) {
+        // final step
+        current.action();
+        currentStep++;
+        if (currentStep < steps.length) {
+          presentStep();
+        }
+        return;
+      }
+
+      // Check correctness
+      if (Number(answer) === current._correctAnswer) {
+        current.action();
+        currentStep++;
+        if (currentStep < steps.length) {
+          presentStep();
+        }
+      } else {
+        document.getElementById("stepError").textContent = "Incorrect, please try again.";
+        speak("That is incorrect. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>
