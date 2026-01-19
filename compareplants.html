@@ -176,6 +176,7 @@
             <label><input type="radio" name="A_leafShape" value="long"> Long</label>
           </div>
         </div>
+
         <div class="q" data-key="leafVeins">
           <div class="label">Leaf veins</div>
           <div class="opts">
@@ -183,13 +184,7 @@
             <label><input type="radio" name="A_leafVeins" value="parallel"> Parallel veins</label>
           </div>
         </div>
-        <div class="q" data-key="leafStalk">
-          <div class="label">Leaf stalk</div>
-          <div class="opts">
-            <label><input type="radio" name="A_leafStalk" value="long"> Long</label>
-            <label><input type="radio" name="A_leafStalk" value="short"> Short</label>
-          </div>
-        </div>
+
         <div class="q" data-key="leafEdge">
           <div class="label">Leaf edge</div>
           <div class="opts">
@@ -197,6 +192,7 @@
             <label><input type="radio" name="A_leafEdge" value="jagged"> Jagged</label>
           </div>
         </div>
+
         <div class="q" data-key="leafTexture">
           <div class="label">Leaf texture</div>
           <div class="opts">
@@ -213,11 +209,12 @@
             <label><input type="radio" name="A_stemType" value="non-woody"> Non-woody</label>
           </div>
         </div>
+
         <div class="q" data-key="stemStrength">
           <div class="label">Stem strength</div>
           <div class="opts">
             <label><input type="radio" name="A_stemStrength" value="strong"> Strong</label>
-            <label><input type="radio" name="A_stemStrength" value="weak (climb/creep)"> Weak (climb/creep)</label>
+            <label><input type="radio" name="A_stemStrength" value="weak"> Weak (needs support)</label>
           </div>
         </div>
 
@@ -234,7 +231,7 @@
           <button onclick="checkSide('A')">Check my answers ✅</button>
           <button class="secondary" onclick="resetSide('A')">Reset 🔄</button>
         </div>
-        <div class="hint">Tip: Weak stems often <b>climb</b> or <b>creep</b>.</div>
+        <div class="hint">Tip: A weak stem needs support (e.g., climbs, creeps, or is supported by water).</div>
       </div>
 
       <div class="panel" id="panelB">
@@ -254,6 +251,7 @@
             <label><input type="radio" name="B_leafShape" value="long"> Long</label>
           </div>
         </div>
+
         <div class="q" data-key="leafVeins">
           <div class="label">Leaf veins</div>
           <div class="opts">
@@ -261,13 +259,7 @@
             <label><input type="radio" name="B_leafVeins" value="parallel"> Parallel veins</label>
           </div>
         </div>
-        <div class="q" data-key="leafStalk">
-          <div class="label">Leaf stalk</div>
-          <div class="opts">
-            <label><input type="radio" name="B_leafStalk" value="long"> Long</label>
-            <label><input type="radio" name="B_leafStalk" value="short"> Short</label>
-          </div>
-        </div>
+
         <div class="q" data-key="leafEdge">
           <div class="label">Leaf edge</div>
           <div class="opts">
@@ -275,6 +267,7 @@
             <label><input type="radio" name="B_leafEdge" value="jagged"> Jagged</label>
           </div>
         </div>
+
         <div class="q" data-key="leafTexture">
           <div class="label">Leaf texture</div>
           <div class="opts">
@@ -291,11 +284,12 @@
             <label><input type="radio" name="B_stemType" value="non-woody"> Non-woody</label>
           </div>
         </div>
+
         <div class="q" data-key="stemStrength">
           <div class="label">Stem strength</div>
           <div class="opts">
             <label><input type="radio" name="B_stemStrength" value="strong"> Strong</label>
-            <label><input type="radio" name="B_stemStrength" value="weak (climb/creep)"> Weak (climb/creep)</label>
+            <label><input type="radio" name="B_stemStrength" value="weak"> Weak (needs support)</label>
           </div>
         </div>
 
@@ -322,7 +316,6 @@
   "Aglaonema": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
@@ -332,27 +325,24 @@
   "Water Lily": {
     "leafShape": "round",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "weak (needs support)",
     "rootThickness": "thin"
   },
   "Fittonia": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "hairy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "strong",
     "rootThickness": "thin"
   },
   "Grass": {
     "leafShape": "long",
     "leafVeins": "parallel",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
@@ -362,17 +352,15 @@
   "Aloe Vera": {
     "leafShape": "long",
     "leafVeins": "parallel",
-    "leafStalk": "short",
-    "leafEdge": "jagged",
+    "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
     "stemStrength": "strong",
-    "rootThickness": "thin"
+    "rootThickness": "thick"
   },
   "Fishbone Fern": {
     "leafShape": "long",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "jagged",
     "leafTexture": "waxy",
     "stemType": "non-woody",
@@ -382,17 +370,15 @@
   "Money Plant": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "weak (needs support)",
     "rootThickness": "thin"
   },
   "Ostrich Fern": {
     "leafShape": "long",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "jagged",
     "leafTexture": "waxy",
     "stemType": "non-woody",
@@ -402,8 +388,7 @@
   "Pandan": {
     "leafShape": "long",
     "leafVeins": "parallel",
-    "leafStalk": "short",
-    "leafEdge": "jagged",
+    "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
     "stemStrength": "strong",
@@ -412,17 +397,15 @@
   "Dragon's Scale Fern": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "weak (needs support)",
     "rootThickness": "thin"
   },
   "Bougainvillea": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "woody",
@@ -430,19 +413,17 @@
     "rootThickness": "thick"
   },
   "Mimosa": {
-    "leafShape": "oval",
+    "leafShape": "long",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "hairy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "strong",
     "rootThickness": "thin"
   },
   "Galangal": {
     "leafShape": "long",
     "leafVeins": "parallel",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
@@ -452,27 +433,24 @@
   "Monstera": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "non-woody",
-    "stemStrength": "weak (climb/creep)",
+    "stemStrength": "weak (needs support)",
     "rootThickness": "thick"
   },
   "Papaya Plant": {
     "leafShape": "round",
     "leafVeins": "net",
-    "leafStalk": "long",
     "leafEdge": "jagged",
-    "leafTexture": "hairy",
-    "stemType": "non-woody",
+    "leafTexture": "waxy",
+    "stemType": "woody",
     "stemStrength": "strong",
     "rootThickness": "thick"
   },
   "Mangrove Tree": {
     "leafShape": "oval",
     "leafVeins": "net",
-    "leafStalk": "short",
     "leafEdge": "smooth",
     "leafTexture": "waxy",
     "stemType": "woody",
@@ -482,7 +460,7 @@
 };
 
   const FIELDS = [
-    "leafShape","leafVeins","leafStalk","leafEdge","leafTexture",
+    "leafShape","leafVeins","leafEdge","leafTexture",
     "stemType","stemStrength","rootThickness"
   ];
 
