@@ -275,8 +275,8 @@
     <section class="hero">
       <h1>Compressibility of Solids, Liquids, and Gases</h1>
       <p class="subtitle">
-        Use the slider to squeeze each state of matter. Then test what happens when more gas is added into the same fixed container.
-        This is a teaching model that simplifies particle behavior so students can clearly see why gases compress much more easily.
+        Use the slider to apply squeezing force. In this comparison, the solid and liquid already fully occupy their containers, so they show no visible compression.
+        Only the gas visibly compresses because it has a lot of empty space between particles.
       </p>
     </section>
 
@@ -284,44 +284,44 @@
       <div class="controls">
         <div class="slider-wrap">
           <div class="label-row">
-            <span>Squeeze the container</span>
+            <span>Apply squeezing force</span>
             <span class="pill">Force: <span id="squeezeValue">0</span>%</span>
           </div>
           <input id="squeeze" type="range" min="0" max="100" value="0" />
         </div>
-        <div class="pill">Smaller width = more compression</div>
+        <div class="pill">Only gas shows a volume decrease</div>
       </div>
 
       <div class="legend">
-        <span><span class="dot" style="background: var(--solid)"></span>Solid particles are tightly packed.</span>
-        <span><span class="dot" style="background: var(--liquid)"></span>Liquid particles are close together with a little movement.</span>
-        <span><span class="dot" style="background: var(--gas)"></span>Gas particles are far apart and move freely.</span>
+        <span><span class="dot" style="background: var(--solid)"></span>Solid particles are tightly packed and fill the container.</span>
+        <span><span class="dot" style="background: var(--liquid)"></span>Liquid particles are close together and fully fill the container.</span>
+        <span><span class="dot" style="background: var(--gas)"></span>Gas particles are far apart, so gas can be compressed.</span>
       </div>
 
       <div class="grid">
         <div class="card">
           <h2>Solid</h2>
-          <p>Particles are packed in a fixed arrangement with almost no empty space, so the container width changes only a tiny amount.</p>
+          <p>For a fair comparison, the solid completely fills the container. The particles are tightly packed with essentially no empty space, so squeezing does not visibly reduce the volume.</p>
           <canvas id="solidCanvas" width="320" height="250"></canvas>
           <div class="stats">
-            <div class="stat"><span class="k">Compressibility</span><span class="v">Very low</span></div>
+            <div class="stat"><span class="k">Compressibility</span><span class="v">None shown</span></div>
             <div class="stat"><span class="k">Empty space</span><span class="v">Almost none</span></div>
           </div>
         </div>
 
         <div class="card">
           <h2>Liquid</h2>
-          <p>Particles are still close together, but they can slide past one another. Liquids change shape more easily than solids, but compress very little.</p>
+          <p>The liquid also fully fills the container, with no air gap above it. The particles can move around, but there is no visible compression because there is almost no empty space to squeeze out.</p>
           <canvas id="liquidCanvas" width="320" height="250"></canvas>
           <div class="stats">
-            <div class="stat"><span class="k">Compressibility</span><span class="v">Low</span></div>
-            <div class="stat"><span class="k">Empty space</span><span class="v">Very little</span></div>
+            <div class="stat"><span class="k">Compressibility</span><span class="v">None shown</span></div>
+            <div class="stat"><span class="k">Empty space</span><span class="v">Almost none</span></div>
           </div>
         </div>
 
         <div class="card">
           <h2>Gas</h2>
-          <p>Particles are far apart with lots of empty space. When squeezed, they move closer together, so the gas volume drops much more.</p>
+          <p>Gas particles are far apart with lots of empty space. When squeezed, they move closer together, so the gas volume drops much more than that of solids or liquids.</p>
           <canvas id="gasCanvas" width="320" height="250"></canvas>
           <div class="stats">
             <div class="stat"><span class="k">Compressibility</span><span class="v">High</span></div>
@@ -380,12 +380,6 @@
     const gasCtx = gasCanvas.getContext('2d');
     const tankCtx = tankCanvas.getContext('2d');
 
-    const stateConfigs = {
-      solid: { compressibility: 0.07, count: 24 },
-      liquid: { compressibility: 0.14, count: 24 },
-      gas: { compressibility: 0.55, count: 10 }
-    };
-
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
     }
@@ -396,8 +390,8 @@
         const angle = Math.random() * Math.PI * 2;
         const speed = (0.6 + Math.random() * 0.8) * speedFactor;
         particles.push({
-          x: 0.1 + Math.random() * 0.8,
-          y: 0.1 + Math.random() * 0.8,
+          x: 0.08 + Math.random() * 0.84,
+          y: 0.08 + Math.random() * 0.84,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed
         });
@@ -405,7 +399,7 @@
       return particles;
     }
 
-    const gasParticles = createMovingParticles(stateConfigs.gas.count, 0.9);
+    const gasParticles = createMovingParticles(10, 0.9);
     let tankParticles = createMovingParticles(10, 1.0);
 
     function roundRect(ctx, x, y, w, h, r, fill, stroke) {
@@ -427,7 +421,7 @@
       ctx.strokeStyle = '#334155';
       roundRect(ctx, x, y, width, height, 14, true, true);
 
-      ctx.globalAlpha = 0.12;
+      ctx.globalAlpha = 0.10;
       ctx.fillStyle = tint;
       roundRect(ctx, x, y, width, height, 14, true, false);
       ctx.globalAlpha = 1;
@@ -473,42 +467,45 @@
         p.y += p.vy * 0.0024 * speedBoost;
 
         if (p.x < 0.06 || p.x > 0.94) p.vx *= -1;
-        if (p.y < 0.08 || p.y > 0.92) p.vy *= -1;
+        if (p.y < 0.06 || p.y > 0.94) p.vy *= -1;
 
         p.x = clamp(p.x, 0.06, 0.94);
-        p.y = clamp(p.y, 0.08, 0.92);
+        p.y = clamp(p.y, 0.06, 0.94);
       });
     }
 
     function drawSolid(squeeze) {
       const ctx = solidCtx;
       const w = solidCanvas.width;
-      ctx.clearRect(0, 0, w, solidCanvas.height);
+      const h = solidCanvas.height;
+      ctx.clearRect(0, 0, w, h);
 
-      const baseWidth = 220;
-      const containerWidth = baseWidth - squeeze * stateConfigs.solid.compressibility * 0.85;
+      const containerWidth = 220;
       const x = (w - containerWidth) / 2;
       const y = 44;
       const containerHeight = 170;
 
       drawCompressionArrows(ctx, w / 2, y, y + containerHeight, squeeze);
-      drawContainer(ctx, containerWidth, containerHeight, x, y, 'Solid resists squeezing', '#475569');
+      drawContainer(ctx, containerWidth, containerHeight, x, y, 'Solid fills the whole container', '#475569');
 
-      const cols = 4;
-      const rows = 6;
-      const padX = 24;
-      const padY = 18;
+      const cols = 6;
+      const rows = 7;
+      const padX = 16;
+      const padY = 14;
       const stepX = (containerWidth - padX * 2) / (cols - 1);
       const stepY = (containerHeight - padY * 2) / (rows - 1);
       const t = performance.now() * 0.002;
 
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.08)';
+      roundRect(ctx, x + 4, y + 4, containerWidth - 8, containerHeight - 8, 10, true, false);
+
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const px = x + padX + c * stepX + Math.sin(t + r + c) * 0.6;
-          const py = y + padY + r * stepY + Math.cos(t + r * 1.2 + c) * 0.6;
+          const px = x + padX + c * stepX + Math.sin(t + r + c) * 0.35;
+          const py = y + padY + r * stepY + Math.cos(t + r * 1.2 + c) * 0.35;
           ctx.beginPath();
           ctx.fillStyle = '#475569';
-          ctx.arc(px, py, 9, 0, Math.PI * 2);
+          ctx.arc(px, py, 8.6, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -517,49 +514,37 @@
     function drawLiquid(squeeze) {
       const ctx = liquidCtx;
       const w = liquidCanvas.width;
-      ctx.clearRect(0, 0, w, liquidCanvas.height);
+      const h = liquidCanvas.height;
+      ctx.clearRect(0, 0, w, h);
 
-      const baseWidth = 220;
-      const containerWidth = baseWidth - squeeze * stateConfigs.liquid.compressibility;
+      const containerWidth = 220;
       const x = (w - containerWidth) / 2;
       const y = 44;
       const containerHeight = 170;
       drawCompressionArrows(ctx, w / 2, y, y + containerHeight, squeeze);
-      drawContainer(ctx, containerWidth, containerHeight, x, y, 'Liquid changes shape more than volume', '#0ea5e9');
+      drawContainer(ctx, containerWidth, containerHeight, x, y, 'Liquid fills the whole container', '#0ea5e9');
 
-      const cols = 5;
-      const rows = 4;
-      const spacingX = (containerWidth - 44) / (cols - 1);
-      const spacingY = 26;
-      const baseY = y + containerHeight - 28;
+      const cols = 6;
+      const rows = 6;
+      const spacingX = (containerWidth - 30) / (cols - 1);
+      const spacingY = (containerHeight - 26) / (rows - 1);
       const time = performance.now() * 0.003;
+
+      ctx.fillStyle = 'rgba(14,165,233,0.14)';
+      roundRect(ctx, x + 4, y + 4, containerWidth - 8, containerHeight - 8, 10, true, false);
 
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-          const wave = Math.sin(time * 1.6 + col * 0.7 + row) * 2;
-          const px = x + 22 + col * spacingX + Math.sin(time + row + col) * 2.2;
-          const py = baseY - row * spacingY + wave;
+          let px = x + 15 + col * spacingX + Math.sin(time + row * 0.8 + col) * 2.1;
+          let py = y + 13 + row * spacingY + Math.cos(time * 1.2 + col * 0.7 + row) * 2.1;
+          px = clamp(px, x + 12, x + containerWidth - 12);
+          py = clamp(py, y + 12, y + containerHeight - 12);
           ctx.beginPath();
           ctx.fillStyle = '#0ea5e9';
-          ctx.globalAlpha = 0.95;
-          ctx.arc(px, py, 9, 0, Math.PI * 2);
+          ctx.arc(px, py, 8.4, 0, Math.PI * 2);
           ctx.fill();
-          ctx.globalAlpha = 1;
         }
       }
-
-      ctx.beginPath();
-      ctx.moveTo(x + 12, baseY - rows * spacingY + 12);
-      for (let i = 0; i <= 20; i++) {
-        const px = x + 12 + (containerWidth - 24) * (i / 20);
-        const py = baseY - rows * spacingY + 12 + Math.sin(time * 2 + i * 0.45) * 2.5;
-        ctx.lineTo(px, py);
-      }
-      ctx.lineTo(x + containerWidth - 12, y + containerHeight - 8);
-      ctx.lineTo(x + 12, y + containerHeight - 8);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(14,165,233,0.12)';
-      ctx.fill();
     }
 
     function drawGas(squeeze) {
@@ -568,7 +553,7 @@
       ctx.clearRect(0, 0, w, gasCanvas.height);
 
       const baseWidth = 220;
-      const containerWidth = baseWidth - squeeze * stateConfigs.gas.compressibility;
+      const containerWidth = baseWidth - squeeze * 0.55;
       const x = (w - containerWidth) / 2;
       const y = 44;
       const containerHeight = 170;
