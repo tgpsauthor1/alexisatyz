@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Dengue Graph Helper v2</title>
+<style>
+  :root{
+    --bg:#f4faf7;
+    --panel:#ffffff;
+    --line:#cfe3d8;
+    --ink:#173428;
+    --muted:#4f6d61;
+    --green:#31a36f;
+    --green2:#e9f8f0;
+    --blue:#2d6bdb;
+    --blue2:#edf4ff;
+    --yellow:#fffdf2;
+    --yellowLine:#f1ddb1;
+    --red:#d16f5b;
+    --red2:#fff2ee;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
+  .top{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    margin-bottom:12px;
+    position:sticky;
+    top:8px;
+    z-index:10;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{font-size:24px;line-height:1.15;margin:0;flex:1}
+  .small{font-size:14px;color:var(--muted)}
+  .progress{height:12px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+  .screen{
+    display:none;
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    min-height:calc(100vh - 120px);
+  }
+  .screen.active{display:flex;flex-direction:column}
+  .title{font-size:26px;line-height:1.15;margin:0 0 8px}
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;padding:10px 12px;
+    font-size:20px;line-height:1.3;margin:0 0 12px;
+  }
+  .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+  .single-card{
+    background:#fbfffc;
+    border:2px solid var(--line);
+    border-radius:22px;
+    padding:12px;
+  }
+  .question{font-size:21px;line-height:1.35;margin:0}
+  .statement{
+    background:var(--yellow);border:2px solid var(--yellowLine);border-radius:18px;padding:14px;
+    font-size:24px;line-height:1.35;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  @media (max-width:760px){
+    .row,.row.three{grid-template-columns:1fr 1fr}
+  }
+  .choice,.option,.tile,.sound-btn,.mini-btn,.star{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+  }
+  .choice,.option,.mini-btn{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
+    min-height:74px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink);
+  }
+  .tile{
+    background:#fff;border:2px solid var(--line);border-radius:22px;padding:12px;min-height:180px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:var(--ink);
+  }
+  .choice:hover,.option:hover,.mini-btn:hover,.tile:hover,.star:hover{transform:translateY(-1px)}
+  .choice.correct,.option.correct,.mini-btn.correct,.tile.correct{background:var(--green2);border-color:#98d0b3}
+  .choice.wrong,.option.wrong,.mini-btn.wrong,.tile.wrong{background:var(--red2);border-color:#e6b3a8}
+  .choice.selected,.option.selected,.mini-btn.selected,.tile.selected{background:var(--blue2);border-color:#bfd5f4}
+  .feedback{display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3}
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+  .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px}
+  .nav-right{display:flex;gap:10px}
+  .btn{
+    appearance:none;border:none;border-radius:18px;padding:14px 18px;font-size:20px;font-weight:700;cursor:pointer
+  }
+  .back{background:#eef5f1;color:var(--ink);border:2px solid var(--line)}
+  .next{background:var(--blue);color:#fff}
+  .done{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .sound-btn{
+    background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;color:var(--ink)
+  }
+  .stars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .star{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 18px;min-width:92px;font-size:34px
+  }
+  .star.selected{background:#fff7d8;border-color:#efd67a}
+  .big-center{font-size:23px;line-height:1.35;text-align:center}
+  .blank-row{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+    font-size:24px;line-height:1.4;
+  }
+  .blank{
+    min-width:190px;
+    padding:10px 12px;
+    border:2px dashed #bfd5f4;
+    border-radius:14px;
+    background:#f8fbff;
+    text-align:center;
+    font-weight:700;
+  }
+  .blank.active{
+    border-color:#2d6bdb;
+    background:#edf4ff;
+  }
+  .bank{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  }
+  .chip-wrap{
+    display:flex;flex-wrap:wrap;gap:10px;min-height:56px;
+    align-items:flex-start;
+  }
+  .chip{
+    background:#eaf4ff;border:2px solid #bfd5f4;border-radius:999px;padding:10px 14px;font-size:18px;font-weight:700;
+  }
+  .summary-card{
+    background:#fbfffc;border:2px solid var(--line);border-radius:22px;padding:16px;
+  }
+  .highlight{
+    display:inline-block;background:#fff4b7;border-radius:8px;padding:2px 6px;font-weight:700;
+  }
+  svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Dengue Graph Helper</h1>
+      <button class="sound-btn" id="speakBtnTop" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Step 1 of 16</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="screen active" id="screen1">
+    <h2 class="title">First try</h2>
+    <p class="instruction">Tap the better answer below. Then tap a face.</p>
+    <div class="content">
+      <div class="single-card">
+        <div style="text-align:center;margin-bottom:8px">
+          <svg viewBox="0 0 760 240" width="100%" height="210" aria-hidden="true">
+            <rect x="20" y="18" width="330" height="190" rx="12" fill="#fff" stroke="#cfe3d8" stroke-width="3"></rect>
+            <text x="185" y="40" text-anchor="middle" font-size="20" font-weight="700">Amount of rainfall</text>
+            <line x1="58" y1="182" x2="320" y2="182" stroke="#333" stroke-width="2"></line>
+            <line x1="58" y1="58" x2="58" y2="182" stroke="#333" stroke-width="2"></line>
+            <polyline points="74,160 100,168 126,154 152,142 178,120 204,92 230,72 256,84 282,104 308,130"
+                      fill="none" stroke="#2d6bdb" stroke-width="4"></polyline>
+            <text x="125" y="62" font-size="15" font-weight="700">Mar to Aug rises</text>
+
+            <rect x="390" y="18" width="330" height="190" rx="12" fill="#fff" stroke="#cfe3d8" stroke-width="3"></rect>
+            <text x="555" y="40" text-anchor="middle" font-size="20" font-weight="700">Number of dengue cases</text>
+            <line x1="428" y1="182" x2="690" y2="182" stroke="#333" stroke-width="2"></line>
+            <line x1="428" y1="58" x2="428" y2="182" stroke="#333" stroke-width="2"></line>
+            <polyline points="444,162 470,168 496,156 522,148 548,130 574,112 600,88 626,94 652,102 678,128"
+                      fill="none" stroke="#31a36f" stroke-width="4"></polyline>
+            <text x="490" y="62" font-size="15" font-weight="700">Mar to Aug rises</text>
+          </svg>
+        </div>
+        <p class="question">How would you say the relationship?</p>
+      </div>
+      <div class="row randomize">
+        <button class="option answer-start" data-value="1">Both increase.</button>
+        <button class="option answer-start" data-value="2">When rainfall increases, dengue cases increase.</button>
+      </div>
+      <div class="single-card">
+        <p class="question" style="text-align:center;margin-bottom:10px">How sure are you?</p>
+        <div class="stars">
+          <button class="star" data-group="confStart" data-value="1">😟</button>
+          <button class="star" data-group="confStart" data-value="2">🙂</button>
+          <button class="star" data-group="confStart" data-value="3">😄</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn back" disabled>Back</button>
+      <div class="nav-right"><button class="btn next" id="next1" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen2">
+    <h2 class="title">What is the question asking?</h2>
+    <p class="instruction">Tap the word <strong>relationship</strong>.</p>
+    <div class="content">
+      <div class="statement">State the relationship between the amount of rainfall and the number of dengue cases.</div>
+      <div class="row randomize">
+        <button class="choice" id="s2a">relationship</button>
+        <button class="choice" id="s2b">exact numbers</button>
+      </div>
+      <div id="fb2" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next2" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen3">
+    <h2 class="title">Which is true?</h2>
+    <p class="instruction">Tap the true sentence.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s3a">More rainfall will cause more dengue cases.</button>
+        <button class="choice" id="s3b">More dengue cases will cause more rainfall.</button>
+      </div>
+      <div id="fb3" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next3" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen4">
+    <h2 class="title">Build the first mark</h2>
+    <p class="instruction" id="inst4">Tap the word for Blank 1.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="blank-row">
+          <span>When the</span>
+          <div class="blank active" id="blank1">Blank 1</div>
+          <span>increases, the</span>
+          <div class="blank" id="blank2">Blank 2</div>
+          <span>increases.</span>
+        </div>
+      </div>
+      <div class="bank randomize" id="bank4">
+        <button class="mini-btn fill4" data-value="amount of rainfall">amount of rainfall</button>
+        <button class="mini-btn fill4" data-value="number of dengue cases">number of dengue cases</button>
+      </div>
+      <div id="fb4" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next4" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen5">
+    <h2 class="title">Which answer gets the mark?</h2>
+    <p class="instruction">Tap the answer that gets the mark.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s5a">From March to August, both rainfall and dengue cases increase.</button>
+        <button class="choice" id="s5b">When the amount of rainfall increases, the number of dengue cases increases.</button>
+      </div>
+      <div id="fb5" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next5" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen6">
+    <h2 class="title">Start the explanation</h2>
+    <p class="instruction">Tap what comes after <strong>more rainfall</strong>.</p>
+    <div class="content">
+      <div class="row three randomize">
+        <button class="choice" id="s6a">more stagnant water</button>
+        <button class="choice" id="s6b">more people getting wet</button>
+        <button class="choice" id="s6c">dengue fever growing in rain</button>
+      </div>
+      <div id="fb6" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen7">
+    <h2 class="title">Which wording is best?</h2>
+    <p class="instruction">Tap the best science words.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s7a">more water collects</button>
+        <button class="choice" id="s7b">more stagnant water</button>
+        <button class="choice" id="s7c">more convenient water</button>
+        <button class="choice" id="s7d">more pools of water form</button>
+      </div>
+      <div id="fb7" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen8">
+    <h2 class="title">What do mosquitoes do there?</h2>
+    <p class="instruction">Tap the best next idea.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s8a">mosquitoes reproduce more</button>
+        <button class="choice" id="s8b">mosquitoes become more convenient</button>
+        <button class="choice" id="s8c">dengue cases appear by themselves</button>
+      </div>
+      <div id="fb8" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next8" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen9">
+    <h2 class="title">What happens next?</h2>
+    <p class="instruction">Tap the next step.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s9a">more adult mosquitoes</button>
+        <button class="choice" id="s9b">more rainfall again</button>
+      </div>
+      <div id="fb9" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next9" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen10">
+    <h2 class="title">What is the final result?</h2>
+    <p class="instruction">Tap the best ending.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s10a">more adult mosquitoes spread dengue fever</button>
+        <button class="choice" id="s10b">more adult mosquitoes drink rainwater</button>
+      </div>
+      <div id="fb10" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next10" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen11">
+    <h2 class="title">Build the explanation chain</h2>
+    <p class="instruction" id="inst11">Tap the first step.</p>
+    <div class="content">
+      <div class="summary-card">
+        <div class="chip-wrap" id="chainProgress"></div>
+      </div>
+      <div class="row randomize" id="chainBank">
+        <button class="mini-btn chain-btn" data-step="more rainfall">more rainfall</button>
+        <button class="mini-btn chain-btn" data-step="more stagnant water">more stagnant water</button>
+        <button class="mini-btn chain-btn" data-step="mosquitoes reproduce more">mosquitoes reproduce more</button>
+        <button class="mini-btn chain-btn" data-step="more adult mosquitoes">more adult mosquitoes</button>
+        <button class="mini-btn chain-btn" data-step="more dengue spread">more dengue spread</button>
+      </div>
+      <div id="fb11" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next11" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen12">
+    <h2 class="title">Build the second mark</h2>
+    <p class="instruction" id="inst12">Tap the word for Blank 1.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="blank-row">
+          <span>More rainfall leads to more</span>
+          <div class="blank active" id="blankA">Blank 1</div>
+          <span>water, so mosquitoes</span>
+          <div class="blank" id="blankB">Blank 2</div>
+          <span>more and</span>
+          <div class="blank" id="blankC">Blank 3</div>
+          <span>dengue fever.</span>
+        </div>
+      </div>
+      <div class="bank randomize" id="bank12">
+        <button class="mini-btn fill12" data-value="stagnant">stagnant</button>
+        <button class="mini-btn fill12" data-value="clean">clean</button>
+        <button class="mini-btn fill12" data-value="reproduce">reproduce</button>
+        <button class="mini-btn fill12" data-value="evaporate">evaporate</button>
+        <button class="mini-btn fill12" data-value="spread">spread</button>
+        <button class="mini-btn fill12" data-value="stop">stop</button>
+      </div>
+      <div id="fb12" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next12" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen13">
+    <h2 class="title">Full answer or partial answer?</h2>
+    <p class="instruction">Tap the stronger answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s13a">More rainfall causes more stagnant water for mosquitoes to breed.</button>
+        <button class="choice" id="s13b">More rainfall leads to more stagnant water, so mosquitoes reproduce more and spread dengue fever.</button>
+      </div>
+      <div id="fb13" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next13" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen14">
+    <h2 class="title">Build the full 2-mark answer</h2>
+    <p class="instruction" id="inst14">Tap the first sentence part.</p>
+    <div class="content">
+      <div class="summary-card">
+        <div class="chip-wrap" id="fullProgress"></div>
+      </div>
+      <div class="row randomize" id="fullBank">
+        <button class="mini-btn full-btn" data-step="When the amount of rainfall increases,">When the amount of rainfall increases,</button>
+        <button class="mini-btn full-btn" data-step="the number of dengue cases increases.">the number of dengue cases increases.</button>
+        <button class="mini-btn full-btn" data-step="More rainfall leads to more stagnant water,">More rainfall leads to more stagnant water,</button>
+        <button class="mini-btn full-btn" data-step="so mosquitoes reproduce more">so mosquitoes reproduce more</button>
+        <button class="mini-btn full-btn" data-step="and spread dengue fever.">and spread dengue fever.</button>
+      </div>
+      <div id="fb14" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next14" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen15">
+    <h2 class="title">Back to the original question</h2>
+    <p class="instruction">Tap the best full answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="option" id="s15a">From March to August, both rainfall and dengue cases increase.</button>
+        <button class="option" id="s15b">When the amount of rainfall increases, the number of dengue cases increases. More rainfall leads to more stagnant water, so mosquitoes reproduce more and spread dengue fever.</button>
+        <button class="option" id="s15c">More rainfall makes it harder to evaporate.</button>
+      </div>
+      <div id="fb15" class="feedback"></div>
+      <div class="single-card">
+        <p class="question" style="text-align:center;margin-bottom:10px">How do you feel now?</p>
+        <div class="stars">
+          <button class="star" data-group="confEnd" data-value="1">😟</button>
+          <button class="star" data-group="confEnd" data-value="2">🙂</button>
+          <button class="star" data-group="confEnd" data-value="3">😄</button>
+        </div>
+        <div class="row randomize" style="margin-top:12px">
+          <button class="choice" id="feel1">I still need help.</button>
+          <button class="choice" id="feel2">I can write one like this now.</button>
+        </div>
+        <div id="fb15b" class="feedback"></div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next15" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen16">
+    <h2 class="title">Now write it</h2>
+    <p class="instruction">First tap “I can say it.” Then write it on paper and tap “I wrote it on paper.”</p>
+    <div class="content">
+      <div class="summary-card">
+        <p class="big-center"><span class="highlight">When the amount of rainfall increases, the number of dengue cases increases.</span></p>
+        <p class="big-center"><span class="highlight">More rainfall leads to more stagnant water, so mosquitoes reproduce more and spread dengue fever.</span></p>
+      </div>
+      <div class="row">
+        <button class="choice" id="s16a">I can say it.</button>
+        <button class="choice" id="s16b">I wrote it on paper.</button>
+      </div>
+      <div id="fb16" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn done" id="finishBtn" disabled>Finished</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const screens=[...document.querySelectorAll('.screen')];
+  let current=0;
+
+  function updateTop(){
+    document.getElementById('stepText').textContent=`Step ${current+1} of ${screens.length}`;
+    document.getElementById('bar').style.width=((current+1)/screens.length*100)+'%';
+  }
+  function goTo(i){
+    current=Math.max(0,Math.min(i,screens.length-1));
+    screens.forEach((s,idx)=>s.classList.toggle('active',idx===current));
+    updateTop();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){ goTo(current+1); }
+  function back(){ goTo(current-1); }
+
+  document.querySelectorAll('.btn.back').forEach(btn=>btn.addEventListener('click',back));
+  document.querySelectorAll('.btn.next').forEach(btn=>btn.addEventListener('click',next));
+  document.getElementById('finishBtn').addEventListener('click',()=>{
+    document.getElementById('finishBtn').textContent='Done!';
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  function shuffleChildren(container){
+    const children = Array.from(container.children);
+    for(let i=children.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [children[i],children[j]]=[children[j],children[i]];
+    }
+    children.forEach(child=>container.appendChild(child));
+  }
+  document.querySelectorAll('.randomize').forEach(shuffleChildren);
+
+  function getScreenSpeech(screen){
+    const clone = screen.cloneNode(true);
+    const nav = clone.querySelector('.nav');
+    if(nav) nav.remove();
+    clone.querySelectorAll('button').forEach(btn=>{
+      if(btn.closest('.stars')) return;
+      const text = btn.textContent.trim();
+      if(text) btn.textContent = 'Option: ' + text;
+    });
+    return clone.innerText.replace(/\s+/g,' ').trim();
+  }
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95;
+    u.pitch=1;
+    u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }
+  function speakCurrentScreen(){ speakNow(getScreenSpeech(screens[current])); }
+  document.getElementById('speakBtnTop').addEventListener('click',speakCurrentScreen);
+
+  const picks={};
+  document.querySelectorAll('[data-group]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks[group]=btn.dataset.value;
+      if(group==='confStart' && picks['start']) document.getElementById('next1').disabled=false;
+      if(group==='confEnd') checkEndReady();
+    });
+  });
+
+  document.querySelectorAll('.answer-start').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.answer-start').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks['start']=btn.dataset.value;
+      if(picks['confStart']) document.getElementById('next1').disabled=false;
+    });
+  });
+
+  function showFB(id,type,text){
+    const el=document.getElementById(id);
+    el.className=`feedback show ${type}`;
+    el.innerHTML=text;
+  }
+
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+    allBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        allBtns.forEach(x=>x.classList.remove('correct','wrong','selected'));
+        btn.classList.add(btn===correctBtn?'correct':'wrong');
+        showFB(fbId, btn===correctBtn?'good':'bad', btn===correctBtn?goodText:badText);
+        document.getElementById(nextId).disabled=false;
+      });
+    });
+  }
+
+  markOne(document.getElementById('s2a'),
+    [document.getElementById('s2a'),document.getElementById('s2b')],
+    'fb2',
+    'Yes. You need to state the relationship, not the exact numbers.',
+    'Look again. The question asks for the relationship.',
+    'next2'
+  );
+
+  markOne(document.getElementById('s3a'),
+    [document.getElementById('s3a'),document.getElementById('s3b')],
+    'fb3',
+    'Yes. More rainfall can lead to more dengue cases.',
+    'Rainfall affects dengue cases, not the other way round.',
+    'next3'
+  );
+
+  // Screen 4 sequential fill
+  const fill4Order = ['amount of rainfall','number of dengue cases'];
+  let fill4Index = 0;
+  document.querySelectorAll('.fill4').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const val = btn.dataset.value;
+      if(fill4Index===0){
+        document.getElementById('blank1').textContent = val;
+        document.getElementById('blank1').classList.remove('active');
+        document.getElementById('blank2').classList.add('active');
+        btn.classList.add(val===fill4Order[0]?'correct':'wrong');
+        if(val===fill4Order[0]){
+          fill4Index=1;
+          btn.disabled=true;
+          document.getElementById('inst4').innerHTML='Now tap the word for <strong>Blank 2</strong>.';
+          showFB('fb4','info','Good. Now fill Blank 2.');
+        } else {
+          showFB('fb4','bad','Blank 1 should be the cause: amount of rainfall.');
+          setTimeout(()=>{btn.classList.remove('wrong'); document.getElementById('blank1').textContent='Blank 1'; document.getElementById('blank2').classList.remove('active'); document.getElementById('blank1').classList.add('active');}, 700);
+        }
+      } else if(fill4Index===1 && !btn.disabled){
+        document.getElementById('blank2').textContent = val;
+        if(val===fill4Order[1]){
+          btn.classList.add('correct');
+          showFB('fb4','good','Good. This is the right cause → effect sentence.');
+        } else {
+          btn.classList.add('wrong');
+          showFB('fb4','bad','Blank 2 should be the result: number of dengue cases.');
+        }
+        document.getElementById('next4').disabled=false;
+      }
+    });
+  });
+
+  markOne(document.getElementById('s5b'),
+    [document.getElementById('s5a'),document.getElementById('s5b')],
+    'fb5',
+    'Yes. This one shows cause and effect.',
+    'Not enough. “Both increase” is only a description.',
+    'next5'
+  );
+
+  markOne(document.getElementById('s6a'),
+    [document.getElementById('s6a'),document.getElementById('s6b'),document.getElementById('s6c')],
+    'fb6',
+    'Yes. More rainfall can lead to more stagnant water.',
+    'Think about where mosquitoes lay eggs.',
+    'next6'
+  );
+
+  markOne(document.getElementById('s7b'),
+    [document.getElementById('s7a'),document.getElementById('s7b'),document.getElementById('s7c'),document.getElementById('s7d')],
+    'fb7',
+    'Yes. Use “stagnant water”.',
+    'Use the accepted science wording: stagnant water.',
+    'next7'
+  );
+
+  markOne(document.getElementById('s8a'),
+    [document.getElementById('s8a'),document.getElementById('s8b'),document.getElementById('s8c')],
+    'fb8',
+    'Yes. In stagnant water, mosquitoes reproduce more.',
+    'The key idea is mosquito reproduction.',
+    'next8'
+  );
+
+  markOne(document.getElementById('s9a'),
+    [document.getElementById('s9a'),document.getElementById('s9b')],
+    'fb9',
+    'Yes. More breeding leads to more adult mosquitoes.',
+    'Stay on the mosquito life cycle.',
+    'next9'
+  );
+
+  markOne(document.getElementById('s10a'),
+    [document.getElementById('s10a'),document.getElementById('s10b')],
+    'fb10',
+    'Yes. More mosquitoes can spread dengue fever.',
+    'The ending must link back to dengue fever.',
+    'next10'
+  );
+
+  // Screen 11 compact ordering
+  const targetChain = [
+    'more rainfall',
+    'more stagnant water',
+    'mosquitoes reproduce more',
+    'more adult mosquitoes',
+    'more dengue spread'
+  ];
+  let chainIndex = 0;
+  document.querySelectorAll('.chain-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const value = btn.dataset.step;
+      if(value === targetChain[chainIndex]){
+        btn.classList.add('correct');
+        btn.disabled=true;
+        const chip=document.createElement('div');
+        chip.className='chip';
+        chip.textContent=value;
+        document.getElementById('chainProgress').appendChild(chip);
+        chainIndex++;
+        if(chainIndex < targetChain.length){
+          document.getElementById('inst11').innerHTML=`Good. Now tap step <strong>${chainIndex+1}</strong>.`;
+        } else {
+          document.getElementById('inst11').innerHTML='All 5 steps are done.';
+          showFB('fb11','good','Good. That is the full explanation chain.');
+          document.getElementById('next11').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb11','bad',`Not yet. Tap step ${chainIndex+1}.`);
+        setTimeout(()=>btn.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  // Screen 12 sequential fill
+  const target12 = ['stagnant','reproduce','spread'];
+  let fill12Index = 0;
+  const blanks12 = [document.getElementById('blankA'),document.getElementById('blankB'),document.getElementById('blankC')];
+  document.querySelectorAll('.fill12').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(fill12Index>=3 || btn.disabled) return;
+      const val = btn.dataset.value;
+      blanks12[fill12Index].textContent = val;
+      if(val === target12[fill12Index]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        blanks12[fill12Index].classList.remove('active');
+        fill12Index++;
+        if(fill12Index<3){
+          blanks12[fill12Index].classList.add('active');
+          document.getElementById('inst12').innerHTML=`Good. Now tap the word for <strong>Blank ${fill12Index+1}</strong>.`;
+          showFB('fb12','info',`Good. Now fill Blank ${fill12Index+1}.`);
+        } else {
+          document.getElementById('inst12').innerHTML='All 3 blanks are filled.';
+          showFB('fb12','good','Good. This is an accepted explanation.');
+          document.getElementById('next12').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        const hints = [
+          'Blank 1 needs the water word.',
+          'Blank 2 needs the mosquito action.',
+          'Blank 3 needs the disease action.'
+        ];
+        showFB('fb12','bad',hints[fill12Index]);
+        setTimeout(()=>{
+          btn.classList.remove('wrong');
+          blanks12[fill12Index].textContent=`Blank ${fill12Index+1}`;
+        }, 700);
+      }
+    });
+  });
+
+  markOne(document.getElementById('s13b'),
+    [document.getElementById('s13a'),document.getElementById('s13b')],
+    'fb13',
+    'Yes. This answer completes more of the chain.',
+    'This answer is only partial. It does not link clearly to dengue spread.',
+    'next13'
+  );
+
+  // Screen 14 compact ordering
+  const targetFull = [
+    'When the amount of rainfall increases,',
+    'the number of dengue cases increases.',
+    'More rainfall leads to more stagnant water,',
+    'so mosquitoes reproduce more',
+    'and spread dengue fever.'
+  ];
+  let fullIndex = 0;
+  document.querySelectorAll('.full-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const value = btn.dataset.step;
+      if(value === targetFull[fullIndex]){
+        btn.classList.add('correct');
+        btn.disabled=true;
+        const chip=document.createElement('div');
+        chip.className='chip';
+        chip.textContent=value;
+        document.getElementById('fullProgress').appendChild(chip);
+        fullIndex++;
+        if(fullIndex < targetFull.length){
+          document.getElementById('inst14').innerHTML=`Good. Now tap part <strong>${fullIndex+1}</strong>.`;
+        } else {
+          document.getElementById('inst14').innerHTML='All 5 parts are done.';
+          showFB('fb14','good','Yes. This is a full 2-mark answer.');
+          document.getElementById('next14').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb14','bad',`Not yet. Tap part ${fullIndex+1}.`);
+        setTimeout(()=>btn.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  markOne(document.getElementById('s15b'),
+    [document.getElementById('s15a'),document.getElementById('s15b'),document.getElementById('s15c')],
+    'fb15',
+    'Well done. This answer states the relationship and explains it.',
+    'Pick the answer that has both the relationship and the explanation.',
+    'next15'
+  );
+
+  function checkEndReady(){
+    if(picks['confEnd'] && picks['feel']) document.getElementById('next15').disabled=false;
+  }
+  [document.getElementById('feel1'),document.getElementById('feel2')].forEach((btn,idx)=>{
+    btn.addEventListener('click',()=>{
+      [document.getElementById('feel1'),document.getElementById('feel2')].forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks['feel']=idx===0?'help':'write';
+      if(idx===0){
+        showFB('fb15b','info','That is okay. Read the full answer aloud once more.');
+      } else {
+        showFB('fb15b','good','Nice. You are ready to write it on paper.');
+      }
+      checkEndReady();
+    });
+  });
+
+  const endState = {say:false, write:false};
+  document.getElementById('s16a').addEventListener('click',()=>{
+    document.getElementById('s16a').classList.add('correct');
+    endState.say = true;
+    showFB('fb16','info','Good. Now write it on paper and tap the other button.');
+    checkEnd16();
+  });
+  document.getElementById('s16b').addEventListener('click',()=>{
+    document.getElementById('s16b').classList.add('correct');
+    endState.write = true;
+    showFB('fb16','good','Good. You used the answer frame and the explanation chain.');
+    checkEnd16();
+  });
+  function checkEnd16(){
+    if(endState.say && endState.write){
+      document.getElementById('finishBtn').disabled=false;
+    }
+  }
+
+  updateTop();
+</script>
+</body>
+</html>

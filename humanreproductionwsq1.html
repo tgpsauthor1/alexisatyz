@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Cells Helper - Version 3</title>
+<style>
+  :root{
+    --bg:#f3faf6;
+    --panel:#ffffff;
+    --line:#cfe3d8;
+    --ink:#173428;
+    --muted:#4f6d61;
+    --green:#31a36f;
+    --green2:#e9f8f0;
+    --blue:#2d6bdb;
+    --blue2:#edf4ff;
+    --orange:#d39a3b;
+    --orange2:#fff6e7;
+    --red:#d16f5b;
+    --red2:#fff2ee;
+    --grey:#e8eeeb;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
+  .top{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    margin-bottom:12px;
+    position:sticky;
+    top:8px;
+    z-index:10;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{
+    font-size:24px;line-height:1.15;margin:0;flex:1;
+  }
+  .small{font-size:14px;color:var(--muted)}
+  .progress{
+    height:12px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line);margin-top:10px
+  }
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+  .screen{
+    display:none;
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    min-height:calc(100vh - 120px);
+  }
+  .screen.active{display:flex;flex-direction:column}
+  .title{font-size:26px;line-height:1.15;margin:0 0 8px}
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;padding:10px 12px;
+    font-size:20px;line-height:1.3;margin:0 0 12px;
+  }
+  .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+  .single-card{
+    flex:1;
+    background:#fbfffc;
+    border:2px solid var(--line);
+    border-radius:22px;
+    padding:12px;
+  }
+  .question{
+    font-size:21px;line-height:1.35;margin:0;
+  }
+  .statement{
+    background:#fffdf7;border:2px solid #f1ddb1;border-radius:18px;padding:14px;
+    font-size:24px;line-height:1.35;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  .row.four{grid-template-columns:repeat(4,1fr)}
+  @media (max-width: 760px){
+    .row,.row.three,.row.four{grid-template-columns:1fr 1fr}
+  }
+  .tile, .choice, .toggle-btn, .option, .sound-btn{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+  }
+  .tile{
+    background:#fff;border:2px solid var(--line);border-radius:22px;padding:12px;min-height:210px;
+    display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:8px;
+    box-shadow:none; color:var(--ink);
+  }
+  .tile p{margin:0;font-size:18px;line-height:1.2;text-align:center}
+  .tile .label{font-size:18px;font-weight:700}
+  .tile:hover, .choice:hover, .option:hover, .toggle-btn:hover{transform:translateY(-1px)}
+  .choice, .option{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
+    min-height:72px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink);
+  }
+  .toggle-btn{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px;
+    min-height:84px;font-size:24px;font-weight:700;color:var(--ink);
+  }
+  .tile.correct,.choice.correct,.option.correct,.toggle-btn.correct{background:var(--green2);border-color:#98d0b3}
+  .tile.wrong,.choice.wrong,.option.wrong,.toggle-btn.wrong{background:var(--red2);border-color:#e6b3a8}
+  .tile.selected,.choice.selected,.option.selected,.toggle-btn.selected{
+    background:var(--blue2);border-color:#bfd5f4;
+  }
+  .feedback{
+    display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3
+  }
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+  .nav{
+    display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px
+  }
+  .nav-right{display:flex;gap:10px}
+  .btn{
+    appearance:none;border:none;border-radius:18px;padding:14px 18px;font-size:20px;font-weight:700;cursor:pointer
+  }
+  .back{background:#eef5f1;color:var(--ink);border:2px solid var(--line)}
+  .next{background:var(--blue);color:#fff}
+  .done{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .sound-btn{
+    background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;color:var(--ink)
+  }
+  .big-center{font-size:23px;line-height:1.35;text-align:center}
+  .mini-title{font-size:21px;font-weight:700;margin:0 0 6px}
+  .badge{
+    display:inline-block;background:var(--blue2);border:2px solid #bfd5f4;border-radius:999px;padding:8px 12px;font-size:17px;font-weight:700
+  }
+  .stars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .star{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 18px;min-width:92px;font-size:34px;cursor:pointer
+  }
+  .star.selected{background:#fff7d8;border-color:#efd67a}
+  .pattern-card{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:12px
+  }
+  .pattern-card .s{font-size:17px;line-height:1.2;min-height:66px}
+  .tf-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tf-mini button{
+    border:none;border-radius:14px;padding:10px 8px;font-size:18px;font-weight:700;cursor:pointer;background:#f6fbf8;border:2px solid var(--line)
+  }
+  .tf-mini button.selected{background:#eaf4ff;border-color:#bfd5f4}
+  .center{display:flex;justify-content:center;align-items:center}
+  svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Cells Helper</h1>
+      <button class="sound-btn" id="speakBtnTop" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Step 1 of 15</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="screen active" id="screen1">
+    <h2 class="title">First try</h2>
+    <p class="instruction">Tap your answer. Then tap a face.</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="question">
+          Jean said these statements about cells.<br><br>
+          A. Some living things are made of only one cell.<br>
+          B. Living things and non-living things are made of cells.<br>
+          C. Different cells can have different shapes, sizes and jobs.<br>
+          D. Bigger animals of the same kind have bigger cells.<br><br>
+          Which are true?
+        </p>
+      </div>
+      <div class="row">
+        <button class="option" data-group="q1" data-value="1">(1) A and C only</button>
+        <button class="option" data-group="q1" data-value="2">(2) B and D only</button>
+        <button class="option" data-group="q1" data-value="3">(3) A, B and C only</button>
+        <button class="option" data-group="q1" data-value="4">(4) A, B, C and D</button>
+      </div>
+      <div class="single-card">
+        <p class="mini-title">How sure are you?</p>
+        <div class="stars" id="confStart">
+          <button class="star" data-group="confStart" data-value="1">😟</button>
+          <button class="star" data-group="confStart" data-value="2">🙂</button>
+          <button class="star" data-group="confStart" data-value="3">😄</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn back" disabled>Back</button>
+      <div class="nav-right"><button class="btn next" id="next1" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen2">
+    <h2 class="title">Statement A</h2>
+    <p class="instruction">Tap the picture that shows <strong>one living thing made of one cell</strong>.</p>
+    <div class="content">
+      <div class="row three">
+        <button class="tile" id="aPic1">
+          <svg viewBox="0 0 180 140" width="160" height="120" aria-hidden="true">
+            <ellipse cx="90" cy="74" rx="54" ry="34" fill="#dff7ea" stroke="#31a36f" stroke-width="5"></ellipse>
+            <circle cx="66" cy="68" r="8" fill="#2d6bdb"></circle>
+            <circle cx="90" cy="56" r="7" fill="#5ab676"></circle>
+            <circle cx="108" cy="84" r="7" fill="#5ab676"></circle>
+            <path d="M38 78 C18 72, 12 58, 20 46" fill="none" stroke="#31a36f" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M142 80 C162 88, 170 102, 164 118" fill="none" stroke="#31a36f" stroke-width="5" stroke-linecap="round"></path>
+          </svg>
+          <p class="label">Bacteria</p>
+        </button>
+        <button class="tile" id="aPic2">
+          <svg viewBox="0 0 180 140" width="160" height="120" aria-hidden="true">
+            <circle cx="90" cy="70" r="36" fill="#31a36f"></circle>
+            <circle cx="78" cy="62" r="8" fill="#fff"></circle>
+            <circle cx="102" cy="62" r="8" fill="#fff"></circle>
+          </svg>
+          <p class="label">Frog</p>
+        </button>
+        <button class="tile" id="aPic3">
+          <svg viewBox="0 0 180 140" width="160" height="120" aria-hidden="true">
+            <circle cx="90" cy="44" r="24" fill="#84c96d"></circle>
+            <rect x="66" y="64" width="48" height="52" rx="10" fill="#84c96d"></rect>
+          </svg>
+          <p class="label">Tree</p>
+        </button>
+      </div>
+      <div id="fb2" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next2" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen3">
+    <h2 class="title">Statement A</h2>
+    <div class="content">
+      <div class="statement">A. Some living things are made of only one cell.</div>
+      <p class="instruction">Tap your answer.</p>
+      <div class="row">
+        <button class="toggle-btn" id="aTrue">True</button>
+        <button class="toggle-btn" id="aFalse">False</button>
+      </div>
+      <div id="fb3" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next3" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen4">
+    <h2 class="title">Statement B</h2>
+    <p class="instruction">Tap what is <strong>not</strong> made of cells.</p>
+    <div class="content">
+      <div class="row">
+        <button class="tile" id="bLiving">
+          <svg viewBox="0 0 210 160" width="190" height="130" aria-hidden="true">
+            <circle cx="52" cy="88" r="26" fill="#31a36f"></circle>
+            <circle cx="44" cy="80" r="7" fill="#fff"></circle>
+            <circle cx="60" cy="80" r="7" fill="#fff"></circle>
+            <circle cx="118" cy="48" r="22" fill="#84c96d"></circle>
+            <rect x="96" y="66" width="46" height="62" rx="10" fill="#84c96d"></rect>
+            <path d="M164 116 C182 86, 196 60, 198 40" fill="none" stroke="#31a36f" stroke-width="8"></path>
+          </svg>
+          <p class="label">Living things</p>
+          <p>Made of cells</p>
+        </button>
+        <button class="tile" id="bNon">
+          <svg viewBox="0 0 210 160" width="190" height="130" aria-hidden="true">
+            <rect x="34" y="72" width="44" height="44" rx="8" fill="#adb7c4"></rect>
+            <rect x="96" y="58" width="42" height="58" rx="6" fill="#9eaab7"></rect>
+            <polygon points="164,48 194,74 180,126 142,126 128,72" fill="#c3ccd8"></polygon>
+          </svg>
+          <p class="label">Non-living things</p>
+          <p>Not made of cells</p>
+        </button>
+      </div>
+      <div id="fb4" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next4" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen5">
+    <h2 class="title">Statement B</h2>
+    <div class="content">
+      <div class="statement">B. Living things and non-living things are made of cells.</div>
+      <p class="instruction">Tap your answer.</p>
+      <div class="row">
+        <button class="toggle-btn" id="bTrue">True</button>
+        <button class="toggle-btn" id="bFalse">False</button>
+      </div>
+      <div id="fb5" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next5" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen6">
+    <h2 class="title">Statement C</h2>
+    <p class="instruction">Look at the cells. Tap the sentence that matches the pictures.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="row three">
+          <div class="tile" style="cursor:default">
+            <svg viewBox="0 0 170 140" width="150" height="118" aria-hidden="true">
+              <rect x="35" y="24" width="90" height="90" rx="12" fill="#dff7ea" stroke="#31a36f" stroke-width="5"></rect>
+              <circle cx="76" cy="68" r="11" fill="#2d6bdb"></circle>
+              <circle cx="62" cy="58" r="7" fill="#5ab676"></circle>
+              <circle cx="98" cy="46" r="7" fill="#5ab676"></circle>
+              <circle cx="116" cy="62" r="7" fill="#5ab676"></circle>
+              <circle cx="98" cy="90" r="7" fill="#5ab676"></circle>
+            </svg>
+            <p class="label">Leaf cell</p>
+            <p>box-like</p>
+            <p>helps make food</p>
+          </div>
+          <div class="tile" style="cursor:default">
+            <svg viewBox="0 0 170 140" width="150" height="118" aria-hidden="true">
+              <rect x="28" y="52" width="54" height="40" rx="12" fill="#f5ead6" stroke="#d39a3b" stroke-width="5"></rect>
+              <path d="M82 72 C112 72, 126 64, 138 44 C136 68, 136 78, 138 100 C124 82, 110 74, 82 74" fill="#f5ead6" stroke="#d39a3b" stroke-width="5"></path>
+              <circle cx="56" cy="72" r="9" fill="#2d6bdb"></circle>
+            </svg>
+            <p class="label">Root hair cell</p>
+            <p>long shape</p>
+            <p>helps absorb water</p>
+          </div>
+          <div class="tile" style="cursor:default">
+            <svg viewBox="0 0 170 140" width="150" height="118" aria-hidden="true">
+              <ellipse cx="86" cy="74" rx="44" ry="30" fill="#ffe0d9" stroke="#d16f5b" stroke-width="5"></ellipse>
+              <circle cx="86" cy="74" r="10" fill="#2d6bdb"></circle>
+            </svg>
+            <p class="label">Skin cell</p>
+            <p>flatter</p>
+            <p>covers and protects</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="choice" id="cA">Different cells can look different and do different jobs.</button>
+        <button class="choice" id="cB">All cells look the same and do the same job.</button>
+      </div>
+      <div id="fb6" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen7">
+    <h2 class="title">Statement C</h2>
+    <div class="content">
+      <div class="statement">C. Different cells can have different shapes, sizes and jobs.</div>
+      <p class="instruction">Tap your answer.</p>
+      <div class="row">
+        <button class="toggle-btn" id="cTrue">True</button>
+        <button class="toggle-btn" id="cFalse">False</button>
+      </div>
+      <div id="fb7" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen8">
+    <h2 class="title">Statement D</h2>
+    <p class="instruction">Look at the bunnies. Tap the better idea.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="row">
+          <div class="tile" style="cursor:default">
+            <svg viewBox="0 0 220 170" width="190" height="128" aria-hidden="true">
+              <ellipse cx="120" cy="92" rx="46" ry="24" fill="#c9ced4"></ellipse>
+              <circle cx="74" cy="76" r="20" fill="#c9ced4"></circle>
+              <rect x="62" y="38" width="10" height="28" rx="5" fill="#c9ced4"></rect>
+              <rect x="78" y="36" width="10" height="30" rx="5" fill="#c9ced4"></rect>
+              <ellipse cx="64" cy="140" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="104" cy="140" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="144" cy="140" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+            </svg>
+            <p class="label">Small bunny</p>
+            <p>same size skin cells</p>
+            <p>fewer skin cells</p>
+          </div>
+          <div class="tile" style="cursor:default">
+            <svg viewBox="0 0 220 170" width="190" height="128" aria-hidden="true">
+              <ellipse cx="128" cy="94" rx="62" ry="30" fill="#c9ced4"></ellipse>
+              <circle cx="64" cy="74" r="24" fill="#c9ced4"></circle>
+              <rect x="50" y="24" width="11" height="36" rx="5" fill="#c9ced4"></rect>
+              <rect x="68" y="20" width="11" height="40" rx="5" fill="#c9ced4"></rect>
+              <ellipse cx="46" cy="132" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="82" cy="132" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="118" cy="132" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="154" cy="132" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+              <ellipse cx="190" cy="132" rx="16" ry="11" fill="#ffe0d9" stroke="#d16f5b" stroke-width="4"></ellipse>
+            </svg>
+            <p class="label">Big bunny</p>
+            <p>same size skin cells</p>
+            <p>more skin cells</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="choice" id="dA">Big bunny = bigger skin cells</button>
+        <button class="choice" id="dB">Big bunny = more skin cells</button>
+      </div>
+      <div id="fb8" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next8" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen9">
+    <h2 class="title">Statement D</h2>
+    <div class="content">
+      <div class="statement">D. Bigger animals of the same kind have bigger cells.</div>
+      <p class="instruction">Tap your answer.</p>
+      <div class="row">
+        <button class="toggle-btn" id="dTrue">True</button>
+        <button class="toggle-btn" id="dFalse">False</button>
+      </div>
+      <div id="fb9" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next9" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen10">
+    <h2 class="title">Build the pattern</h2>
+    <p class="instruction">Tap True or False for each one.</p>
+    <div class="content">
+      <div class="row four">
+        <div class="pattern-card">
+          <div class="badge">A</div>
+          <div class="s">Some living things are made of only one cell.</div>
+          <div class="tf-mini">
+            <button data-pick="A" data-val="T">True</button>
+            <button data-pick="A" data-val="F">False</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">B</div>
+          <div class="s">Living things and non-living things are made of cells.</div>
+          <div class="tf-mini">
+            <button data-pick="B" data-val="T">True</button>
+            <button data-pick="B" data-val="F">False</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">C</div>
+          <div class="s">Different cells can have different shapes, sizes and jobs.</div>
+          <div class="tf-mini">
+            <button data-pick="C" data-val="T">True</button>
+            <button data-pick="C" data-val="F">False</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">D</div>
+          <div class="s">Bigger animals of the same kind have bigger cells.</div>
+          <div class="tf-mini">
+            <button data-pick="D" data-val="T">True</button>
+            <button data-pick="D" data-val="F">False</button>
+          </div>
+        </div>
+      </div>
+      <div id="fb10" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next10" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen11">
+    <h2 class="title">Back to the question</h2>
+    <p class="instruction">Which option matches the pattern?</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="big-center">A = True &nbsp;&nbsp; B = False &nbsp;&nbsp; C = True &nbsp;&nbsp; D = False</p>
+      </div>
+      <div class="row">
+        <button class="option" id="q2_1">(1) A and C only</button>
+        <button class="option" id="q2_2">(2) B and D only</button>
+        <button class="option" id="q2_3">(3) A, B and C only</button>
+        <button class="option" id="q2_4">(4) A, B, C and D</button>
+      </div>
+      <div id="fb11" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next11" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen12">
+    <h2 class="title">Quick check</h2>
+    <p class="instruction">Tap the true sentence.</p>
+    <div class="content">
+      <div class="row">
+        <button class="choice" id="r1">Non-living things are made of cells.</button>
+        <button class="choice" id="r2">Some living things are made of only one cell.</button>
+      </div>
+      <div class="row">
+        <button class="choice" id="r3">Bigger animals always have bigger cells.</button>
+        <button class="choice" id="r4">All cells have the same job.</button>
+      </div>
+      <div id="fb12" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next12" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen13">
+    <h2 class="title">How do you feel now?</h2>
+    <p class="instruction">Tap a face. Then tap one box.</p>
+    <div class="content center" style="flex-direction:column;gap:18px">
+      <div class="stars" id="confEnd">
+        <button class="star" data-group="confEnd" data-value="1">😟</button>
+        <button class="star" data-group="confEnd" data-value="2">🙂</button>
+        <button class="star" data-group="confEnd" data-value="3">😄</button>
+      </div>
+      <div class="row">
+        <button class="choice" id="feel1">I still need help.</button>
+        <button class="choice" id="feel2">I can try one like this again.</button>
+      </div>
+      <div id="fb13" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next13" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen14">
+    <h2 class="title">One more</h2>
+    <p class="instruction">Try this one by yourself.</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="question">
+          Kim said these statements about cells.<br><br>
+          A. All living things are made of many cells.<br>
+          B. Cells are found only in living things.<br>
+          C. Different cells can have different jobs.<br>
+          D. A bigger fish of the same kind usually has more cells, not bigger cells.<br><br>
+          Which are true?
+        </p>
+      </div>
+      <div class="row">
+        <button class="option" id="t1">(1) B, C and D only</button>
+        <button class="option" id="t2">(2) A and C only</button>
+        <button class="option" id="t3">(3) A, B and C only</button>
+        <button class="option" id="t4">(4) A, B, C and D</button>
+      </div>
+      <div id="fb14" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next14" disabled>Finish</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen15">
+    <h2 class="title">Great work!</h2>
+    <p class="instruction">You did it.</p>
+    <div class="content center" style="gap:18px;flex-direction:column">
+      <div class="single-card center" style="flex-direction:column;gap:10px;max-width:720px">
+        <div style="font-size:72px">🏅</div>
+        <p class="big-center">Best method:<br><strong>Check one statement at a time.</strong></p>
+        <p class="big-center">Then match the pattern to the options.</p>
+      </div>
+      <div class="row">
+        <button class="choice" onclick="goTo(0)">Do it again</button>
+        <button class="choice" onclick="speakCurrentScreen()">Read this page</button>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn done" id="finishBtn">Finished</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const screens=[...document.querySelectorAll('.screen')];
+  let current=0;
+
+  function updateTop(){
+    document.getElementById('stepText').textContent=`Step ${current+1} of ${screens.length}`;
+    document.getElementById('bar').style.width=((current+1)/screens.length*100)+'%';
+  }
+  function goTo(i){
+    current=Math.max(0,Math.min(i,screens.length-1));
+    screens.forEach((s,idx)=>s.classList.toggle('active',idx===current));
+    updateTop();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){ goTo(current+1); }
+  function back(){ goTo(current-1); }
+
+  document.querySelectorAll('.btn.back').forEach(btn=>btn.addEventListener('click',back));
+  document.querySelectorAll('.btn.next').forEach(btn=>btn.addEventListener('click',next));
+  document.getElementById('finishBtn').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+  function getScreenSpeech(screen){
+    const clone = screen.cloneNode(true);
+    const nav = clone.querySelector('.nav');
+    if(nav) nav.remove();
+    const allButtons = [...clone.querySelectorAll('button')];
+    allButtons.forEach(btn=>{
+      if(btn.closest('.stars')) return;
+      if(btn.closest('.row') || btn.closest('.tf-mini')){
+        btn.textContent = 'Option: ' + btn.textContent.trim();
+      }
+    });
+    return clone.innerText.replace(/\s+/g,' ').trim();
+  }
+
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95;
+    u.pitch=1;
+    u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }
+  function speakCurrentScreen(){
+    speakNow(getScreenSpeech(screens[current]));
+  }
+  document.getElementById('speakBtnTop').addEventListener('click',speakCurrentScreen);
+
+  const picks={};
+  document.querySelectorAll('[data-group]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(x=>x.classList.remove('selected','correct','wrong'));
+      btn.classList.add('selected');
+      picks[group]=btn.dataset.value;
+      if(group==='q1' && picks['confStart']) document.getElementById('next1').disabled=false;
+      if(group==='confStart' && picks['q1']) document.getElementById('next1').disabled=false;
+      if(group==='confEnd' && picks['feel']) document.getElementById('next13').disabled=false;
+    });
+  });
+
+  function showFB(id,type,text){
+    const el=document.getElementById(id);
+    el.className=`feedback show ${type}`;
+    el.innerHTML=text;
+  }
+
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+    allBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        allBtns.forEach(x=>x.classList.remove('correct','wrong','selected'));
+        btn.classList.add(btn===correctBtn?'correct':'wrong');
+        showFB(fbId, btn===correctBtn?'good':'bad', btn===correctBtn?goodText:badText);
+        document.getElementById(nextId).disabled=false;
+      });
+    });
+  }
+
+  markOne(
+    document.getElementById('aPic1'),
+    [document.getElementById('aPic1'),document.getElementById('aPic2'),document.getElementById('aPic3')],
+    'fb2',
+    'Yes. Bacteria can be one living thing made of one cell.',
+    'Try again in your head: a frog and a tree are made of many cells. Bacteria can be made of one cell.',
+    'next2'
+  );
+
+  markOne(
+    document.getElementById('aTrue'),
+    [document.getElementById('aTrue'),document.getElementById('aFalse')],
+    'fb3',
+    'Correct. A is true.',
+    'A is true. Some living things are made of one cell.',
+    'next3'
+  );
+
+  markOne(
+    document.getElementById('bNon'),
+    [document.getElementById('bLiving'),document.getElementById('bNon')],
+    'fb4',
+    'Correct. Non-living things are not made of cells.',
+    'Living things are made of cells. Non-living things are not made of cells.',
+    'next4'
+  );
+
+  markOne(
+    document.getElementById('bFalse'),
+    [document.getElementById('bTrue'),document.getElementById('bFalse')],
+    'fb5',
+    'Correct. B is false.',
+    'B is false. Non-living things are not made of cells.',
+    'next5'
+  );
+
+  markOne(
+    document.getElementById('cA'),
+    [document.getElementById('cA'),document.getElementById('cB')],
+    'fb6',
+    'Yes. The cells look different and do different jobs.',
+    'Try again. These pictures show that cells can look different and do different jobs.',
+    'next6'
+  );
+
+  markOne(
+    document.getElementById('cTrue'),
+    [document.getElementById('cTrue'),document.getElementById('cFalse')],
+    'fb7',
+    'Correct. C is true.',
+    'C is true. Different cells can have different jobs and can look different.',
+    'next7'
+  );
+
+  markOne(
+    document.getElementById('dB'),
+    [document.getElementById('dA'),document.getElementById('dB')],
+    'fb8',
+    'Yes. The big bunny has more skin cells. The skin cells stay the same size.',
+    'Try again. The big bunny has more skin cells, not bigger skin cells.',
+    'next8'
+  );
+
+  markOne(
+    document.getElementById('dFalse'),
+    [document.getElementById('dTrue'),document.getElementById('dFalse')],
+    'fb9',
+    'Correct. D is false.',
+    'D is false. Bigger animals of the same kind usually have more cells, not bigger cells.',
+    'next9'
+  );
+
+  const pattern={A:null,B:null,C:null,D:null};
+  document.querySelectorAll('[data-pick]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const k=btn.dataset.pick;
+      pattern[k]=btn.dataset.val;
+      btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      if(Object.values(pattern).every(Boolean)){
+        if(pattern.A==='T' && pattern.B==='F' && pattern.C==='T' && pattern.D==='F'){
+          showFB('fb10','good','Nice. The pattern is A true, B false, C true, D false.');
+        } else {
+          showFB('fb10','bad','Check again. A true, B false, C true, D false.');
+        }
+        document.getElementById('next10').disabled=false;
+      }
+    });
+  });
+
+  markOne(
+    document.getElementById('q2_1'),
+    [document.getElementById('q2_1'),document.getElementById('q2_2'),document.getElementById('q2_3'),document.getElementById('q2_4')],
+    'fb11',
+    'Correct. The answer is (1) A and C only.',
+    'Try again. The pattern matches (1) A and C only.',
+    'next11'
+  );
+
+  markOne(
+    document.getElementById('r2'),
+    [document.getElementById('r1'),document.getElementById('r2'),document.getElementById('r3'),document.getElementById('r4')],
+    'fb12',
+    'Yes. Some living things are made of only one cell.',
+    'That one is not true. Tap the true sentence.',
+    'next12'
+  );
+
+  function checkEndReady(){
+    if(picks['confEnd'] && picks['feel']) document.getElementById('next13').disabled=false;
+  }
+  [document.getElementById('feel1'),document.getElementById('feel2')].forEach((btn,idx)=>{
+    btn.addEventListener('click',()=>{
+      [document.getElementById('feel1'),document.getElementById('feel2')].forEach(x=>x.classList.remove('correct','wrong','selected'));
+      btn.classList.add('selected');
+      picks['feel']=idx===0?'help':'try';
+      if(idx===0){
+        showFB('fb13','info','That is okay. You can do it again and use the same method.');
+      } else {
+        showFB('fb13','good','Nice. You are ready to try one more.');
+      }
+      checkEndReady();
+    });
+  });
+  document.querySelectorAll('#confEnd [data-group="confEnd"]').forEach(btn=>{
+    btn.addEventListener('click',checkEndReady);
+  });
+
+  markOne(
+    document.getElementById('t1'),
+    [document.getElementById('t1'),document.getElementById('t2'),document.getElementById('t3'),document.getElementById('t4')],
+    'fb14',
+    'Great job. The answer is (1) B, C and D only.',
+    'Not yet. Watch A: the word all makes A false, because some living things have only one cell.',
+    'next14'
+  );
+  document.getElementById('next14').addEventListener('click',()=>goTo(14));
+
+  updateTop();
+</script>
+</body>
+</html>

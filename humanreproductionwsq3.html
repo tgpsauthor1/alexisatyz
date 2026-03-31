@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Human Reproduction Helper</title>
+<style>
+  :root{
+    --bg:#f4faf7;
+    --panel:#ffffff;
+    --line:#cfe3d8;
+    --ink:#173428;
+    --muted:#4f6d61;
+    --green:#31a36f;
+    --green2:#e9f8f0;
+    --blue:#2d6bdb;
+    --blue2:#edf4ff;
+    --yellow:#fff8dd;
+    --yellowLine:#f1ddb1;
+    --red:#d16f5b;
+    --red2:#fff2ee;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
+  .top{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    margin-bottom:12px;
+    position:sticky;
+    top:8px;
+    z-index:10;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{font-size:24px;line-height:1.15;margin:0;flex:1}
+  .small{font-size:14px;color:var(--muted)}
+  .progress{height:12px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+
+  .screen{
+    display:none;
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    min-height:calc(100vh - 120px);
+  }
+  .screen.active{display:flex;flex-direction:column}
+  .title{font-size:26px;line-height:1.15;margin:0 0 8px}
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;padding:10px 12px;
+    font-size:20px;line-height:1.3;margin:0 0 12px;
+  }
+  .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+  .single-card{
+    background:#fbfffc;
+    border:2px solid var(--line);
+    border-radius:22px;
+    padding:12px;
+  }
+  .question{font-size:21px;line-height:1.35;margin:0}
+  .statement{
+    background:#fffdf7;border:2px solid var(--yellowLine);border-radius:18px;padding:14px;
+    font-size:24px;line-height:1.35;
+  }
+  .key{
+    display:inline-block;
+    background:#fff4b7;
+    border-radius:8px;
+    padding:2px 6px;
+    font-weight:700;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  .row.four{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:760px){
+    .row,.row.three,.row.four{grid-template-columns:1fr 1fr}
+  }
+  .tile,.choice,.toggle-btn,.option,.sound-btn{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+  }
+  .tile{
+    background:#fff;border:2px solid var(--line);border-radius:22px;padding:12px;min-height:180px;
+    display:flex;flex-direction:column;justify-content:flex-start;align-items:center;gap:8px;color:var(--ink);
+  }
+  .tile p{margin:0;font-size:18px;line-height:1.2;text-align:center}
+  .tile .label{font-size:18px;font-weight:700}
+  .choice,.option{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
+    min-height:72px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink);
+  }
+  .toggle-btn{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px;
+    min-height:84px;font-size:24px;font-weight:700;color:var(--ink);
+  }
+  .tile.correct,.choice.correct,.option.correct,.toggle-btn.correct{background:var(--green2);border-color:#98d0b3}
+  .tile.wrong,.choice.wrong,.option.wrong,.toggle-btn.wrong{background:var(--red2);border-color:#e6b3a8}
+  .tile.selected,.choice.selected,.option.selected,.toggle-btn.selected{background:var(--blue2);border-color:#bfd5f4}
+
+  .feedback{display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3}
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+
+  .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px}
+  .nav-right{display:flex;gap:10px}
+  .btn{
+    appearance:none;border:none;border-radius:18px;padding:14px 18px;font-size:20px;font-weight:700;cursor:pointer
+  }
+  .back{background:#eef5f1;color:var(--ink);border:2px solid var(--line)}
+  .next{background:var(--blue);color:#fff}
+  .done{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .sound-btn{
+    background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;color:var(--ink)
+  }
+
+  .mini-title{font-size:21px;font-weight:700;margin:0 0 6px}
+  .big-center{font-size:23px;line-height:1.35;text-align:center}
+  .badge{
+    display:inline-block;background:var(--blue2);border:2px solid #bfd5f4;border-radius:999px;padding:8px 12px;font-size:17px;font-weight:700
+  }
+  .stars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .star{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 18px;min-width:92px;font-size:34px;cursor:pointer
+  }
+  .star.selected{background:#fff7d8;border-color:#efd67a}
+  .pattern-card{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:12px
+  }
+  .pattern-card .s{font-size:17px;line-height:1.2;min-height:82px}
+  .mark-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .mark-grid button{
+    border:none;border-radius:14px;padding:10px 8px;font-size:18px;font-weight:700;cursor:pointer;background:#f6fbf8;border:2px solid var(--line)
+  }
+  .mark-grid button.selected{background:#eaf4ff;border-color:#bfd5f4}
+  .center{display:flex;justify-content:center;align-items:center}
+  svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Human Reproduction Helper</h1>
+      <button class="sound-btn" id="speakBtnTop" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Step 1 of 15</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <!-- 1 -->
+  <section class="screen active" id="screen1">
+    <h2 class="title">First try</h2>
+    <p class="instruction">Tap your answer. Then tap a face.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="row" style="align-items:center">
+          <div class="center">
+            <svg viewBox="0 0 260 180" width="240" height="160" aria-hidden="true">
+              <circle cx="130" cy="88" r="42" fill="none" stroke="#222" stroke-width="3"></circle>
+              <path d="M96 122 L44 150" stroke="#777" stroke-width="2"></path>
+              <text x="10" y="162" font-size="18">egg</text>
+
+              <ellipse cx="92" cy="52" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M83 52 C72 44, 72 34, 77 26" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <ellipse cx="174" cy="44" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M183 44 C194 36, 196 24, 191 16" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <ellipse cx="202" cy="92" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M211 92 C225 86, 228 74, 223 64" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <ellipse cx="176" cy="142" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M185 142 C197 151, 202 165, 196 173" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <ellipse cx="103" cy="146" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M94 146 C80 152, 76 162, 81 172" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <ellipse cx="58" cy="92" rx="9" ry="6" fill="#111"></ellipse>
+              <path d="M49 92 C35 86, 30 74, 35 64" stroke="#111" fill="none" stroke-width="2"></path>
+
+              <text x="208" y="96" font-size="18">sperm</text>
+            </svg>
+          </div>
+          <div>
+            <p class="question">
+              The diagram shows a process in human reproduction.<br><br>
+              Which statement is <span class="key">not correct</span>?
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="option" data-group="q1" data-value="1">(1) This process is fertilization.</button>
+        <button class="option" data-group="q1" data-value="2">(2) The egg is produced in the ovary.</button>
+        <button class="option" data-group="q1" data-value="3">(3) The fertilized egg develops in the ovary.</button>
+        <button class="option" data-group="q1" data-value="4">(4) Fusion of sperm and egg results in a fertilized egg.</button>
+      </div>
+      <div class="single-card">
+        <p class="mini-title">How sure are you?</p>
+        <div class="stars" id="confStart">
+          <button class="star" data-group="confStart" data-value="1">😟</button>
+          <button class="star" data-group="confStart" data-value="2">🙂</button>
+          <button class="star" data-group="confStart" data-value="3">😄</button>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn back" disabled>Back</button>
+      <div class="nav-right"><button class="btn next" id="next1" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="screen" id="screen2">
+    <h2 class="title">What is the question asking?</h2>
+    <p class="instruction">Tap the words that matter.</p>
+    <div class="content">
+      <div class="statement">Which statement is <span class="key">not correct</span>?</div>
+      <div class="row">
+        <button class="choice" id="askCorrect">correct</button>
+        <button class="choice" id="askNotCorrect">not correct</button>
+      </div>
+      <div id="fb2" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next2" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="screen" id="screen3">
+    <h2 class="title">What process is this?</h2>
+    <p class="instruction">Tap the process shown in the diagram.</p>
+    <div class="content">
+      <div class="single-card center">
+        <svg viewBox="0 0 260 180" width="250" height="170" aria-hidden="true">
+          <circle cx="130" cy="88" r="42" fill="none" stroke="#222" stroke-width="3"></circle>
+          <ellipse cx="92" cy="52" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M83 52 C72 44, 72 34, 77 26" stroke="#111" fill="none" stroke-width="2"></path>
+          <ellipse cx="174" cy="44" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M183 44 C194 36, 196 24, 191 16" stroke="#111" fill="none" stroke-width="2"></path>
+          <ellipse cx="202" cy="92" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M211 92 C225 86, 228 74, 223 64" stroke="#111" fill="none" stroke-width="2"></path>
+          <ellipse cx="176" cy="142" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M185 142 C197 151, 202 165, 196 173" stroke="#111" fill="none" stroke-width="2"></path>
+          <ellipse cx="103" cy="146" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M94 146 C80 152, 76 162, 81 172" stroke="#111" fill="none" stroke-width="2"></path>
+          <ellipse cx="58" cy="92" rx="9" ry="6" fill="#111"></ellipse>
+          <path d="M49 92 C35 86, 30 74, 35 64" stroke="#111" fill="none" stroke-width="2"></path>
+        </svg>
+      </div>
+      <div class="row">
+        <button class="choice" id="p1">fertilization</button>
+        <button class="choice" id="p2">birth</button>
+      </div>
+      <div id="fb3" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next3" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="screen" id="screen4">
+    <h2 class="title">Where is the egg made?</h2>
+    <p class="instruction">Tap the correct place.</p>
+    <div class="content">
+      <div class="row">
+        <button class="tile" id="eggOvary">
+          <svg viewBox="0 0 220 180" width="180" height="145" aria-hidden="true">
+            <ellipse cx="110" cy="90" rx="64" ry="42" fill="#ffdcd5" stroke="#d16f5b" stroke-width="4"></ellipse>
+            <circle cx="82" cy="90" r="8" fill="#fff"></circle>
+            <circle cx="108" cy="90" r="8" fill="#fff"></circle>
+            <circle cx="134" cy="90" r="8" fill="#fff"></circle>
+            <text x="110" y="158" font-size="24" text-anchor="middle">ovary</text>
+          </svg>
+        </button>
+        <button class="tile" id="eggWomb">
+          <svg viewBox="0 0 220 180" width="180" height="145" aria-hidden="true">
+            <path d="M58 66 C58 26, 162 26, 162 66 C162 120, 130 146, 110 154 C90 146, 58 120, 58 66 Z" fill="#ffe8e2" stroke="#d16f5b" stroke-width="4"></path>
+            <text x="110" y="158" font-size="24" text-anchor="middle">womb</text>
+          </svg>
+        </button>
+      </div>
+      <div id="fb4" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next4" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="screen" id="screen5">
+    <h2 class="title">Where does it develop?</h2>
+    <p class="instruction">After fertilization, the fertilized egg develops in the...</p>
+    <div class="content">
+      <div class="row">
+        <button class="tile" id="devOvary">
+          <svg viewBox="0 0 220 180" width="180" height="145" aria-hidden="true">
+            <ellipse cx="110" cy="90" rx="64" ry="42" fill="#ffdcd5" stroke="#d16f5b" stroke-width="4"></ellipse>
+            <circle cx="82" cy="90" r="8" fill="#fff"></circle>
+            <circle cx="108" cy="90" r="8" fill="#fff"></circle>
+            <circle cx="134" cy="90" r="8" fill="#fff"></circle>
+            <text x="110" y="158" font-size="24" text-anchor="middle">ovary</text>
+          </svg>
+        </button>
+        <button class="tile" id="devWomb">
+          <svg viewBox="0 0 220 180" width="180" height="145" aria-hidden="true">
+            <path d="M58 66 C58 26, 162 26, 162 66 C162 120, 130 146, 110 154 C90 146, 58 120, 58 66 Z" fill="#ffe8e2" stroke="#d16f5b" stroke-width="4"></path>
+            <circle cx="110" cy="88" r="12" fill="#fff"></circle>
+            <text x="110" y="158" font-size="24" text-anchor="middle">womb</text>
+          </svg>
+        </button>
+      </div>
+      <div id="fb5" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next5" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="screen" id="screen6">
+    <h2 class="title">Option 1</h2>
+    <div class="content">
+      <div class="statement">(1) This process is fertilization.</div>
+      <p class="instruction">Tap one.</p>
+      <div class="row">
+        <button class="toggle-btn" id="o1c">correct</button>
+        <button class="toggle-btn" id="o1n">not correct</button>
+      </div>
+      <div id="fb6" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="screen" id="screen7">
+    <h2 class="title">Option 2</h2>
+    <div class="content">
+      <div class="statement">(2) The egg is produced in the ovary.</div>
+      <p class="instruction">Tap one.</p>
+      <div class="row">
+        <button class="toggle-btn" id="o2c">correct</button>
+        <button class="toggle-btn" id="o2n">not correct</button>
+      </div>
+      <div id="fb7" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section class="screen" id="screen8">
+    <h2 class="title">Option 3</h2>
+    <p class="instruction">Which word makes this sentence wrong? Tap it.</p>
+    <div class="content">
+      <div class="single-card center" style="flex-direction:column;gap:12px">
+        <div class="big-center">The fertilized egg develops in the <span class="key">ovary</span>.</div>
+        <div class="row">
+          <button class="choice" id="wDev">develops</button>
+          <button class="choice" id="wOvary">ovary</button>
+        </div>
+      </div>
+      <div id="fb8" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next8" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section class="screen" id="screen9">
+    <h2 class="title">Option 3</h2>
+    <div class="content">
+      <div class="statement">(3) The fertilized egg develops in the ovary.</div>
+      <p class="instruction">Tap one.</p>
+      <div class="row">
+        <button class="toggle-btn" id="o3c">correct</button>
+        <button class="toggle-btn" id="o3n">not correct</button>
+      </div>
+      <div id="fb9" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next9" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="screen" id="screen10">
+    <h2 class="title">Option 4</h2>
+    <div class="content">
+      <div class="statement">(4) Fusion of sperm and egg results in a fertilized egg.</div>
+      <p class="instruction">Tap one.</p>
+      <div class="row">
+        <button class="toggle-btn" id="o4c">correct</button>
+        <button class="toggle-btn" id="o4n">not correct</button>
+      </div>
+      <div id="fb10" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next10" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="screen" id="screen11">
+    <h2 class="title">Check all 4</h2>
+    <p class="instruction">Tap correct or not correct for each option.</p>
+    <div class="content">
+      <div class="row four">
+        <div class="pattern-card">
+          <div class="badge">1</div>
+          <div class="s">This process is fertilization.</div>
+          <div class="mark-grid">
+            <button data-pick="1" data-val="C">correct</button>
+            <button data-pick="1" data-val="N">not correct</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">2</div>
+          <div class="s">The egg is produced in the ovary.</div>
+          <div class="mark-grid">
+            <button data-pick="2" data-val="C">correct</button>
+            <button data-pick="2" data-val="N">not correct</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">3</div>
+          <div class="s">The fertilized egg develops in the ovary.</div>
+          <div class="mark-grid">
+            <button data-pick="3" data-val="C">correct</button>
+            <button data-pick="3" data-val="N">not correct</button>
+          </div>
+        </div>
+        <div class="pattern-card">
+          <div class="badge">4</div>
+          <div class="s">Fusion of sperm and egg results in a fertilized egg.</div>
+          <div class="mark-grid">
+            <button data-pick="4" data-val="C">correct</button>
+            <button data-pick="4" data-val="N">not correct</button>
+          </div>
+        </div>
+      </div>
+      <div id="fb11" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next11" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 12 -->
+  <section class="screen" id="screen12">
+    <h2 class="title">Back to the question</h2>
+    <p class="instruction">Which option is not correct?</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="big-center">Option 1 = correct<br>Option 2 = correct<br>Option 3 = not correct<br>Option 4 = correct</p>
+      </div>
+      <div class="row">
+        <button class="option" id="q2_1">(1)</button>
+        <button class="option" id="q2_2">(2)</button>
+        <button class="option" id="q2_3">(3)</button>
+        <button class="option" id="q2_4">(4)</button>
+      </div>
+      <div id="fb12" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next12" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 13 -->
+  <section class="screen" id="screen13">
+    <h2 class="title">Quick check</h2>
+    <p class="instruction">Tap the true sentence.</p>
+    <div class="content">
+      <div class="row">
+        <button class="choice" id="qc1">The fertilized egg develops in the ovary.</button>
+        <button class="choice" id="qc2">The fertilized egg develops in the womb.</button>
+      </div>
+      <div class="row">
+        <button class="choice" id="qc3">The egg is produced in the womb.</button>
+        <button class="choice" id="qc4">Fertilization means the sperm and egg do not join.</button>
+      </div>
+      <div id="fb13" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next13" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 14 -->
+  <section class="screen" id="screen14">
+    <h2 class="title">How do you feel now?</h2>
+    <p class="instruction">Tap a face. Then tap one box.</p>
+    <div class="content center" style="flex-direction:column;gap:18px">
+      <div class="stars" id="confEnd">
+        <button class="star" data-group="confEnd" data-value="1">😟</button>
+        <button class="star" data-group="confEnd" data-value="2">🙂</button>
+        <button class="star" data-group="confEnd" data-value="3">😄</button>
+      </div>
+      <div class="row">
+        <button class="choice" id="feel1">I still need help.</button>
+        <button class="choice" id="feel2">I can try one like this again.</button>
+      </div>
+      <div id="fb14" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next14" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <!-- 15 -->
+  <section class="screen" id="screen15">
+    <h2 class="title">One more</h2>
+    <p class="instruction">Try this one by yourself.</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="question">
+          Which statement is <span class="key">not correct</span>?<br><br>
+          (1) Fertilization happens when sperm joins with egg.<br>
+          (2) The egg is produced in the ovary.<br>
+          (3) The fertilized egg develops in the womb.<br>
+          (4) The fertilized egg develops in the ovary.
+        </p>
+      </div>
+      <div class="row">
+        <button class="option" id="t1">(1)</button>
+        <button class="option" id="t2">(2)</button>
+        <button class="option" id="t3">(3)</button>
+        <button class="option" id="t4">(4)</button>
+      </div>
+      <div id="fb15" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn done" id="finishBtn" disabled>Finished</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const screens=[...document.querySelectorAll('.screen')];
+  let current=0;
+
+  function updateTop(){
+    document.getElementById('stepText').textContent=`Step ${current+1} of ${screens.length}`;
+    document.getElementById('bar').style.width=((current+1)/screens.length*100)+'%';
+  }
+  function goTo(i){
+    current=Math.max(0,Math.min(i,screens.length-1));
+    screens.forEach((s,idx)=>s.classList.toggle('active',idx===current));
+    updateTop();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){ goTo(current+1); }
+  function back(){ goTo(current-1); }
+
+  document.querySelectorAll('.btn.back').forEach(btn=>btn.addEventListener('click',back));
+  document.querySelectorAll('.btn.next').forEach(btn=>btn.addEventListener('click',next));
+  document.getElementById('finishBtn').addEventListener('click',()=>{
+    document.getElementById('finishBtn').textContent='Done!';
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  function getScreenSpeech(screen){
+    const clone = screen.cloneNode(true);
+    const nav = clone.querySelector('.nav');
+    if(nav) nav.remove();
+    clone.querySelectorAll('button').forEach(btn=>{
+      if(btn.closest('.stars')) return;
+      const text = btn.textContent.trim();
+      if(text) btn.textContent = 'Option: ' + text;
+    });
+    return clone.innerText.replace(/\s+/g,' ').trim();
+  }
+
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95;
+    u.pitch=1;
+    u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }
+  function speakCurrentScreen(){ speakNow(getScreenSpeech(screens[current])); }
+  document.getElementById('speakBtnTop').addEventListener('click',speakCurrentScreen);
+
+  const picks={};
+  document.querySelectorAll('[data-group]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(x=>x.classList.remove('selected','correct','wrong'));
+      btn.classList.add('selected');
+      picks[group]=btn.dataset.value;
+      if(group==='q1' && picks['confStart']) document.getElementById('next1').disabled=false;
+      if(group==='confStart' && picks['q1']) document.getElementById('next1').disabled=false;
+      if(group==='confEnd' && picks['feel']) document.getElementById('next14').disabled=false;
+    });
+  });
+
+  function showFB(id,type,text){
+    const el=document.getElementById(id);
+    el.className=`feedback show ${type}`;
+    el.innerHTML=text;
+  }
+
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+    allBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        allBtns.forEach(x=>x.classList.remove('correct','wrong','selected'));
+        btn.classList.add(btn===correctBtn?'correct':'wrong');
+        showFB(fbId, btn===correctBtn?'good':'bad', btn===correctBtn?goodText:badText);
+        document.getElementById(nextId).disabled=false;
+      });
+    });
+  }
+
+  markOne(document.getElementById('askNotCorrect'),
+    [document.getElementById('askCorrect'),document.getElementById('askNotCorrect')],
+    'fb2',
+    'Yes. You are looking for the statement that is wrong.',
+    'Watch the question. It asks for the statement that is <strong>not correct</strong>.',
+    'next2'
+  );
+
+  markOne(document.getElementById('p1'),
+    [document.getElementById('p1'),document.getElementById('p2')],
+    'fb3',
+    'Correct. The process shown is fertilization.',
+    'Not this one. The diagram shows sperm meeting egg. That is fertilization.',
+    'next3'
+  );
+
+  markOne(document.getElementById('eggOvary'),
+    [document.getElementById('eggOvary'),document.getElementById('eggWomb')],
+    'fb4',
+    'Correct. The egg is produced in the ovary.',
+    'Try again. The egg is produced in the ovary.',
+    'next4'
+  );
+
+  markOne(document.getElementById('devWomb'),
+    [document.getElementById('devOvary'),document.getElementById('devWomb')],
+    'fb5',
+    'Correct. The fertilized egg develops in the womb.',
+    'Watch this carefully. It develops in the womb, not the ovary.',
+    'next5'
+  );
+
+  markOne(document.getElementById('o1c'),
+    [document.getElementById('o1c'),document.getElementById('o1n')],
+    'fb6',
+    'Yes. Option 1 is correct, so it is not the answer.',
+    'Option 1 is correct. The diagram shows fertilization.',
+    'next6'
+  );
+
+  markOne(document.getElementById('o2c'),
+    [document.getElementById('o2c'),document.getElementById('o2n')],
+    'fb7',
+    'Yes. Option 2 is correct, so it is not the answer.',
+    'Option 2 is correct. The egg is produced in the ovary.',
+    'next7'
+  );
+
+  markOne(document.getElementById('wOvary'),
+    [document.getElementById('wDev'),document.getElementById('wOvary')],
+    'fb8',
+    'Yes. <strong>ovary</strong> is the wrong word. The fertilized egg develops in the womb.',
+    'The problem is not “develops”. The wrong word is <strong>ovary</strong>.',
+    'next8'
+  );
+
+  markOne(document.getElementById('o3n'),
+    [document.getElementById('o3c'),document.getElementById('o3n')],
+    'fb9',
+    'Correct. Option 3 is not correct.',
+    'Option 3 is the wrong statement because it says <strong>ovary</strong> instead of <strong>womb</strong>.',
+    'next9'
+  );
+
+  markOne(document.getElementById('o4c'),
+    [document.getElementById('o4c'),document.getElementById('o4n')],
+    'fb10',
+    'Yes. Option 4 is correct, so it is not the answer.',
+    'Option 4 is correct. Sperm and egg join to form a fertilized egg.',
+    'next10'
+  );
+
+  const pattern={1:null,2:null,3:null,4:null};
+  document.querySelectorAll('[data-pick]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const k=btn.dataset.pick;
+      pattern[k]=btn.dataset.val;
+      btn.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      if(Object.values(pattern).every(Boolean)){
+        const good = pattern[1]==='C' && pattern[2]==='C' && pattern[3]==='N' && pattern[4]==='C';
+        if(good){
+          showFB('fb11','good','Nice. Only option 3 is not correct.');
+        } else {
+          showFB('fb11','bad','Check again. 1 correct, 2 correct, 3 not correct, 4 correct.');
+        }
+        document.getElementById('next11').disabled=false;
+      }
+    });
+  });
+
+  markOne(document.getElementById('q2_3'),
+    [document.getElementById('q2_1'),document.getElementById('q2_2'),document.getElementById('q2_3'),document.getElementById('q2_4')],
+    'fb12',
+    'Correct. The answer is option 3.',
+    'Try again. You are looking for the option that is <strong>not correct</strong>. That is option 3.',
+    'next12'
+  );
+
+  markOne(document.getElementById('qc2'),
+    [document.getElementById('qc1'),document.getElementById('qc2'),document.getElementById('qc3'),document.getElementById('qc4')],
+    'fb13',
+    'Yes. The fertilized egg develops in the womb.',
+    'Not this one. The fertilized egg develops in the womb.',
+    'next13'
+  );
+
+  function checkEndReady(){
+    if(picks['confEnd'] && picks['feel']) document.getElementById('next14').disabled=false;
+  }
+  [document.getElementById('feel1'),document.getElementById('feel2')].forEach((btn,idx)=>{
+    btn.addEventListener('click',()=>{
+      [document.getElementById('feel1'),document.getElementById('feel2')].forEach(x=>x.classList.remove('correct','wrong','selected'));
+      btn.classList.add('selected');
+      picks['feel']=idx===0?'help':'try';
+      if(idx===0){
+        showFB('fb14','info','That is okay. You can go through it again and watch the word <strong>not correct</strong>.');
+      } else {
+        showFB('fb14','good','Nice. You are ready to try one more.');
+      }
+      checkEndReady();
+    });
+  });
+  document.querySelectorAll('#confEnd [data-group="confEnd"]').forEach(btn=>{
+    btn.addEventListener('click',checkEndReady);
+  });
+
+  markOne(document.getElementById('t4'),
+    [document.getElementById('t1'),document.getElementById('t2'),document.getElementById('t3'),document.getElementById('t4')],
+    'fb15',
+    'Great job. Option 4 is not correct.',
+    'Try again. Watch the words carefully. The fertilized egg develops in the womb, not the ovary.',
+    'finishBtn'
+  );
+
+  updateTop();
+</script>
+</body>
+</html>

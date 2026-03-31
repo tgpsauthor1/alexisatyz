@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Fertilisation Word Guess Game</title>
+<style>
+  :root{
+    --bg:#f4faf7;
+    --panel:#ffffff;
+    --line:#cfe3d8;
+    --ink:#173428;
+    --muted:#4f6d61;
+    --green:#31a36f;
+    --green2:#e9f8f0;
+    --blue:#2d6bdb;
+    --blue2:#edf4ff;
+    --red:#d16f5b;
+    --red2:#fff2ee;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:920px;margin:0 auto;padding:16px}
+  .top{
+    background:var(--panel);border:2px solid var(--line);border-radius:22px;
+    box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px;
+    position:sticky;top:8px;z-index:5;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{font-size:30px;line-height:1.1;margin:0;flex:1}
+  .small{font-size:16px;color:var(--muted);margin-top:6px}
+  .sound-btn,.btn{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+    border-radius:18px;padding:12px 16px;font-size:20px;font-weight:700;
+  }
+  .sound-btn{background:#fff;border:2px solid var(--line);color:var(--ink)}
+  .panel{
+    background:var(--panel);border:2px solid var(--line);border-radius:28px;
+    box-shadow:var(--shadow);padding:18px;min-height:calc(100vh - 130px);
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;
+    padding:12px 14px;font-size:24px;line-height:1.3;
+  }
+  .sentence-card,.guess-card,.done-card{
+    background:#fbfffc;border:2px solid var(--line);border-radius:22px;padding:18px;
+  }
+  .sentence{
+    font-size:34px;line-height:1.35;text-align:center;
+  }
+  .starter{display:block;margin-bottom:10px}
+  .word-row{
+    display:flex;justify-content:center;gap:14px;flex-wrap:wrap;align-items:center;
+    margin-top:8px;
+  }
+  .chip{
+    border:2px solid var(--line);border-radius:16px;padding:10px 14px;
+    font-size:30px;font-weight:700;background:#fff;min-width:140px;text-align:center;
+  }
+  .connector{
+    font-size:30px;font-weight:700;color:var(--ink);
+  }
+  .chip.done{background:var(--green2);border-color:#98d0b3}
+  .chip.current{background:var(--blue2);border-color:#bfd5f4}
+  .guess-title{font-size:24px;font-weight:700;text-align:center;margin-bottom:12px}
+  .pattern{
+    display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;
+  }
+  .letter-box{
+    width:48px;height:56px;border:2px dashed #bfd5f4;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:28px;font-weight:700;background:#f8fbff;
+  }
+  .letter-box.revealed{
+    border-style:solid;background:#edf4ff;border-color:#bfd5f4;
+  }
+  .input-row{
+    display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;
+  }
+  input[type="text"]{
+    font:inherit;font-size:26px;padding:12px 14px;border:2px solid var(--line);
+    border-radius:16px;min-width:260px;max-width:100%;text-align:center;color:var(--ink);
+  }
+  .btn.check{background:var(--blue);color:#fff}
+  .btn.next{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .feedback{
+    display:none;border-radius:18px;padding:12px;font-size:22px;line-height:1.3;text-align:center;
+  }
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+  .progress{height:14px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line)}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+  .footer-note{font-size:18px;color:var(--muted);text-align:center}
+  @media (max-width:720px){
+    h1{font-size:24px}
+    .instruction{font-size:21px}
+    .sentence{font-size:28px}
+    .chip{font-size:24px;min-width:110px}
+    .letter-box{width:42px;height:50px;font-size:24px}
+    input[type="text"]{font-size:22px;min-width:220px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Fertilisation Word Guess Game</h1>
+      <button class="sound-btn" id="readAloudBtn" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Word 1 of 3</div>
+    <div class="progress" style="margin-top:10px"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <div class="panel" id="gamePanel">
+    <div class="instruction" id="instructionText">
+      Type the whole missing word. Then tap <strong>Check</strong>. If you are wrong, one more letter will appear.
+    </div>
+
+    <div class="sentence-card">
+      <div class="sentence">
+        <span class="starter">Fertilisation in human reproduction is the</span>
+        <div class="word-row">
+          <span class="chip" id="chip0">______</span>
+          <span class="connector">of</span>
+          <span class="chip" id="chip1">_____</span>
+          <span class="connector">and</span>
+          <span class="chip" id="chip2">___</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="guess-card" id="guessCard">
+      <div class="guess-title" id="guessTitle">Guess word 1</div>
+      <div class="pattern" id="pattern"></div>
+      <div class="input-row">
+        <input id="guessInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole word" />
+        <button class="btn check" id="checkBtn" type="button">Check</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="done-card" id="doneCard" style="display:none">
+      <div class="guess-title">Great job!</div>
+      <div class="sentence">
+        Fertilisation in human reproduction is the <strong>fusion of sperm and egg</strong>.
+      </div>
+      <div class="footer-note" style="margin-top:10px">You guessed all the science words.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const words = ["fusion", "sperm", "egg"];
+  const displayWords = ["fusion", "sperm", "egg"]; // only the guessed science words go in the boxes
+  let currentIndex = 0;
+  let revealed = 1;
+
+  const chipEls = [
+    document.getElementById("chip0"),
+    document.getElementById("chip1"),
+    document.getElementById("chip2")
+  ];
+
+  const stepText = document.getElementById("stepText");
+  const bar = document.getElementById("bar");
+  const guessTitle = document.getElementById("guessTitle");
+  const pattern = document.getElementById("pattern");
+  const guessInput = document.getElementById("guessInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const feedback = document.getElementById("feedback");
+  const doneCard = document.getElementById("doneCard");
+  const guessCard = document.getElementById("guessCard");
+  const instructionText = document.getElementById("instructionText");
+
+  function updateTop(){
+    stepText.textContent = currentIndex < words.length ? `Word ${currentIndex + 1} of ${words.length}` : "Finished";
+    bar.style.width = `${(currentIndex / words.length) * 100}%`;
+  }
+
+  function renderChips(){
+    const placeholders = ["fusion","sperm","egg"].map(w => "_".repeat(w.length));
+    chipEls.forEach((chip, i) => {
+      chip.classList.remove("done", "current");
+      if (i < currentIndex){
+        chip.textContent = displayWords[i];
+        chip.classList.add("done");
+      } else if (i === currentIndex){
+        chip.textContent = placeholders[i];
+        chip.classList.add("current");
+      } else {
+        chip.textContent = placeholders[i];
+      }
+    });
+  }
+
+  function renderPattern(){
+    pattern.innerHTML = "";
+    const word = words[currentIndex];
+    for(let i = 0; i < word.length; i++){
+      const box = document.createElement("div");
+      box.className = "letter-box" + (i < revealed ? " revealed" : "");
+      box.textContent = i < revealed ? word[i] : "_";
+      pattern.appendChild(box);
+    }
+  }
+
+  function showFeedback(type, text){
+    feedback.className = `feedback show ${type}`;
+    feedback.innerHTML = text;
+  }
+
+  function loadWord(){
+    updateTop();
+    renderChips();
+    guessTitle.textContent = `Guess word ${currentIndex + 1}`;
+    revealed = 1;
+    guessInput.value = "";
+    guessInput.focus();
+    renderPattern();
+    showFeedback("info", "Look at the letters shown. Type the whole word.");
+  }
+
+  function normalise(text){
+    return text.trim().toLowerCase();
+  }
+
+  function checkGuess(){
+    const answer = words[currentIndex];
+    const guess = normalise(guessInput.value);
+
+    if (!guess){
+      showFeedback("bad", "Type a word first.");
+      return;
+    }
+
+    if (guess === answer){
+      chipEls[currentIndex].textContent = displayWords[currentIndex];
+      chipEls[currentIndex].classList.remove("current");
+      chipEls[currentIndex].classList.add("done");
+      showFeedback("good", `Yes! The word is <strong>${answer}</strong>.`);
+      currentIndex += 1;
+
+      if (currentIndex < words.length){
+        setTimeout(() => loadWord(), 700);
+      } else {
+        finishGame();
+      }
+    } else {
+      if (revealed < answer.length){
+        revealed += 1;
+        renderPattern();
+        showFeedback("bad", `Not yet. One more letter is shown. Try again.`);
+      } else {
+        showFeedback("bad", `This word is <strong>${answer}</strong>. Type it once, then check again.`);
+      }
+      guessInput.value = "";
+      guessInput.focus();
+    }
+  }
+
+  function finishGame(){
+    updateTop();
+    bar.style.width = "100%";
+    guessCard.style.display = "none";
+    doneCard.style.display = "block";
+    instructionText.innerHTML = `You finished all 3 words. Read the full answer aloud.`;
+  }
+
+  function getReadableText(){
+    if (currentIndex < words.length){
+      const shown = words[currentIndex].slice(0, revealed);
+      return `Fertilisation Word Guess Game. ${instructionText.innerText} Sentence starter: Fertilisation in human reproduction is the. Current word ${currentIndex + 1}. Letters shown: ${shown}.`;
+    }
+    return `Fertilisation Word Guess Game. Great job. Fertilisation in human reproduction is the fusion of sperm and egg.`;
+  }
+
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.pitch = 1;
+    u.lang = 'en-US';
+    window.speechSynthesis.speak(u);
+  }
+
+  document.getElementById("readAloudBtn").addEventListener("click", () => speakNow(getReadableText()));
+  checkBtn.addEventListener("click", checkGuess);
+  guessInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter"){
+      e.preventDefault();
+      checkGuess();
+    }
+  });
+
+  loadWord();
+</script>
+</body>
+</html>

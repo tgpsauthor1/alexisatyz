@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Dengue Delay Helper</title>
+<style>
+  :root{
+    --bg:#f4faf7;
+    --panel:#ffffff;
+    --line:#cfe3d8;
+    --ink:#173428;
+    --muted:#4f6d61;
+    --green:#31a36f;
+    --green2:#e9f8f0;
+    --blue:#2d6bdb;
+    --blue2:#edf4ff;
+    --yellow:#fffdf2;
+    --yellowLine:#f1ddb1;
+    --red:#d16f5b;
+    --red2:#fff2ee;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
+  .top{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:20px;
+    box-shadow:var(--shadow);
+    padding:12px 14px;
+    margin-bottom:12px;
+    position:sticky;
+    top:8px;
+    z-index:10;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{font-size:24px;line-height:1.15;margin:0;flex:1}
+  .small{font-size:14px;color:var(--muted)}
+  .progress{height:12px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+
+  .screen{
+    display:none;
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    padding:16px;
+    min-height:calc(100vh - 120px);
+  }
+  .screen.active{display:flex;flex-direction:column}
+  .title{font-size:26px;line-height:1.15;margin:0 0 8px}
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;padding:10px 12px;
+    font-size:20px;line-height:1.3;margin:0 0 12px;
+  }
+  .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+  .single-card{
+    background:#fbfffc;
+    border:2px solid var(--line);
+    border-radius:22px;
+    padding:12px;
+  }
+  .question{font-size:21px;line-height:1.35;margin:0}
+  .statement{
+    background:var(--yellow);border:2px solid var(--yellowLine);border-radius:18px;padding:14px;
+    font-size:24px;line-height:1.35;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  .row.four{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:760px){
+    .row,.row.three,.row.four{grid-template-columns:1fr 1fr}
+  }
+  .choice,.option,.tile,.sound-btn,.mini-btn,.star{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+  }
+  .choice,.option,.mini-btn{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
+    min-height:74px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink);
+  }
+  .tile{
+    background:#fff;border:2px solid var(--line);border-radius:22px;padding:12px;min-height:170px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:var(--ink);
+  }
+  .tile p{margin:0;font-size:18px;line-height:1.2;text-align:center}
+  .choice:hover,.option:hover,.mini-btn:hover,.tile:hover,.star:hover{transform:translateY(-1px)}
+  .choice.correct,.option.correct,.mini-btn.correct,.tile.correct{background:var(--green2);border-color:#98d0b3}
+  .choice.wrong,.option.wrong,.mini-btn.wrong,.tile.wrong{background:var(--red2);border-color:#e6b3a8}
+  .choice.selected,.option.selected,.mini-btn.selected,.tile.selected{background:var(--blue2);border-color:#bfd5f4}
+  .feedback{display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3}
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+  .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px}
+  .nav-right{display:flex;gap:10px}
+  .btn{
+    appearance:none;border:none;border-radius:18px;padding:14px 18px;font-size:20px;font-weight:700;cursor:pointer
+  }
+  .back{background:#eef5f1;color:var(--ink);border:2px solid var(--line)}
+  .next{background:var(--blue);color:#fff}
+  .done{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .sound-btn{
+    background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;color:var(--ink)
+  }
+  .stars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .star{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:16px 18px;min-width:92px;font-size:34px
+  }
+  .star.selected{background:#fff7d8;border-color:#efd67a}
+  .big-center{font-size:23px;line-height:1.35;text-align:center}
+  .chip-wrap{
+    display:flex;flex-wrap:wrap;gap:10px;min-height:56px;
+    align-items:flex-start;
+  }
+  .chip{
+    background:#eaf4ff;border:2px solid #bfd5f4;border-radius:999px;padding:10px 14px;font-size:18px;font-weight:700;
+  }
+  .blank-row{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+    font-size:24px;line-height:1.4;
+  }
+  .blank{
+    min-width:170px;
+    padding:10px 12px;
+    border:2px dashed #bfd5f4;
+    border-radius:14px;
+    background:#f8fbff;
+    text-align:center;
+    font-weight:700;
+  }
+  .blank.active{border-color:#2d6bdb;background:#edf4ff}
+  .summary-card{
+    background:#fbfffc;border:2px solid var(--line);border-radius:22px;padding:16px;
+  }
+  .bank{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .highlight{
+    display:inline-block;background:#fff4b7;border-radius:8px;padding:2px 6px;font-weight:700;
+  }
+  svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Dengue Delay Helper</h1>
+      <button class="sound-btn" id="speakBtnTop" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Step 1 of 14</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="screen active" id="screen1">
+    <h2 class="title">Read the question</h2>
+    <p class="instruction">Tap the words <strong>another reason</strong>.</p>
+    <div class="content">
+      <div class="single-card">
+        <p class="question">
+          Give <strong>another reason</strong> why the number of dengue cases does not change immediately after the amount of rainfall changes.
+        </p>
+      </div>
+      <div class="row three randomize">
+        <button class="choice" id="s1a">another reason</button>
+        <button class="choice" id="s1b">does not change immediately</button>
+        <button class="choice" id="s1c">dengue cases</button>
+      </div>
+      <div id="fb1" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back" disabled>Back</button>
+      <div class="nav-right"><button class="btn next" id="next1" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen2">
+    <h2 class="title">Do not give this reason</h2>
+    <p class="instruction">Tap the reason you should <strong>NOT</strong> give.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s2a">Dengue fever develops about two weeks after a person is bitten.</button>
+        <button class="choice" id="s2b">It takes time for mosquitoes to become adults.</button>
+      </div>
+      <div id="fb2" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next2" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen3">
+    <h2 class="title">Mosquito life cycle</h2>
+    <p class="instruction" id="inst3">Tap the stage where a mosquito's life starts.</p>
+    <div class="content">
+      <div class="summary-card">
+        <div class="chip-wrap" id="lifeProgress"></div>
+        <div style="text-align:center;margin-top:10px">
+          <svg viewBox="0 0 560 120" width="100%" height="110" aria-hidden="true">
+            <circle cx="70" cy="60" r="18" fill="#fff" stroke="#cfe3d8" stroke-width="3"></circle>
+            <path d="M100 60 L180 60" stroke="#cfe3d8" stroke-width="4"></path>
+            <ellipse cx="230" cy="60" rx="30" ry="18" fill="#fff" stroke="#cfe3d8" stroke-width="3"></ellipse>
+            <path d="M270 60 L350 60" stroke="#cfe3d8" stroke-width="4"></path>
+            <rect x="390" y="38" width="42" height="44" rx="18" fill="#fff" stroke="#cfe3d8" stroke-width="3"></rect>
+            <path d="M432 60 L500 60" stroke="#cfe3d8" stroke-width="4"></path>
+            <circle cx="525" cy="50" r="12" fill="#fff" stroke="#cfe3d8" stroke-width="3"></circle>
+            <path d="M536 50 L552 36" stroke="#cfe3d8" stroke-width="3"></path>
+            <path d="M536 58 L552 74" stroke="#cfe3d8" stroke-width="3"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="row four randomize">
+        <button class="mini-btn life-btn" data-step="egg">egg</button>
+        <button class="mini-btn life-btn" data-step="larva">larva</button>
+        <button class="mini-btn life-btn" data-step="pupa">pupa</button>
+        <button class="mini-btn life-btn" data-step="adult">adult</button>
+      </div>
+      <div id="fb3" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next3" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen4">
+    <h2 class="title">Which stage matters most?</h2>
+    <p class="instruction">Tap the stage that matters most for more dengue cases.</p>
+    <div class="content">
+      <div class="row four randomize">
+        <button class="choice" id="s4a">egg</button>
+        <button class="choice" id="s4b">larva</button>
+        <button class="choice" id="s4c">pupa</button>
+        <button class="choice" id="s4d">adult mosquito</button>
+      </div>
+      <div id="fb4" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next4" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen5" data-skip="true">
+    <h2 class="title">Which stage matters most?</h2>
+    <p class="instruction">Tap the stage that matters most for more dengue cases.</p>
+    <div class="content">
+      <div class="row four randomize">
+        <button class="choice" id="s5a">egg</button>
+        <button class="choice" id="s5b">larva</button>
+        <button class="choice" id="s5c">pupa</button>
+        <button class="choice" id="s5d">adult mosquito</button>
+      </div>
+      <div id="fb5" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next5" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen6" data-skip="true">
+    <h2 class="title">Which answer gets the mark?</h2>
+    <p class="instruction">Tap the answer that gets the mark.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s6a">It takes time for eggs to hatch.</button>
+        <button class="choice" id="s6b">It takes time for mosquito eggs to hatch and become adult mosquitoes.</button>
+      </div>
+      <div id="fb6" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen7" data-skip="true">
+    <h2 class="title">What comes after eggs?</h2>
+    <p class="instruction">Tap what comes next after eggs.</p>
+    <div class="content">
+      <div class="row three randomize">
+        <button class="choice" id="s7a">larva</button>
+        <button class="choice" id="s7b">adult mosquito</button>
+        <button class="choice" id="s7c">dengue fever</button>
+      </div>
+      <div id="fb7" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen8">
+    <h2 class="title">Build the key idea</h2>
+    <p class="instruction" id="inst8">Tap the first step.</p>
+    <div class="content">
+      <div class="summary-card">
+        <div class="chip-wrap" id="ideaProgress"></div>
+      </div>
+      <div class="row three randomize">
+        <button class="mini-btn idea-btn" data-step="eggs">eggs</button>
+        <button class="mini-btn idea-btn" data-step="hatch">hatch</button>
+        <button class="mini-btn idea-btn" data-step="become adult mosquitoes">become adult mosquitoes</button>
+      </div>
+      <div id="fb8" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next8" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen9">
+    <h2 class="title">Build the sentence</h2>
+    <p class="instruction" id="inst9">Tap the word for Blank 1.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="blank-row">
+          <span>It takes time for mosquito</span>
+          <div class="blank active" id="blank1">Blank 1</div>
+          <span>to hatch and become adult</span>
+          <div class="blank" id="blank2">Blank 2</div>
+          <span>.</span>
+        </div>
+      </div>
+      <div class="bank randomize">
+        <button class="mini-btn fill9" data-value="eggs">eggs</button>
+        <button class="mini-btn fill9" data-value="mosquitoes">mosquitoes</button>
+        <button class="mini-btn fill9" data-value="larvae">larvae</button>
+        <button class="mini-btn fill9" data-value="adults">adults</button>
+      </div>
+      <div id="fb9" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next9" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen10" data-skip="true">
+    <h2 class="title">Which answer is stronger?</h2>
+    <p class="instruction">Tap the stronger answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s10a">It takes time for mosquitoes to grow.</button>
+        <button class="choice" id="s10b">It takes time for mosquito eggs to hatch and become adult mosquitoes.</button>
+      </div>
+      <div id="fb10" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next10" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen11">
+    <h2 class="title">Back to the question</h2>
+    <p class="instruction">Tap the best answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="option" id="s11a">Dengue fever develops about two weeks after a person is bitten.</button>
+        <button class="option" id="s11b">It takes time for mosquito eggs to hatch and become adult mosquitoes.</button>
+        <button class="option" id="s11c">Mosquitoes need time to lay eggs.</button>
+        <button class="option" id="s11d">Rainwater needs time to evaporate.</button>
+      </div>
+      <div id="fb11" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next11" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen12">
+    <h2 class="title">How do you feel now?</h2>
+    <p class="instruction">Tap a face. Then tap one box.</p>
+    <div class="content">
+      <div class="stars">
+        <button class="star" data-group="confEnd" data-value="1">😟</button>
+        <button class="star" data-group="confEnd" data-value="2">🙂</button>
+        <button class="star" data-group="confEnd" data-value="3">😄</button>
+      </div>
+      <div class="row randomize">
+        <button class="choice" id="feel1">I still need help.</button>
+        <button class="choice" id="feel2">I can answer one like this now.</button>
+      </div>
+      <div id="fb12" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next12" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen13">
+    <h2 class="title">Now say it</h2>
+    <p class="instruction">Tap the complete answer.</p>
+    <div class="content">
+      <div class="summary-card">
+        <p class="big-center"><span class="highlight">It takes time for mosquito eggs to hatch and become adult mosquitoes.</span></p>
+      </div>
+      <div class="row randomize">
+        <button class="choice" id="s13a">It takes time for mosquito eggs to hatch and become adult mosquitoes.</button>
+        <button class="choice" id="s13b">It takes time for rainwater to stay.</button>
+      </div>
+      <div id="fb13" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn next" id="next13" disabled>Next</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen14">
+    <h2 class="title">Now write it</h2>
+    <p class="instruction">First tap “I can say it.” Then write it on paper and tap “I wrote it on paper.”</p>
+    <div class="content">
+      <div class="summary-card">
+        <p class="big-center"><span class="highlight">It takes time for mosquito eggs to hatch and become adult mosquitoes.</span></p>
+      </div>
+      <div class="row">
+        <button class="choice" id="s14a">I can say it.</button>
+        <button class="choice" id="s14b">I wrote it on paper.</button>
+      </div>
+      <div id="fb14" class="feedback"></div>
+    </div>
+    <div class="nav">
+      <button class="btn back">Back</button>
+      <div class="nav-right"><button class="btn done" id="finishBtn" disabled>Finished</button></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const screens=[...document.querySelectorAll('.screen:not([data-skip="true"])')];
+  let current=0;
+
+  function updateTop(){
+    document.getElementById('stepText').textContent=`Step ${current+1} of ${screens.length}`;
+    document.getElementById('bar').style.width=((current+1)/screens.length*100)+'%';
+  }
+  function goTo(i){
+    current=Math.max(0,Math.min(i,screens.length-1));
+    screens.forEach((s,idx)=>s.classList.toggle('active',idx===current));
+    updateTop();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){ goTo(current+1); }
+  function back(){ goTo(current-1); }
+
+  document.querySelectorAll('.btn.back').forEach(btn=>btn.addEventListener('click',back));
+  document.querySelectorAll('.btn.next').forEach(btn=>btn.addEventListener('click',next));
+  document.getElementById('finishBtn').addEventListener('click',()=>{
+    document.getElementById('finishBtn').textContent='Done!';
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  function shuffleChildren(container){
+    const children = Array.from(container.children);
+    for(let i=children.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [children[i],children[j]]=[children[j],children[i]];
+    }
+    children.forEach(child=>container.appendChild(child));
+  }
+  document.querySelectorAll('.randomize').forEach(shuffleChildren);
+
+  function getScreenSpeech(screen){
+    const clone = screen.cloneNode(true);
+    const nav = clone.querySelector('.nav');
+    if(nav) nav.remove();
+    clone.querySelectorAll('button').forEach(btn=>{
+      if(btn.closest('.stars')) return;
+      const text = btn.textContent.trim();
+      if(text) btn.textContent = 'Option: ' + text;
+    });
+    return clone.innerText.replace(/\s+/g,' ').trim();
+  }
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95;
+    u.pitch=1;
+    u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }
+  function speakCurrentScreen(){ speakNow(getScreenSpeech(screens[current])); }
+  document.getElementById('speakBtnTop').addEventListener('click',speakCurrentScreen);
+
+  const picks={};
+  document.querySelectorAll('[data-group]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group=btn.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks[group]=btn.dataset.value;
+      if(group==='confEnd') checkEndReady();
+    });
+  });
+
+  function showFB(id,type,text){
+    const el=document.getElementById(id);
+    el.className=`feedback show ${type}`;
+    el.innerHTML=text;
+  }
+
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+    allBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        allBtns.forEach(x=>x.classList.remove('correct','wrong','selected'));
+        btn.classList.add(btn===correctBtn?'correct':'wrong');
+        showFB(fbId, btn===correctBtn?'good':'bad', btn===correctBtn?goodText:badText);
+        document.getElementById(nextId).disabled=false;
+      });
+    });
+  }
+
+  markOne(document.getElementById('s1a'),
+    [document.getElementById('s1a'),document.getElementById('s1b'),document.getElementById('s1c')],
+    'fb1',
+    'Yes. You must give a different reason, not copy the one given.',
+    'Watch the words “another reason”.',
+    'next1'
+  );
+
+  markOne(document.getElementById('s2a'),
+    [document.getElementById('s2a'),document.getElementById('s2b')],
+    'fb2',
+    'Yes. Do not give this reason. It is already in the question. You must give another one.',
+    'This is the new reason you should give, not the reason to avoid.',
+    'next2'
+  );
+
+  const targetLife = ['egg','larva','pupa','adult'];
+  const lifePrompts = [
+    "Tap the stage where a mosquito's life starts.",
+    "Good. Now tap what comes after egg.",
+    "Good. Now tap what comes after larva.",
+    "Good. Now tap what comes after pupa."
+  ];
+  let lifeIndex = 0;
+  document.querySelectorAll('.life-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const value = btn.dataset.step;
+      if(value === targetLife[lifeIndex]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        const chip=document.createElement('div');
+        chip.className='chip';
+        chip.textContent=value;
+        document.getElementById('lifeProgress').appendChild(chip);
+        lifeIndex++;
+        if(lifeIndex < targetLife.length){
+          document.getElementById('inst3').innerHTML = lifePrompts[lifeIndex];
+        } else {
+          document.getElementById('inst3').innerHTML='All 4 stages are done.';
+          showFB('fb3','good','Good. A mosquito needs time to go from egg to adult.');
+          document.getElementById('next3').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb3','bad','Not yet. Start with egg, then follow the life cycle.');
+        setTimeout(()=>btn.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  markOne(document.getElementById('s4d'),
+    [document.getElementById('s4a'),document.getElementById('s4b'),document.getElementById('s4c'),document.getElementById('s4d')],
+    'fb4',
+    'Yes. Adult mosquitoes matter most because they spread dengue fever.',
+    'The answer must reach adult mosquitoes.',
+    'next4'
+  );
+
+  markOne(document.getElementById('s6b'),
+    [document.getElementById('s6a'),document.getElementById('s6b')],
+    'fb6',
+    'Yes. The answer must reach adult mosquitoes.',
+    'Not enough. The answer must explain the delay until adult mosquitoes appear.',
+    'next6'
+  );
+
+  markOne(document.getElementById('s7a'),
+    [document.getElementById('s7a'),document.getElementById('s7b'),document.getElementById('s7c')],
+    'fb7',
+    'Yes. The mosquito does not jump straight from egg to adult.',
+    'Think about the next stage in the life cycle.',
+    'next7'
+  );
+
+  const targetIdea = ['eggs','hatch','become adult mosquitoes'];
+  let ideaIndex = 0;
+  document.querySelectorAll('.idea-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const value = btn.dataset.step;
+      if(value === targetIdea[ideaIndex]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        const chip=document.createElement('div');
+        chip.className='chip';
+        chip.textContent=value;
+        document.getElementById('ideaProgress').appendChild(chip);
+        ideaIndex++;
+        if(ideaIndex < targetIdea.length){
+          document.getElementById('inst8').innerHTML=`Good. Now tap step <strong>${ideaIndex+1}</strong>.`;
+        } else {
+          document.getElementById('inst8').innerHTML='All 3 steps are done.';
+          showFB('fb8','good','Good. This is the key idea in the answer.');
+          document.getElementById('next8').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb8','bad',`Not yet. Tap step ${ideaIndex+1}.`);
+        setTimeout(()=>btn.classList.remove('wrong'), 500);
+      }
+    });
+  });
+
+  const target9 = ['eggs','mosquitoes'];
+  let fill9Index = 0;
+  const blanks9 = [document.getElementById('blank1'), document.getElementById('blank2')];
+  document.querySelectorAll('.fill9').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(fill9Index>=2 || btn.disabled) return;
+      const val = btn.dataset.value;
+      blanks9[fill9Index].textContent = val;
+      if(val === target9[fill9Index]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        blanks9[fill9Index].classList.remove('active');
+        fill9Index++;
+        if(fill9Index<2){
+          blanks9[fill9Index].classList.add('active');
+          document.getElementById('inst9').innerHTML='Good. Now tap the word for <strong>Blank 2</strong>.';
+          showFB('fb9','info','Good. Now fill Blank 2.');
+        } else {
+          document.getElementById('inst9').innerHTML='All 2 blanks are filled.';
+          showFB('fb9','good','Yes. This answer gets the mark.');
+          document.getElementById('next9').disabled = false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        const hints = [
+          'Blank 1 should name what hatches.',
+          'Blank 2 should be adult mosquitoes.'
+        ];
+        showFB('fb9','bad',hints[fill9Index]);
+        setTimeout(()=>{
+          btn.classList.remove('wrong');
+          blanks9[fill9Index].textContent=`Blank ${fill9Index+1}`;
+        }, 700);
+      }
+    });
+  });
+
+  markOne(document.getElementById('s10b'),
+    [document.getElementById('s10a'),document.getElementById('s10b')],
+    'fb10',
+    'Yes. This one is clear enough for the mark.',
+    'The stronger answer says what becomes what.',
+    'next10'
+  );
+
+  markOne(document.getElementById('s11b'),
+    [document.getElementById('s11a'),document.getElementById('s11b'),document.getElementById('s11c'),document.getElementById('s11d')],
+    'fb11',
+    'Well done. This is another valid reason.',
+    'Choose the answer about the delay before adult mosquitoes appear.',
+    'next11'
+  );
+
+  function checkEndReady(){
+    if(picks['confEnd'] && picks['feel']) document.getElementById('next12').disabled=false;
+  }
+  [document.getElementById('feel1'),document.getElementById('feel2')].forEach((btn,idx)=>{
+    btn.addEventListener('click',()=>{
+      [document.getElementById('feel1'),document.getElementById('feel2')].forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks['feel']=idx===0?'help':'ready';
+      if(idx===0){
+        showFB('fb12','info','That is okay. Read the answer aloud once more.');
+      } else {
+        showFB('fb12','good','Nice. You are ready to say and write it.');
+      }
+      checkEndReady();
+    });
+  });
+
+  markOne(document.getElementById('s13a'),
+    [document.getElementById('s13a'),document.getElementById('s13b')],
+    'fb13',
+    'Good. Say this answer aloud once.',
+    'The complete answer must mention adult mosquitoes.',
+    'next13'
+  );
+
+  const endState = {say:false, write:false};
+  document.getElementById('s14a').addEventListener('click',()=>{
+    document.getElementById('s14a').classList.add('correct');
+    endState.say = true;
+    showFB('fb14','info','Good. Now write it on paper and tap the other button.');
+    checkEnd14();
+  });
+  document.getElementById('s14b').addEventListener('click',()=>{
+    document.getElementById('s14b').classList.add('correct');
+    endState.write = true;
+    showFB('fb14','good','Good. You used the answer needed for the mark.');
+    checkEnd14();
+  });
+  function checkEnd14(){
+    if(endState.say && endState.write){
+      document.getElementById('finishBtn').disabled=false;
+    }
+  }
+
+  updateTop();
+</script>
+</body>
+</html>

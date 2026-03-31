@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Fertilisation Tubes Helper</title>
+<style>
+  :root{
+    --bg:#f4faf7; --panel:#ffffff; --line:#cfe3d8; --ink:#173428; --muted:#4f6d61;
+    --green:#31a36f; --green2:#e9f8f0; --blue:#2d6bdb; --blue2:#edf4ff;
+    --yellow:#fffdf2; --yellowLine:#f1ddb1; --red:#d16f5b; --red2:#fff2ee;
+    --shadow:0 8px 20px rgba(23,52,40,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, #e7fff1 0 11%, transparent 12%),
+      radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
+      linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
+  }
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
+  .top{
+    background:var(--panel);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+    padding:12px 14px;margin-bottom:12px;position:sticky;top:8px;z-index:10;
+  }
+  .toprow{display:flex;align-items:center;gap:12px}
+  h1{font-size:24px;line-height:1.15;margin:0;flex:1}
+  .small{font-size:14px;color:var(--muted)}
+  .progress{height:12px;border-radius:999px;background:#eaf2ed;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));transition:width .25s ease}
+  .topbtn{
+    appearance:none;border:none;border-radius:16px;padding:12px 14px;font-size:18px;font-weight:700;cursor:pointer;
+    background:#fff;border:2px solid var(--line);color:var(--ink)
+  }
+
+  .screen{
+    display:none;background:var(--panel);border:2px solid var(--line);border-radius:26px;box-shadow:var(--shadow);
+    padding:16px;min-height:calc(100vh - 120px);
+  }
+  .screen.active{display:flex;flex-direction:column}
+  .title{font-size:26px;line-height:1.15;margin:0 0 8px}
+  .instruction{
+    background:#f8fcfa;border:2px solid var(--line);border-radius:18px;padding:10px 12px;
+    font-size:20px;line-height:1.3;margin:0 0 12px;
+  }
+  .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
+  .single-card,.summary-card{
+    background:#fbfffc;border:2px solid var(--line);border-radius:22px;padding:14px;
+  }
+  .question{font-size:21px;line-height:1.35;margin:0}
+  .statement{
+    background:var(--yellow);border:2px solid var(--yellowLine);border-radius:18px;padding:14px;
+    font-size:24px;line-height:1.35;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.three{grid-template-columns:1fr 1fr 1fr}
+  .row.four{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:760px){
+    .row,.row.three,.row.four{grid-template-columns:1fr 1fr}
+  }
+  .choice,.mini-btn,.star{
+    appearance:none;border:none;font-family:inherit;cursor:pointer;
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
+    min-height:74px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink);
+  }
+  .choice:hover,.mini-btn:hover,.star:hover{transform:translateY(-1px)}
+  .choice.correct,.mini-btn.correct{background:var(--green2);border-color:#98d0b3}
+  .choice.wrong,.mini-btn.wrong{background:var(--red2);border-color:#e6b3a8}
+  .choice.selected,.mini-btn.selected,.star.selected{background:var(--blue2);border-color:#bfd5f4}
+  .feedback{display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3}
+  .feedback.show{display:block}
+  .good{background:var(--green2);border:2px solid #a3d4b8}
+  .bad{background:var(--red2);border:2px solid #e7baa9}
+  .info{background:var(--blue2);border:2px solid #bfd5f4}
+  .nav{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px}
+  .nav-right{display:flex;gap:10px}
+  .btn{
+    appearance:none;border:none;border-radius:18px;padding:14px 18px;font-size:20px;font-weight:700;cursor:pointer
+  }
+  .back{background:#eef5f1;color:var(--ink);border:2px solid var(--line)}
+  .next{background:var(--blue);color:#fff}
+  .done{background:var(--green);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:10px;min-height:56px;align-items:flex-start}
+  .chip{background:#eaf4ff;border:2px solid #bfd5f4;border-radius:999px;padding:10px 14px;font-size:18px;font-weight:700}
+  .blank-row{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+    font-size:24px;line-height:1.4;
+  }
+  .blank{
+    min-width:150px;padding:10px 12px;border:2px dashed #bfd5f4;border-radius:14px;background:#f8fbff;
+    text-align:center;font-weight:700;
+  }
+  .blank.active{border-color:#2d6bdb;background:#edf4ff}
+  .stars{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .star{min-width:92px;font-size:34px}
+  .diagram{
+    width:100%;max-width:520px;margin:0 auto;display:block;
+  }
+  .highlight{display:inline-block;background:#fff4b7;border-radius:8px;padding:2px 6px;font-weight:700}
+  .modal{
+    position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px;z-index:30;
+  }
+  .modal.show{display:flex}
+  .modal-card{
+    max-width:620px;width:100%;background:#fff;border:2px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:18px;
+  }
+  .modal-card h2{margin:0 0 10px;font-size:28px}
+  .modal-card p{margin:0 0 14px;font-size:21px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="toprow">
+      <h1>Fertilisation Tubes Helper</h1>
+      <button class="topbtn" id="infoBtn" type="button">💛 Learn more</button>
+      <button class="topbtn" id="speakBtnTop" type="button">🔊 Read aloud</button>
+    </div>
+    <div class="small" id="stepText">Step 1 of 11</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <section class="screen active" id="screen1">
+    <h2 class="title">Read the question</h2>
+    <p class="instruction">Tap what you should answer first.</p>
+    <div class="content">
+      <div class="statement">Will fertilisation be able to take place when the tubes are cut and tied at X and Y? Explain why.</div>
+      <div class="row randomize">
+        <button class="choice" id="s1a">Will fertilisation be able to take place?</button>
+        <button class="choice" id="s1b">Explain why.</button>
+      </div>
+      <div id="fb1" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back" disabled>Back</button><div class="nav-right"><button class="btn next" id="next1" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen2" data-skip="true">
+    <h2 class="title">Do not miss this</h2>
+    <p class="instruction">Tap the word that must be in the answer.</p>
+    <div class="content">
+      <div class="row three randomize">
+        <button class="choice" id="s2a">No</button>
+        <button class="choice" id="s2b">Womb</button>
+        <button class="choice" id="s2c">Tube</button>
+      </div>
+      <div id="fb2" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next2" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen3">
+    <h2 class="title">Look at X and Y</h2>
+    <p class="instruction">Tap the part that is cut and tied at X and Y.</p>
+    <div class="content">
+      <div class="single-card">
+        <svg class="diagram" viewBox="0 0 420 220" aria-hidden="true">
+          <path d="M95 75 C120 40, 155 35, 190 55" fill="none" stroke="#666" stroke-width="5"/>
+          <path d="M325 75 C300 40, 265 35, 230 55" fill="none" stroke="#666" stroke-width="5"/>
+          <ellipse cx="85" cy="85" rx="16" ry="12" fill="#f7d7d7" stroke="#666" stroke-width="3"/>
+          <ellipse cx="335" cy="85" rx="16" ry="12" fill="#f7d7d7" stroke="#666" stroke-width="3"/>
+          <path d="M190 55 C170 70, 165 105, 185 135 C195 150, 198 175, 198 198" fill="none" stroke="#666" stroke-width="5"/>
+          <path d="M230 55 C250 70, 255 105, 235 135 C225 150, 222 175, 222 198" fill="none" stroke="#666" stroke-width="5"/>
+          <path d="M190 55 C205 45, 215 45, 230 55" fill="none" stroke="#666" stroke-width="5"/>
+          <line x1="118" y1="60" x2="118" y2="88" stroke="#d16f5b" stroke-width="5"/>
+          <line x1="123" y1="60" x2="123" y2="88" stroke="#d16f5b" stroke-width="5"/>
+          <line x1="297" y1="60" x2="297" y2="88" stroke="#d16f5b" stroke-width="5"/>
+          <line x1="302" y1="60" x2="302" y2="88" stroke="#d16f5b" stroke-width="5"/>
+          <text x="120" y="42" font-size="22" text-anchor="middle">X</text>
+          <text x="300" y="42" font-size="22" text-anchor="middle">Y</text>
+        </svg>
+      </div>
+      <div class="row three randomize">
+        <button class="choice" id="s3a">the tubes</button>
+        <button class="choice" id="s3b">the ovaries</button>
+        <button class="choice" id="s3c">the womb</button>
+      </div>
+      <div id="fb3" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next3" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen4">
+    <h2 class="title">What is needed for fertilisation?</h2>
+    <p class="instruction">Tap what must happen.</p>
+    <div class="content">
+      <div class="row three randomize">
+        <button class="choice" id="s4a">the sperm meets the egg</button>
+        <button class="choice" id="s4b">the egg goes to the womb</button>
+        <button class="choice" id="s4c">the womb makes the egg</button>
+      </div>
+      <div id="fb4" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next4" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen5">
+    <h2 class="title">What happens when the tubes are cut?</h2>
+    <p class="instruction">Tap the best answer.</p>
+    <div class="content">
+      <div class="row three randomize">
+        <button class="choice" id="s5a">the sperm will not meet the egg</button>
+        <button class="choice" id="s5b">the fertilised egg will not go to the womb</button>
+        <button class="choice" id="s5c">the womb is blocked</button>
+      </div>
+      <div id="fb5" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next5" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen6">
+    <h2 class="title">Which answer is wrong?</h2>
+    <p class="instruction">Tap the wrong answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s6a">No. The sperm will not meet the egg.</button>
+        <button class="choice" id="s6b">No. The egg cannot go to the womb.</button>
+      </div>
+      <div id="fb6" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen7">
+    <h2 class="title">Build the answer</h2>
+    <p class="instruction" id="inst7">Tap the first part.</p>
+    <div class="content">
+      <div class="summary-card"><div class="chip-wrap" id="orderProgress"></div></div>
+      <div class="row four randomize">
+        <button class="mini-btn order-btn" data-step="No.">No.</button>
+        <button class="mini-btn order-btn" data-step="The sperm">The sperm</button>
+        <button class="mini-btn order-btn" data-step="will not meet">will not meet</button>
+        <button class="mini-btn order-btn" data-step="the egg.">the egg.</button>
+      </div>
+      <div id="fb7" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen8">
+    <h2 class="title">Fill the blanks</h2>
+    <p class="instruction" id="inst8">Tap the word for Blank 1.</p>
+    <div class="content">
+      <div class="single-card">
+        <div class="blank-row">
+          <div class="blank active" id="b1">Blank 1</div>
+          <span>. The</span>
+          <div class="blank" id="b2">Blank 2</div>
+          <span>will not meet the</span>
+          <div class="blank" id="b3">Blank 3</div>
+          <span>.</span>
+        </div>
+      </div>
+      <div class="row three randomize">
+        <button class="mini-btn fill-btn" data-value="No">No</button>
+        <button class="mini-btn fill-btn" data-value="sperm">sperm</button>
+        <button class="mini-btn fill-btn" data-value="egg">egg</button>
+        <button class="mini-btn fill-btn" data-value="womb">womb</button>
+        <button class="mini-btn fill-btn" data-value="tube">tube</button>
+      </div>
+      <div id="fb8" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next8" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen9">
+    <h2 class="title">Try the question again</h2>
+    <p class="instruction">Tap the best full answer.</p>
+    <div class="content">
+      <div class="row randomize">
+        <button class="choice" id="s9a">No. The sperm will not meet the egg.</button>
+        <button class="choice" id="s9b">The sperm will not meet the egg.</button>
+        <button class="choice" id="s9c">No. The egg cannot go to the womb.</button>
+        <button class="choice" id="s9d">No. The tubes are cut and tied.</button>
+      </div>
+      <div id="fb9" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next9" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen10">
+    <h2 class="title">How do you feel now?</h2>
+    <p class="instruction">Tap a face. Then tap one box.</p>
+    <div class="content">
+      <div class="stars">
+        <button class="star" data-group="confEnd" data-value="1">😟</button>
+        <button class="star" data-group="confEnd" data-value="2">🙂</button>
+        <button class="star" data-group="confEnd" data-value="3">😄</button>
+      </div>
+      <div class="row randomize">
+        <button class="choice" id="feel1">I still need help.</button>
+        <button class="choice" id="feel2">I can answer one like this now.</button>
+      </div>
+      <div id="fb10" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next10" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen11">
+    <h2 class="title">Now say it and write it</h2>
+    <p class="instruction">First tap “I can say it.” Then write it on paper and tap “I wrote it on paper.”</p>
+    <div class="content">
+      <div class="summary-card">
+        <p class="question" style="text-align:center;font-size:30px"><span class="highlight">No. The sperm will not meet the egg.</span></p>
+      </div>
+      <div class="row">
+        <button class="choice" id="s11a">I can say it.</button>
+        <button class="choice" id="s11b">I wrote it on paper.</button>
+      </div>
+      <div id="fb11" class="feedback"></div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn done" id="finishBtn" disabled>Finished</button></div></div>
+  </section>
+</div>
+
+<div class="modal" id="infoModal">
+  <div class="modal-card">
+    <h2>Learn more</h2>
+    <p>Some mothers choose this surgery when they do not want more children. A doctor does this surgery carefully to help keep the mother safe.</p>
+    <button class="btn done" id="closeModal" type="button">Close</button>
+  </div>
+</div>
+
+<script>
+  const screens=[...document.querySelectorAll('.screen:not([data-skip="true"])')];
+  let current=0;
+
+  function updateTop(){
+    document.getElementById('stepText').textContent=`Step ${current+1} of ${screens.length}`;
+    document.getElementById('bar').style.width=((current+1)/screens.length*100)+'%';
+  }
+  function goTo(i){
+    current=Math.max(0,Math.min(i,screens.length-1));
+    screens.forEach((s,idx)=>s.classList.toggle('active',idx===current));
+    updateTop();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function next(){ goTo(current+1); }
+  function back(){ goTo(current-1); }
+
+  document.querySelectorAll('.btn.back').forEach(btn=>btn.addEventListener('click',back));
+  document.querySelectorAll('.btn.next').forEach(btn=>btn.addEventListener('click',next));
+  document.getElementById('finishBtn').addEventListener('click',()=>{
+    document.getElementById('finishBtn').textContent='Done!';
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  function shuffleChildren(container){
+    const children = Array.from(container.children);
+    for(let i=children.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [children[i],children[j]]=[children[j],children[i]];
+    }
+    children.forEach(child=>container.appendChild(child));
+  }
+  document.querySelectorAll('.randomize').forEach(shuffleChildren);
+
+  function getScreenSpeech(screen){
+    const clone = screen.cloneNode(true);
+    const nav = clone.querySelector('.nav');
+    if(nav) nav.remove();
+    clone.querySelectorAll('button').forEach(btn=>{
+      if(btn.closest('.stars')) return;
+      const text = btn.textContent.trim();
+      if(text) btn.textContent = 'Option: ' + text;
+    });
+    return clone.innerText.replace(/\s+/g,' ').trim();
+  }
+  function speakNow(text){
+    if(!('speechSynthesis' in window)){
+      alert('Read aloud is not available on this browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95; u.pitch=1; u.lang='en-US';
+    window.speechSynthesis.speak(u);
+  }
+  function speakCurrentScreen(){ speakNow(getScreenSpeech(screens[current])); }
+  document.getElementById('speakBtnTop').addEventListener('click',speakCurrentScreen);
+
+  const modal = document.getElementById('infoModal');
+  document.getElementById('infoBtn').addEventListener('click',()=>modal.classList.add('show'));
+  document.getElementById('closeModal').addEventListener('click',()=>modal.classList.remove('show'));
+  modal.addEventListener('click',(e)=>{ if(e.target===modal) modal.classList.remove('show'); });
+
+  function showFB(id,type,text){
+    const el=document.getElementById(id);
+    el.className=`feedback show ${type}`;
+    el.innerHTML=text;
+  }
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+    allBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        allBtns.forEach(x=>x.classList.remove('correct','wrong','selected'));
+        btn.classList.add(btn===correctBtn?'correct':'wrong');
+        showFB(fbId, btn===correctBtn?'good':'bad', btn===correctBtn?goodText:badText);
+        document.getElementById(nextId).disabled=false;
+      });
+    });
+  }
+
+  markOne(document.getElementById('s1a'),
+    [document.getElementById('s1a'),document.getElementById('s1b')],
+    'fb1',
+    'Yes. First answer whether fertilisation can take place. Then explain why.',
+    'Answer the question first. Then explain why.',
+    'next1'
+  );
+  markOne(document.getElementById('s2a'),
+    [document.getElementById('s2a'),document.getElementById('s2b'),document.getElementById('s2c')],
+    'fb2',
+    'Yes. You must say No for any mark.',
+    'The word “No” must be in the answer.',
+    'next2'
+  );
+  markOne(document.getElementById('s3a'),
+    [document.getElementById('s3a'),document.getElementById('s3b'),document.getElementById('s3c')],
+    'fb3',
+    'Yes. The tubes are cut and tied.',
+    'X and Y are on the tubes, not the ovaries or womb.',
+    'next3'
+  );
+  markOne(document.getElementById('s4a'),
+    [document.getElementById('s4a'),document.getElementById('s4b'),document.getElementById('s4c')],
+    'fb4',
+    'Yes. Fertilisation needs the sperm to meet the egg.',
+    'The key idea is sperm meeting egg.',
+    'next4'
+  );
+  markOne(document.getElementById('s5a'),
+    [document.getElementById('s5a'),document.getElementById('s5b'),document.getElementById('s5c')],
+    'fb5',
+    'Yes. If the tubes are cut and tied, the sperm will not meet the egg.',
+    'Focus on fertilisation first. The sperm and egg cannot meet.',
+    'next5'
+  );
+  markOne(document.getElementById('s6b'),
+    [document.getElementById('s6a'),document.getElementById('s6b')],
+    'fb6',
+    'Yes. This is wrong because it talks about the womb, not fertilisation.',
+    'The wrong answer is the one about the womb.',
+    'next6'
+  );
+
+  const targetOrder = ['No.','The sperm','will not meet','the egg.'];
+  let orderIndex = 0;
+  document.querySelectorAll('.order-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const value = btn.dataset.step;
+      if(value === targetOrder[orderIndex]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        const chip = document.createElement('div');
+        chip.className='chip';
+        chip.textContent=value;
+        document.getElementById('orderProgress').appendChild(chip);
+        orderIndex++;
+        if(orderIndex < targetOrder.length){
+          document.getElementById('inst7').innerHTML=`Good. Now tap part <strong>${orderIndex+1}</strong>.`;
+        } else {
+          document.getElementById('inst7').innerHTML='All 4 parts are done.';
+          showFB('fb7','good','Good. This answer gets the mark.');
+          document.getElementById('next7').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb7','bad',`Not yet. Start with No.`);
+        setTimeout(()=>btn.classList.remove('wrong'),500);
+      }
+    });
+  });
+
+  const targetFill = ['No','sperm','egg'];
+  let fillIndex = 0;
+  const blanks = [document.getElementById('b1'), document.getElementById('b2'), document.getElementById('b3')];
+  document.querySelectorAll('.fill-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(fillIndex >= 3 || btn.disabled) return;
+      const val = btn.dataset.value;
+      blanks[fillIndex].textContent = val;
+      if(val === targetFill[fillIndex]){
+        btn.classList.add('correct');
+        btn.disabled = true;
+        blanks[fillIndex].classList.remove('active');
+        fillIndex++;
+        if(fillIndex < 3){
+          blanks[fillIndex].classList.add('active');
+          document.getElementById('inst8').innerHTML=`Good. Now tap the word for <strong>Blank ${fillIndex+1}</strong>.`;
+          showFB('fb8','info',`Good. Now fill Blank ${fillIndex+1}.`);
+        } else {
+          document.getElementById('inst8').innerHTML='All 3 blanks are filled.';
+          showFB('fb8','good','Yes. This answer gets the mark.');
+          document.getElementById('next8').disabled=false;
+        }
+      } else {
+        btn.classList.add('wrong');
+        const hints = [
+          'Blank 1 must be No.',
+          'Blank 2 must be sperm.',
+          'Blank 3 must be egg.'
+        ];
+        showFB('fb8','bad',hints[fillIndex]);
+        setTimeout(()=>{
+          btn.classList.remove('wrong');
+          blanks[fillIndex].textContent=`Blank ${fillIndex+1}`;
+        },700);
+      }
+    });
+  });
+
+  markOne(document.getElementById('s9a'),
+    [document.getElementById('s9a'),document.getElementById('s9b'),document.getElementById('s9c'),document.getElementById('s9d')],
+    'fb9',
+    'Well done. This answer gets the mark.',
+    'Pick the answer with No and the sperm meeting the egg idea.',
+    'next9'
+  );
+
+  const picks = {};
+  document.querySelectorAll('[data-group]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const group = btn.dataset.group;
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks[group] = btn.dataset.value;
+      checkEndReady();
+    });
+  });
+  [document.getElementById('feel1'), document.getElementById('feel2')].forEach((btn, idx)=>{
+    btn.addEventListener('click',()=>{
+      [document.getElementById('feel1'), document.getElementById('feel2')].forEach(x=>x.classList.remove('selected'));
+      btn.classList.add('selected');
+      picks['feel'] = idx===0 ? 'help' : 'ready';
+      if(idx===0){
+        showFB('fb10','info','That is okay. Read the answer aloud once more.');
+      } else {
+        showFB('fb10','good','Nice. You are ready to say and write it.');
+      }
+      checkEndReady();
+    });
+  });
+  function checkEndReady(){
+    if(picks['confEnd'] && picks['feel']) document.getElementById('next10').disabled=false;
+  }
+
+  const endState = {say:false, write:false};
+  document.getElementById('s11a').addEventListener('click',()=>{
+    document.getElementById('s11a').classList.add('correct');
+    endState.say = true;
+    showFB('fb11','info','Good. Now write it on paper and tap the other button.');
+    checkFinish();
+  });
+  document.getElementById('s11b').addEventListener('click',()=>{
+    document.getElementById('s11b').classList.add('correct');
+    endState.write = true;
+    showFB('fb11','good','Good. You used the full answer needed for the mark.');
+    checkFinish();
+  });
+  function checkFinish(){
+    if(endState.say && endState.write){
+      document.getElementById('finishBtn').disabled=false;
+    }
+  }
+
+  updateTop();
+</script>
+</body>
+</html>
