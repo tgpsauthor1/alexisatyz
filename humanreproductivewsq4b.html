@@ -9,7 +9,7 @@
     --bg:#f4faf7; --panel:#ffffff; --line:#cfe3d8; --ink:#173428; --muted:#4f6d61;
     --green:#2f9e67; --green2:#e9f8f0; --blue:#2d6bdb; --blue2:#edf4ff;
     --red:#c45d4b; --red2:#fff1ed; --shadow:0 8px 20px rgba(23,52,40,.08);
-    --soft:#f8fcfa; --yellow:#fff6cf; --yellowLine:#ecd777;
+    --soft:#f8fcfa; --yellow:#fff6cf; --yellowLine:#ecd777; --purple:#7c4dff; --purple2:#f3edff;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
@@ -20,10 +20,10 @@
       radial-gradient(circle at 88% 12%, #edf4ff 0 9%, transparent 10%),
       linear-gradient(180deg,#f9fffb 0%, var(--bg) 100%);
   }
-  .app{max-width:960px;margin:0 auto;padding:14px 14px 24px}
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 24px}
   .top{
     background:var(--panel);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
-    padding:12px 14px;margin-bottom:12px;position:sticky;top:8px;z-index:10
+    padding:12px 14px;margin-bottom:12px;position:sticky;top:8px;z-index:20
   }
   .toprow{display:flex;align-items:center;gap:12px}
   h1{font-size:24px;line-height:1.15;margin:0;flex:1}
@@ -42,35 +42,35 @@
     padding:10px 12px;font-size:20px;line-height:1.3;margin:0 0 12px
   }
   .content{flex:1;display:flex;flex-direction:column;gap:12px;justify-content:flex-start}
-  .single-card,.summary-card,.question-card,.learn-card{
+  .card,.question-card,.learn-card,.feedback-card,.map-card,.guess-card{
     background:#fbfffc;border:2px solid var(--line);border-radius:22px;padding:12px
   }
+  .question-card{background:#f8fcff;border-color:#bfd5f4}
+  .question-title{font-size:18px;font-weight:700;margin:0 0 8px}
+  .question-text{font-size:19px;line-height:1.35;margin:0}
+  .highlight{background:#fff0a9;border-radius:8px;padding:1px 4px}
+  .hint{font-size:17px;line-height:1.35;color:var(--muted);margin:8px 0 0}
   .question{font-size:21px;line-height:1.35;margin:0}
-  .hint{font-size:18px;line-height:1.3;color:var(--muted);margin:0}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .row.three{grid-template-columns:repeat(3,1fr)}
   .row.four{grid-template-columns:repeat(4,1fr)}
-  .row.five{grid-template-columns:repeat(5,1fr)}
   .stack{display:flex;flex-direction:column;gap:10px}
   @media (max-width:760px){
-    .row,.row.three,.row.four,.row.five{grid-template-columns:1fr 1fr}
+    .row,.row.three,.row.four{grid-template-columns:1fr}
     .screen-head{flex-direction:column;align-items:stretch}
   }
-  .choice,.tile,.mini-btn,.sound-btn,.btn,.learn-btn,.modal-close{
+  .choice,.tile,.mini-btn,.sound-btn,.btn,.learn-btn,.modal-close,.check-btn{
     appearance:none;border:none;font-family:inherit;cursor:pointer
   }
-  .choice,.mini-btn{
+  .choice,.mini-btn,.check-btn{
     background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;
-    min-height:78px;font-size:22px;line-height:1.2;text-align:center;color:var(--ink)
+    min-height:78px;font-size:22px;line-height:1.22;text-align:center;color:var(--ink)
   }
-  .tile{
-    background:#fff;border:2px solid var(--line);border-radius:22px;padding:12px;
-    min-height:170px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;color:var(--ink)
+  .choice:hover,.mini-btn:hover,.btn:hover,.sound-btn:hover,.learn-btn:hover,.modal-close:hover,.check-btn:hover{
+    transform:translateY(-1px)
   }
-  .tile p{margin:0;font-size:18px;line-height:1.2;text-align:center}
-  .choice:hover,.mini-btn:hover,.tile:hover,.btn:hover,.sound-btn:hover,.learn-btn:hover,.modal-close:hover{transform:translateY(-1px)}
-  .choice.correct,.mini-btn.correct,.tile.correct{background:var(--green2);border-color:#98d0b3}
-  .choice.wrong,.mini-btn.wrong,.tile.wrong{background:var(--red2);border-color:#e6b3a8}
+  .choice.correct,.mini-btn.correct,.check-btn.correct{background:var(--green2);border-color:#98d0b3}
+  .choice.wrong,.mini-btn.wrong,.check-btn.wrong{background:var(--red2);border-color:#e6b3a8}
   .feedback{display:none;border-radius:18px;padding:12px;font-size:20px;line-height:1.3}
   .feedback.show{display:block}
   .good{background:var(--green2);border:2px solid #a3d4b8}
@@ -89,27 +89,14 @@
     background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;
     font-size:18px;font-weight:700;color:var(--ink)
   }
-  .chip-wrap{display:flex;flex-wrap:wrap;gap:10px;min-height:56px;align-items:flex-start}
-  .chip{background:#eaf4ff;border:2px solid #bfd5f4;border-radius:999px;padding:10px 14px;font-size:18px;font-weight:700}
-  .blank-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;font-size:24px;line-height:1.4}
-  .blank{min-width:170px;padding:10px 12px;border:2px dashed #bfd5f4;border-radius:14px;background:#f8fbff;text-align:center;font-weight:700}
-  .blank.active{border-color:#2d6bdb;background:#edf4ff}
-  .completion{display:none}
-  .completion.show{display:block}
-  .learn-card{
-    background:var(--yellow);border-color:var(--yellowLine)
-  }
-  .learn-title{
-    font-size:18px;font-weight:700;margin:0 0 8px
-  }
+  .learn-card{background:var(--yellow);border-color:var(--yellowLine)}
+  .learn-title{font-size:18px;font-weight:700;margin:0 0 8px}
   .learn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .learn-btn{
     background:#fff;border:2px solid var(--yellowLine);border-radius:16px;padding:12px 14px;
     min-height:64px;font-size:18px;line-height:1.25;color:var(--ink);text-align:left;font-weight:700
   }
-  @media (max-width:760px){
-    .learn-grid{grid-template-columns:1fr}
-  }
+  @media (max-width:760px){ .learn-grid{grid-template-columns:1fr} }
   .modal-backdrop{
     position:fixed;inset:0;background:rgba(23,52,40,.45);display:none;align-items:center;justify-content:center;
     padding:18px;z-index:100
@@ -127,7 +114,87 @@
     background:#eef5f1;color:var(--ink);border:2px solid var(--line);border-radius:16px;
     padding:10px 14px;font-size:18px;font-weight:700
   }
-  svg{max-width:100%;height:auto}
+
+  .prompt-strip{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px
+  }
+  .prompt-mini{
+    background:#fff;border:2px dashed #bfd5f4;border-radius:18px;padding:12px
+  }
+  .prompt-mini p{margin:0;font-size:18px;line-height:1.3}
+  @media (max-width:760px){ .prompt-strip{grid-template-columns:1fr} }
+
+  .visual-stage{
+    display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center
+  }
+  .stage-box{
+    border:2px solid var(--line);border-radius:20px;padding:12px;background:#fff;text-align:center;min-height:116px;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px
+  }
+  .stage-box strong{font-size:20px}
+  .stage-box span{font-size:16px;line-height:1.2;color:var(--muted)}
+  .stage-box.active{background:var(--green2);border-color:#98d0b3}
+  .arrow{
+    font-size:34px;font-weight:700;color:#8aa79b;opacity:.35;transition:all .3s ease
+  }
+  .arrow.active{color:var(--blue);opacity:1;transform:scale(1.15)}
+  .pulse{animation:pulse 1s ease-in-out infinite}
+  .shake{animation:shake .4s ease}
+  @keyframes pulse{
+    0%{transform:scale(1);opacity:.9}
+    50%{transform:scale(1.06);opacity:1}
+    100%{transform:scale(1);opacity:.9}
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-4px)}
+    75%{transform:translateX(4px)}
+  }
+  @media (max-width:760px){
+    .visual-stage{grid-template-columns:1fr;gap:8px}
+    .arrow{transform:rotate(90deg);justify-self:center}
+    .arrow.active{transform:rotate(90deg) scale(1.15)}
+  }
+
+  .chip-wrap{display:flex;flex-wrap:wrap;gap:10px;min-height:56px;align-items:flex-start}
+  .chip{background:#eaf4ff;border:2px solid #bfd5f4;border-radius:999px;padding:10px 14px;font-size:18px;font-weight:700}
+
+  .mosq-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .mosq-card{
+    border:2px solid var(--line);border-radius:22px;background:#fff;padding:12px;text-align:center;
+    display:flex;flex-direction:column;gap:10px;justify-content:center;align-items:center
+  }
+  .mosq-card.active{background:var(--green2);border-color:#98d0b3}
+  .mosq-label{font-size:20px;font-weight:700}
+  .mosq-note{font-size:17px;color:var(--muted);line-height:1.25}
+  .human-wrap{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap}
+  .bite-arrow{
+    font-size:34px;font-weight:700;color:#8aa79b;opacity:.3;transition:all .3s ease
+  }
+  .bite-arrow.active{color:var(--red);opacity:1}
+  .human-icon,.blood-icon{font-size:46px}
+  @media (max-width:760px){ .mosq-grid{grid-template-columns:1fr} }
+
+  .blank-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;font-size:24px;line-height:1.4}
+  .blank{min-width:150px;padding:10px 12px;border:2px dashed #bfd5f4;border-radius:14px;background:#f8fbff;text-align:center;font-weight:700}
+  .blank.active{border-color:#2d6bdb;background:#edf4ff}
+
+  .guess-card{background:var(--purple2);border-color:#d2c0ff}
+  .guess-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .guess-word{
+    min-width:120px;padding:10px 12px;border:2px dashed #b69cff;border-radius:14px;background:#fff;text-align:center;
+    font-size:22px;font-weight:700
+  }
+  .guess-word.active{background:#fff;border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,77,255,.10)}
+  .guess-sentence{font-size:24px;line-height:1.45}
+  .guess-panel{display:flex;flex-direction:column;gap:12px}
+  .guess-input{
+    width:100%;padding:14px 16px;font-size:22px;border:2px solid #b69cff;border-radius:16px;font-family:inherit
+  }
+  .guess-progress{font-size:18px;color:var(--muted);font-weight:700}
+  .reveal-line{font-size:20px;color:var(--muted)}
+  .completion{display:none}
+  .completion.show{display:block}
 </style>
 </head>
 <body>
@@ -137,39 +204,36 @@
       <h1>Mosquitoes with Bacteria W Helper</h1>
       <button class="sound-btn" id="speakBtnTop" type="button">🔊 Read this screen</button>
     </div>
-    <div class="small" id="stepText">Step 1 of 6</div>
+    <div class="small" id="stepText">Step 1 of 7</div>
     <div class="progress"><div class="bar" id="bar"></div></div>
   </div>
 
   <section class="screen active" id="screen1">
     <div class="screen-head">
-      <h2 class="title">What happens after mating?</h2>
+      <h2 class="title">Read the whole question first</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction">Tap what happens when a male mosquito with bacteria W mates with a female mosquito.</p>
+    <p class="instruction">Tap the change that happened first.</p>
     <div class="content">
-      <div class="single-card" style="text-align:center">
-        <svg viewBox="0 0 520 140" width="100%" height="120" aria-hidden="true">
-          <circle cx="80" cy="70" r="26" fill="#cdd5df"></circle><text x="80" y="76" font-size="18" text-anchor="middle">male</text><text x="80" y="105" font-size="16" text-anchor="middle">+ W</text>
-          <path d="M118 70 L208 70" stroke="#2d6bdb" stroke-width="5"></path>
-          <circle cx="250" cy="70" r="26" fill="#f6c7d0"></circle><text x="250" y="76" font-size="18" text-anchor="middle">female</text>
-          <path d="M288 70 L380 70" stroke="#2d6bdb" stroke-width="5"></path>
-          <ellipse cx="435" cy="70" rx="48" ry="24" fill="#fff" stroke="#d39a3b" stroke-width="4"></ellipse>
-          <line x1="404" y1="42" x2="466" y2="98" stroke="#d16f5b" stroke-width="5"></line><line x1="466" y1="42" x2="404" y2="98" stroke="#d16f5b" stroke-width="5"></line>
-          <text x="435" y="120" font-size="18" text-anchor="middle">eggs do not hatch</text>
-        </svg>
+      <div class="question-card">
+        <p class="question-title">Full question</p>
+        <p class="question-text">(b) Male mosquitoes do not bite and do not spread dengue fever. When a male mosquito carrying bacteria W mates with a female mosquito, the egg will not hatch.</p>
+        <p class="question-text" style="margin-top:8px;">In 2016, male mosquitoes carrying bacteria W were released into some housing estates in Singapore. The number of dengue cases in these housing estates decreased after the release of these male mosquitoes. Explain why.</p>
       </div>
       <div class="row three randomize">
-        <button class="choice" id="s1a">The eggs do not hatch.</button>
-        <button class="choice" id="s1b">The female mosquito dies.</button>
-        <button class="choice" id="s1c">The bacteria spread to humans.</button>
+        <button class="choice" id="q1a">Male mosquitoes do not bite humans for blood.</button>
+        <button class="choice" id="q1b">Male mosquitoes carrying bacteria W were released into the housing estates.</button>
+        <button class="choice" id="q1c">The number of dengue cases in the housing estates went down later.</button>
+      </div>
+      <div class="prompt-strip">
+        <div class="prompt-mini"><p><strong>Question strategy:</strong> First find what changed. Then find what result happened. Then explain the link.</p></div>
+        <div class="prompt-mini"><p><strong>Do not jump straight to memory.</strong> Follow the cause-and-effect steps in the question.</p></div>
       </div>
       <div class="learn-card">
-        <p class="learn-title">Need more background? Tap a button to open a pop-up.</p>
+        <p class="learn-title">Background help</p>
         <div class="learn-grid">
-          <button class="learn-btn" data-modal="carry-means">Learn more: What does “carry bacteria W” mean?</button>
+          <button class="learn-btn" data-modal="carry-means">Learn more: What does “carrying bacteria W” mean?</button>
           <button class="learn-btn" data-modal="bred-males">Learn more: How did the males get bacteria W?</button>
-          <button class="learn-btn" data-modal="eggs-not-hatch">Learn more: Why do the eggs not hatch?</button>
         </div>
       </div>
       <div id="fb1" class="feedback"></div>
@@ -179,18 +243,20 @@
 
   <section class="screen" id="screen2">
     <div class="screen-head">
-      <h2 class="title">Build the cause-and-effect chain</h2>
+      <h2 class="title">What is the question asking you to explain?</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction" id="inst2">Tap the first step.</p>
+    <p class="instruction">Tap the result that you must explain.</p>
     <div class="content">
-      <div class="summary-card"><div class="chip-wrap" id="chainProgress"></div></div>
-      <div class="row five randomize">
-        <button class="mini-btn chain-btn" data-step="More male mosquitoes with bacteria W were released.">More male mosquitoes with bacteria W were released.</button>
-        <button class="mini-btn chain-btn" data-step="More female mosquitoes mate with these males.">More female mosquitoes mate with these males.</button>
-        <button class="mini-btn chain-btn" data-step="Fewer eggs hatch.">Fewer eggs hatch.</button>
-        <button class="mini-btn chain-btn" data-step="Fewer adult mosquitoes grow.">Fewer adult mosquitoes grow.</button>
-        <button class="mini-btn chain-btn" data-step="Fewer female mosquitoes spread dengue fever.">Fewer female mosquitoes spread dengue fever.</button>
+      <div class="question-card">
+        <p class="question-title">Full question</p>
+        <p class="question-text">(b) Male mosquitoes do not bite and do not spread dengue fever. When a male mosquito carrying bacteria W mates with a female mosquito, the egg will not hatch.</p>
+        <p class="question-text" style="margin-top:8px;">In 2016, male mosquitoes carrying bacteria W were released into some housing estates in Singapore. The number of dengue cases in these housing estates decreased after the release of these male mosquitoes. Explain why.</p>
+      </div>
+      <div class="row three randomize">
+        <button class="choice" id="q2a">Explain why dengue cases went down in those housing estates.</button>
+        <button class="choice" id="q2b">Explain why male mosquitoes do not bite humans.</button>
+        <button class="choice" id="q2c">Explain why the males had bacteria W in their bodies.</button>
       </div>
       <div id="fb2" class="feedback"></div>
     </div>
@@ -199,17 +265,44 @@
 
   <section class="screen" id="screen3">
     <div class="screen-head">
-      <h2 class="title">Which mosquitoes bite humans and spread dengue?</h2>
+      <h2 class="title">What is the first science effect?</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction">Tap the mosquitoes that bite humans and spread dengue fever.</p>
+    <p class="instruction">Tap what happens when a male mosquito with bacteria W mates with a female mosquito.</p>
     <div class="content">
       <div class="question-card">
-        <p class="question"><strong>This idea matters for the final answer:</strong> Releasing more male mosquitoes with bacteria W leads to fewer adult mosquitoes later. To explain why dengue spread goes down, you must identify which mosquitoes bite humans.</p>
+        <p class="question-title">Question reminder</p>
+        <p class="question-text">Use the clue in the question about what happens after a male mosquito carrying bacteria W mates with a female mosquito. Then choose the first science effect.</p>
       </div>
-      <div class="row randomize">
-        <button class="choice" id="s3a">male mosquitoes</button>
-        <button class="choice" id="s3b">female mosquitoes</button>
+      <div class="visual-stage">
+        <div class="stage-box" id="s3box1">
+          <div style="font-size:38px;">🦟</div>
+          <strong>male + W</strong>
+          <span>carries bacteria W</span>
+        </div>
+        <div class="arrow" id="s3arrow1">→</div>
+        <div class="stage-box" id="s3box2">
+          <div style="font-size:38px;">🦟</div>
+          <strong>female</strong>
+          <span>mates with the male</span>
+        </div>
+        <div class="arrow" id="s3arrow2">→</div>
+        <div class="stage-box" id="s3box3">
+          <div style="font-size:38px;">🥚</div>
+          <strong>first science effect</strong>
+          <span>choose the correct effect below</span>
+        </div>
+      </div>
+      <div class="row three randomize">
+        <button class="choice" id="q3a">The egg does not hatch.</button>
+        <button class="choice" id="q3b">The female mosquito dies.</button>
+        <button class="choice" id="q3c">The bacteria spread to humans.</button>
+      </div>
+      <div class="learn-card">
+        <p class="learn-title">Background help</p>
+        <div class="learn-grid">
+          <button class="learn-btn" data-modal="eggs-not-hatch">Learn more: Why does the egg not hatch?</button>
+        </div>
       </div>
       <div id="fb3" class="feedback"></div>
     </div>
@@ -218,26 +311,38 @@
 
   <section class="screen" id="screen4">
     <div class="screen-head">
-      <h2 class="title">Build sentence 1</h2>
+      <h2 class="title">Build the cause-and-effect chain</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction" id="inst4">Tap the word for Blank 1.</p>
+    <p class="instruction" id="inst4">Tap the first step.</p>
     <div class="content">
-      <div class="single-card">
-        <div class="blank-row">
-          <span>When</span><div class="blank active" id="b4_1">Blank 1</div>
-          <span>male mosquitoes with</span><div class="blank" id="b4_2">Blank 2</div>
-          <span>mate with female mosquitoes,</span><div class="blank" id="b4_3">Blank 3</div>
-          <span>eggs hatch.</span>
+      <div class="question-card">
+        <p class="question-title">Question reminder</p>
+        <p class="question-text">To explain why dengue cases decreased, you must link the release of these males to the final result step by step.</p>
+      </div>
+      <div class="map-card">
+        <div class="visual-stage">
+          <div class="stage-box" id="map1"><strong>1</strong><span>tap to build this step</span></div>
+          <div class="arrow" id="arr1">→</div>
+          <div class="stage-box" id="map2"><strong>2</strong><span>tap to build this step</span></div>
+          <div class="arrow" id="arr2">→</div>
+          <div class="stage-box" id="map3"><strong>3</strong><span>tap to build this step</span></div>
+        </div>
+        <div class="visual-stage" style="margin-top:10px;">
+          <div class="stage-box" id="map4"><strong>4</strong><span>tap to build this step</span></div>
+          <div class="arrow" id="arr3">→</div>
+          <div class="stage-box" id="map5"><strong>5</strong><span>tap to build this step</span></div>
+          <div></div>
+          <div></div>
         </div>
       </div>
+      <div class="card"><div class="chip-wrap" id="chainProgress"></div></div>
       <div class="row three randomize">
-        <button class="mini-btn fill4" data-value="more">more</button>
-        <button class="mini-btn fill4" data-value="bacteria W">bacteria W</button>
-        <button class="mini-btn fill4" data-value="fewer">fewer</button>
-        <button class="mini-btn fill4" data-value="adult">adult</button>
-        <button class="mini-btn fill4" data-value="male">male</button>
-        <button class="mini-btn fill4" data-value="less">less</button>
+        <button class="mini-btn chain-btn" data-step="More male mosquitoes with bacteria W were released.">More male mosquitoes with bacteria W were released.</button>
+        <button class="mini-btn chain-btn" data-step="More female mosquitoes mate with these males.">More female mosquitoes mate with these males.</button>
+        <button class="mini-btn chain-btn" data-step="Fewer eggs hatch.">Fewer eggs hatch.</button>
+        <button class="mini-btn chain-btn" data-step="Fewer adult mosquitoes grow.">Fewer adult mosquitoes grow.</button>
+        <button class="mini-btn chain-btn" data-step="Fewer female mosquitoes spread dengue fever.">Fewer female mosquitoes spread dengue fever.</button>
       </div>
       <div id="fb4" class="feedback"></div>
     </div>
@@ -246,21 +351,35 @@
 
   <section class="screen" id="screen5">
     <div class="screen-head">
-      <h2 class="title">Build sentence 2</h2>
+      <h2 class="title">Which mosquitoes spread dengue?</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction">Tap the word for Blank 1.</p>
+    <p class="instruction">Tap the mosquitoes that bite humans and spread dengue fever.</p>
     <div class="content">
-      <div class="single-card">
-        <div class="blank-row">
-          <span>There will be fewer</span><div class="blank active" id="b5_1">Blank 1</div>
-          <span>mosquitoes spreading dengue fever.</span>
+      <div class="question-card">
+        <p class="question-title">Question reminder</p>
+        <p class="question-text">This part is <strong>central</strong> to the answer. The number of dengue cases can only go down if there are fewer mosquitoes that bite humans and spread dengue.</p>
+      </div>
+      <div class="mosq-grid">
+        <div class="mosq-card" id="maleCard">
+          <div style="font-size:50px;">🦟</div>
+          <div class="mosq-label">male mosquito</div>
+          <div class="mosq-note">does not bite humans for blood</div>
+        </div>
+        <div class="mosq-card" id="femaleCard">
+          <div style="font-size:50px;">🦟</div>
+          <div class="mosq-label">female mosquito</div>
+          <div class="mosq-note">bites humans for blood</div>
         </div>
       </div>
-      <div class="row three randomize">
-        <button class="mini-btn fill5" data-value="female">female</button>
-        <button class="mini-btn fill5" data-value="male">male</button>
-        <button class="mini-btn fill5" data-value="egg">egg</button>
+      <div class="human-wrap">
+        <div class="blood-icon">🩸</div>
+        <div class="bite-arrow" id="biteArrow">→</div>
+        <div class="human-icon">🧍</div>
+      </div>
+      <div class="row randomize">
+        <button class="choice" id="q5a">male mosquitoes</button>
+        <button class="choice" id="q5b">female mosquitoes</button>
       </div>
       <div id="fb5" class="feedback"></div>
     </div>
@@ -269,22 +388,76 @@
 
   <section class="screen" id="screen6">
     <div class="screen-head">
-      <h2 class="title">Retry the question</h2>
+      <h2 class="title">Find the missing link</h2>
       <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
     </div>
-    <p class="instruction">Tap the best 2-mark answer.</p>
+    <p class="instruction">Tap the missing link that answers the whole question.</p>
     <div class="content">
       <div class="question-card">
-        <p class="question"><strong>Question:</strong> Explain how releasing more male mosquitoes with bacteria W can reduce the spread of dengue fever.</p>
-        <p class="hint">Choose the answer that explains both the egg result and the dengue result.</p>
+        <p class="question-title">Question reminder</p>
+        <p class="question-text">You already know: more males with bacteria W → fewer eggs hatch → fewer adult mosquitoes grow.</p>
+        <p class="question-text" style="margin-top:8px;">Now choose the <strong>missing idea</strong> that explains why dengue cases decreased.</p>
       </div>
-      <div class="stack randomize">
-        <button class="choice" id="s6a"><strong>Answer A</strong><br>When more male mosquitoes with bacteria W mate with female mosquitoes, fewer eggs hatch. There will be fewer female mosquitoes spreading dengue fever.</button>
-        <button class="choice" id="s6b"><strong>Answer B</strong><br>When more male mosquitoes with bacteria W mate with female mosquitoes, fewer eggs hatch.</button>
-        <button class="choice" id="s6c"><strong>Answer C</strong><br>There will be fewer male mosquitoes spreading dengue fever.</button>
+      <div class="row three randomize">
+        <button class="choice" id="q6a">There are fewer female mosquitoes left to bite humans and spread dengue fever.</button>
+        <button class="choice" id="q6b">Male mosquitoes bite fewer humans after they are released.</button>
+        <button class="choice" id="q6c">Bacteria W spreads from male mosquitoes to humans.</button>
       </div>
       <div id="fb6" class="feedback"></div>
-      <div class="summary-card completion" id="completion6">
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next6" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen7">
+    <div class="screen-head">
+      <h2 class="title">Guess the words in the answer</h2>
+      <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
+    </div>
+    <p class="instruction">Type the whole missing word. Then tap Check. If you are wrong, one more letter will appear.</p>
+    <div class="content">
+      <div class="question-card">
+        <p class="question-title">Full question</p>
+        <p class="question-text">(b) Male mosquitoes do not bite and do not spread dengue fever. When a male mosquito carrying bacteria W mates with a female mosquito, the egg will not hatch.</p>
+        <p class="question-text" style="margin-top:8px;">In 2016, male mosquitoes carrying bacteria W were released into some housing estates in Singapore. The number of dengue cases in these housing estates decreased after the release of these male mosquitoes. Explain why.</p>
+      </div>
+      <div class="guess-card">
+        <div class="guess-progress" id="guessProgress">Word 1 of 4</div>
+        <p class="guess-sentence" id="guessSentence"></p>
+        <div class="reveal-line" id="revealLine">Hint: first letter shows first.</div>
+        <div class="guess-panel">
+          <input class="guess-input" id="guessInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the missing word here" />
+          <button class="check-btn" id="guessCheck">Check</button>
+        </div>
+      </div>
+      <div id="fb7" class="feedback"></div>
+      <div class="card completion" id="completion7">
+        <p class="question"><strong>All 4 key words are solved.</strong></p>
+        <p class="hint">Good. Now use the same idea in one more transfer question.</p>
+      </div>
+    </div>
+    <div class="nav"><button class="btn back">Back</button><div class="nav-right"><button class="btn next" id="next7" disabled>Next</button></div></div>
+  </section>
+
+  <section class="screen" id="screen8">
+    <div class="screen-head">
+      <h2 class="title">Transfer your learning</h2>
+      <button class="sound-btn speak-screen" type="button">🔊 Read this screen</button>
+    </div>
+    <p class="instruction">Read the new situation. Then tap the best answer.</p>
+    <div class="content">
+      <div class="question-card">
+        <p class="question-title">New question</p>
+        <p class="question-text">Scientists released more male mosquitoes carrying bacteria W in Town P.</p>
+        <p class="question-text" style="margin-top:8px;">A few months later, Town P had fewer dengue cases.</p>
+        <p class="question-text" style="margin-top:8px;"><strong>Which statement best explains this?</strong></p>
+      </div>
+      <div class="stack randomize">
+        <button class="choice" id="s8a"><strong>Answer A</strong><br>More eggs did not hatch, so fewer female mosquitoes were left to bite humans and spread dengue fever.</button>
+        <button class="choice" id="s8b"><strong>Answer B</strong><br>Male mosquitoes carrying bacteria W bit fewer humans, so dengue spread less.</button>
+        <button class="choice" id="s8c"><strong>Answer C</strong><br>Bacteria W spread from the released male mosquitoes to humans and stopped dengue.</button>
+      </div>
+      <div id="fb8" class="feedback"></div>
+      <div class="card completion" id="completion8">
         <p class="question">You have completed this activity. Please go to the next question.</p>
       </div>
     </div>
@@ -307,18 +480,10 @@
   let current=0;
 
   const modalContent = {
-    'female-bites': {
-      title: 'Why do females bite humans?',
-      body: [
-        'Female mosquitoes bite humans to get blood.',
-        'They need the blood to make eggs.',
-        'Male mosquitoes do not bite humans for blood.'
-      ]
-    },
     'carry-means': {
-      title: 'What does “carry bacteria W” mean?',
+      title: 'What does “carrying bacteria W” mean?',
       body: [
-        'Here, “carry bacteria W” means the bacteria are inside the mosquito’s body.',
+        'Here, “carrying bacteria W” means the bacteria are inside the mosquito’s body.',
         'It does not mean the mosquito is holding the bacteria on its legs or outside its body.'
       ]
     },
@@ -330,18 +495,11 @@
       ]
     },
     'eggs-not-hatch': {
-      title: 'Why do the eggs not hatch?',
+      title: 'Why does the egg not hatch?',
       body: [
         'Bacteria W affects what happens when the sperm and egg come together.',
-        'The eggs are laid, but they do not develop properly, so they do not hatch.'
-      ]
-    },
-    'female-spread': {
-      title: 'Why are female mosquitoes the ones that spread dengue?',
-      body: [
-        'Female mosquitoes are the ones that bite humans to get blood.',
-        'When an infected female mosquito bites a person, dengue can spread.',
-        'Male mosquitoes do not spread dengue this way.'
+        'The eggs are laid, but they do not develop properly, so they do not hatch.',
+        'This helps you understand the science, but for the final answer you mainly need the effect: fewer eggs hatch.'
       ]
     }
   };
@@ -381,6 +539,8 @@
       const text = btn.textContent.trim();
       if(text) btn.textContent = 'Option: ' + text;
     });
+    const input = clone.querySelector('input');
+    if(input) input.remove();
     return clone.innerText.replace(/\s+/g,' ').trim();
   }
   function speakNow(text){
@@ -431,7 +591,7 @@
     el.innerHTML=text;
   }
 
-  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId){
+  function markOne(correctBtn, allBtns, fbId, goodText, badText, nextId, onCorrect){
     allBtns.forEach(btn=>{
       btn.addEventListener('click',()=>{
         allBtns.forEach(x=>x.classList.remove('correct','wrong'));
@@ -439,17 +599,45 @@
         btn.classList.add(isCorrect?'correct':'wrong');
         showFB(fbId, isCorrect?'good':'bad', isCorrect?goodText:badText);
         document.getElementById(nextId).disabled=!isCorrect;
+        if(isCorrect && typeof onCorrect === 'function'){ onCorrect(); }
       });
     });
   }
 
   markOne(
-    document.getElementById('s1a'),
-    [document.getElementById('s1a'),document.getElementById('s1b'),document.getElementById('s1c')],
+    document.getElementById('q1b'),
+    [document.getElementById('q1a'),document.getElementById('q1b'),document.getElementById('q1c')],
     'fb1',
-    'Yes. The eggs do not hatch.',
-    'Focus on what happens to the eggs after mating.',
+    'Yes. This is the change in the situation: male mosquitoes carrying bacteria W were released.',
+    'Look for the event that changed the situation before dengue cases went down.',
     'next1'
+  );
+
+  markOne(
+    document.getElementById('q2a'),
+    [document.getElementById('q2a'),document.getElementById('q2b'),document.getElementById('q2c')],
+    'fb2',
+    'Yes. The question asks you to explain why dengue cases went down.',
+    'Focus on the result that happened after the males were released.',
+    'next2'
+  );
+
+  markOne(
+    document.getElementById('q3a'),
+    [document.getElementById('q3a'),document.getElementById('q3b'),document.getElementById('q3c')],
+    'fb3',
+    'Yes. This is the first science effect: the egg does not hatch.',
+    'Focus on what happens after the male and female mosquitoes mate.',
+    'next3',
+    ()=>{
+      document.getElementById('s3box1').classList.add('active');
+      document.getElementById('s3box2').classList.add('active');
+      document.getElementById('s3box3').classList.add('active');
+      document.getElementById('s3box3').querySelector('strong').textContent='egg does not hatch';
+      document.getElementById('s3box3').querySelector('span').textContent='first effect in the chain';
+      document.getElementById('s3arrow1').classList.add('active');
+      document.getElementById('s3arrow2').classList.add('active');
+    }
   );
 
   const targetChain = [
@@ -459,7 +647,15 @@
     'Fewer adult mosquitoes grow.',
     'Fewer female mosquitoes spread dengue fever.'
   ];
+  const mapTexts = [
+    'more males with bacteria W are released',
+    'more females mate with these males',
+    'fewer eggs hatch',
+    'fewer adult mosquitoes grow',
+    'fewer female mosquitoes spread dengue'
+  ];
   let chainIndex = 0;
+  const mapIds = ['map1','map2','map3','map4','map5'];
   document.querySelectorAll('.chain-btn').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const value = btn.dataset.step;
@@ -470,121 +666,167 @@
         chip.className='chip';
         chip.textContent=value;
         document.getElementById('chainProgress').appendChild(chip);
+
+        const currentMap = document.getElementById(mapIds[chainIndex]);
+        if(currentMap){
+          currentMap.classList.add('active');
+          currentMap.querySelector('span').textContent = mapTexts[chainIndex];
+        }
+        if(chainIndex===1){ document.getElementById('arr1').classList.add('active'); }
+        if(chainIndex===2){ document.getElementById('arr2').classList.add('active'); }
+        if(chainIndex===4){ document.getElementById('arr3').classList.add('active'); }
+
         chainIndex++;
         if(chainIndex < targetChain.length){
-          document.getElementById('inst2').innerHTML=`Good. Now tap step <strong>${chainIndex+1}</strong>.`;
-          showFB('fb2','info',`Good. Now find step ${chainIndex+1}.`);
+          document.getElementById('inst4').innerHTML=`Good. Now tap step <strong>${chainIndex+1}</strong>.`;
+          showFB('fb4','info',`Good. Now find step ${chainIndex+1}.`);
         } else {
-          document.getElementById('inst2').innerHTML='All 5 steps are done.';
-          showFB('fb2','good','Good. This is the full cause-and-effect chain.');
-          document.getElementById('next2').disabled=false;
+          document.getElementById('inst4').innerHTML='All 5 steps are done.';
+          showFB('fb4','good','Good. You built the full cause-and-effect chain.');
+          document.getElementById('next4').disabled=false;
         }
       } else {
-        btn.classList.add('wrong');
-        showFB('fb2','bad',`Not yet. Tap step ${chainIndex+1}.`);
-        setTimeout(()=>btn.classList.remove('wrong'),500);
+        btn.classList.add('wrong','shake');
+        showFB('fb4','bad',`Not yet. Tap step ${chainIndex+1}.`);
+        setTimeout(()=>btn.classList.remove('wrong','shake'),450);
       }
     });
   });
 
   markOne(
-    document.getElementById('s3b'),
-    [document.getElementById('s3a'),document.getElementById('s3b')],
-    'fb3',
-    'Yes. Female mosquitoes bite humans, so they are the ones that spread dengue fever.',
+    document.getElementById('q5b'),
+    [document.getElementById('q5a'),document.getElementById('q5b')],
+    'fb5',
+    'Yes. Female mosquitoes bite humans for blood, so they are the ones that spread dengue fever.',
     'Not this one. Male mosquitoes do not bite humans for blood, so they do not spread dengue this way.',
-    'next3'
+    'next5',
+    ()=>{
+      document.getElementById('femaleCard').classList.add('active');
+      document.getElementById('biteArrow').classList.add('active');
+    }
   );
 
-  const target4=['more','bacteria W','fewer'];
-  let fill4Index=0;
-  const blanks4=[document.getElementById('b4_1'),document.getElementById('b4_2'),document.getElementById('b4_3')];
-  document.querySelectorAll('.fill4').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      if(fill4Index>=3 || btn.disabled) return;
-      const val=btn.dataset.value;
-      blanks4[fill4Index].textContent=val;
-      if(val===target4[fill4Index]){
-        btn.classList.add('correct');
-        btn.disabled=true;
-        blanks4[fill4Index].classList.remove('active');
-        fill4Index++;
-        if(fill4Index<3){
-          blanks4[fill4Index].classList.add('active');
-          document.getElementById('inst4').innerHTML=`Good. Now tap the word for <strong>Blank ${fill4Index+1}</strong>.`;
-          showFB('fb4','info',`Good. Now fill Blank ${fill4Index+1}.`);
-        } else {
-          document.getElementById('inst4').innerHTML='All 3 blanks are filled.';
-          showFB('fb4','good','Yes. This is the first sentence of the answer.');
-          document.getElementById('next4').disabled=false;
-        }
-      } else {
-        btn.classList.add('wrong');
-        const hints=[
-          'Blank 1 needs the comparison word.',
-          'Blank 2 needs the bacteria name.',
-          'Blank 3 needs the egg result.'
-        ];
-        showFB('fb4','bad',hints[fill4Index]);
-        setTimeout(()=>{
-          btn.classList.remove('wrong');
-          blanks4[fill4Index].textContent=`Blank ${fill4Index+1}`;
-        },650);
-      }
-    });
-  });
+  markOne(
+    document.getElementById('q6a'),
+    [document.getElementById('q6a'),document.getElementById('q6b'),document.getElementById('q6c')],
+    'fb6',
+    'Yes. This is the missing link: fewer female mosquitoes are left to bite humans and spread dengue fever.',
+    'Choose the idea that links fewer adult mosquitoes to fewer dengue cases.',
+    'next6'
+  );
 
-  document.querySelectorAll('.fill5').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.fill5').forEach(x=>x.classList.remove('correct','wrong'));
-      const val=btn.dataset.value;
-      document.getElementById('b5_1').textContent=val;
-      if(val==='female'){
-        btn.classList.add('correct');
-        document.getElementById('b5_1').classList.remove('active');
-        showFB('fb5','good','Yes. This is the second sentence of the answer.');
-        document.getElementById('next5').disabled=false;
-      } else {
-        btn.classList.add('wrong');
-        showFB('fb5','bad','Choose the mosquitoes that spread dengue fever.');
-        document.getElementById('b5_1').classList.add('active');
-        document.getElementById('next5').disabled=true;
-      }
-    });
-  });
+  const guessWords = [
+    {word:'more', display:'m', label:'Word 1 of 4'},
+    {word:'eggs', display:'e', label:'Word 2 of 4'},
+    {word:'female', display:'f', label:'Word 3 of 4'},
+    {word:'dengue', display:'d', label:'Word 4 of 4'}
+  ];
+  let guessIndex = 0;
+  let revealCount = 1;
 
-  function finishReady(){
-    document.getElementById('finishBtn').disabled=false;
-    document.getElementById('completion6').classList.add('show');
+  function renderGuessSentence(){
+    const current = guessWords[guessIndex];
+    function hiddenWord(word){ return '_'.repeat(word.length); }
+    function displayWord(index){
+      const item = guessWords[index];
+      if(guessIndex > index){ return item.word; }
+      if(guessIndex === index){ return item.word.slice(0,revealCount) + '_'.repeat(Math.max(item.word.length-revealCount,0)); }
+      return hiddenWord(item.word);
+    }
+    const words = [
+      displayWord(0),
+      'male mosquitoes with bacteria W mate with female mosquitoes, fewer',
+      displayWord(1),
+      'hatch. There will be fewer',
+      displayWord(2),
+      'mosquitoes spreading',
+      displayWord(3),
+      'fever.'
+    ];
+    document.getElementById('guessSentence').innerHTML = `
+      When <span class="guess-word ${guessIndex===0?'active':''}">${words[0]}</span>
+      ${words[1]}
+      <span class="guess-word ${guessIndex===1?'active':''}">${words[2]}</span>
+      ${words[3]}
+      <span class="guess-word ${guessIndex===2?'active':''}">${words[4]}</span>
+      ${words[5]}
+      <span class="guess-word ${guessIndex===3?'active':''}">${words[6]}</span>
+      ${words[7]}
+    `;
+    if(guessIndex < guessWords.length){
+      document.getElementById('guessProgress').textContent = guessWords[guessIndex].label;
+      document.getElementById('revealLine').textContent = `Current hint: ${current.word.slice(0,revealCount)}${'_'.repeat(Math.max(current.word.length-revealCount,0))}`;
+    } else {
+      document.getElementById('guessProgress').textContent = 'All words solved';
+      document.getElementById('revealLine').textContent = 'Great. Now use the same idea in the transfer question.';
+    }
   }
+
+  function checkGuess(){
+    if(guessIndex >= guessWords.length) return;
+    const input = document.getElementById('guessInput');
+    const typed = input.value.trim().toLowerCase();
+    const current = guessWords[guessIndex];
+    if(typed === current.word){
+      document.getElementById('guessCheck').classList.remove('wrong');
+      document.getElementById('guessCheck').classList.add('correct');
+      showFB('fb7','good',`Yes. "${current.word}" is correct.`);
+      guessIndex++;
+      revealCount = 1;
+      input.value = '';
+      renderGuessSentence();
+      setTimeout(()=>document.getElementById('guessCheck').classList.remove('correct'),400);
+      if(guessIndex >= guessWords.length){
+        document.getElementById('completion7').classList.add('show');
+        document.getElementById('next7').disabled = false;
+        input.disabled = true;
+        document.getElementById('guessCheck').disabled = true;
+      }
+    } else {
+      document.getElementById('guessCheck').classList.remove('correct');
+      document.getElementById('guessCheck').classList.add('wrong');
+      revealCount = Math.min(revealCount + 1, current.word.length);
+      renderGuessSentence();
+      showFB('fb7','bad',`Not yet. One more letter has been revealed for "${current.word.length}"-letter word.`);
+      setTimeout(()=>document.getElementById('guessCheck').classList.remove('wrong'),400);
+    }
+  }
+
+  document.getElementById('guessCheck').addEventListener('click',checkGuess);
+  document.getElementById('guessInput').addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); checkGuess(); }
+  });
+
+
+  const transferButtons=[document.getElementById('s8a'),document.getElementById('s8b'),document.getElementById('s8c')];
+  transferButtons.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      transferButtons.forEach(x=>x.classList.remove('correct','wrong'));
+      if(btn.id==='s8a'){
+        btn.classList.add('correct');
+        showFB('fb8','good','Yes. This uses the same idea in a new situation: fewer eggs hatch, so fewer female mosquitoes are left to spread dengue fever.');
+        document.getElementById('completion8').classList.add('show');
+        document.getElementById('finishBtn').disabled = false;
+      } else if(btn.id==='s8b'){
+        btn.classList.add('wrong');
+        showFB('fb8','bad','Male mosquitoes do not bite humans. Choose the answer about fewer female mosquitoes spreading dengue fever.');
+        document.getElementById('completion8').classList.remove('show');
+        document.getElementById('finishBtn').disabled = true;
+      } else {
+        btn.classList.add('wrong');
+        showFB('fb8','bad','Bacteria W does not spread from the released male mosquitoes to humans. Choose the answer that follows the egg → adult female → dengue chain.');
+        document.getElementById('completion8').classList.remove('show');
+        document.getElementById('finishBtn').disabled = true;
+      }
+    });
+  });
 
   document.getElementById('finishBtn').addEventListener('click',()=>{
     speakNow('You have completed this activity. Please go to the next question.');
     document.getElementById('finishBtn').textContent='Done!';
   });
 
-  const retryButtons=[document.getElementById('s6a'),document.getElementById('s6b'),document.getElementById('s6c')];
-  retryButtons.forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      retryButtons.forEach(x=>x.classList.remove('correct','wrong'));
-      if(btn.id==='s6a'){
-        btn.classList.add('correct');
-        showFB('fb6','good','Yes. This answer explains both the egg result and the dengue result.');
-        finishReady();
-      } else if(btn.id==='s6b'){
-        btn.classList.add('wrong');
-        showFB('fb6','bad','This is only a partial answer. Find the answer that also explains the dengue result.');
-        document.getElementById('finishBtn').disabled=true;
-        document.getElementById('completion6').classList.remove('show');
-      } else {
-        btn.classList.add('wrong');
-        showFB('fb6','bad','Find the answer about fewer female mosquitoes spreading dengue fever.');
-        document.getElementById('finishBtn').disabled=true;
-        document.getElementById('completion6').classList.remove('show');
-      }
-    });
-  });
-
+  renderGuessSentence();
   updateTop();
 </script>
 </body>
