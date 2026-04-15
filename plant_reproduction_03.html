@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>plant_reproduction_3</title>
+  <style>
+    :root{
+      --bg:#f4fbf7;
+      --panel:#ffffff;
+      --panel2:#eef8f1;
+      --text:#173126;
+      --muted:#4f6a5d;
+      --green:#2f8f57;
+      --green-dark:#1f6a3e;
+      --green-soft:#d8f0de;
+      --yellow:#f4c84d;
+      --red:#d95050;
+      --shadow:0 10px 24px rgba(23,49,38,0.12);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, #f9fff7 0%, #f4fbf7 45%, #edf8f1 100%);
+      color:var(--text);
+    }
+    .app{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background:rgba(244,251,247,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid #dbece0;
+      padding:14px 16px;
+    }
+    .topbar-inner{
+      max-width:1080px;
+      margin:0 auto;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .title-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:250px;
+    }
+    .flower-badge{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      background:linear-gradient(135deg, #ffe89a, #c9f2d4);
+      display:grid;
+      place-items:center;
+      box-shadow:var(--shadow);
+      flex:0 0 auto;
+      font-size:26px;
+    }
+    h1{
+      margin:0;
+      font-size:30px;
+      line-height:1.1;
+    }
+    .sub{
+      margin-top:4px;
+      font-size:15px;
+      color:var(--muted);
+    }
+    .top-controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .speech-toggle, .small-btn, .big-btn, .option-btn, .choice-row, .check-btn{
+      border:none;
+      cursor:pointer;
+      font:inherit;
+      border-radius:18px;
+      transition:transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .speech-toggle, .small-btn{
+      background:var(--panel);
+      color:var(--text);
+      border:2px solid #cfe7d6;
+      padding:12px 16px;
+      font-weight:700;
+      box-shadow:0 6px 14px rgba(23,49,38,0.08);
+    }
+    .speech-toggle:hover, .small-btn:hover, .big-btn:hover, .option-btn:hover, .choice-row:hover, .check-btn:hover{
+      transform:translateY(-1px);
+    }
+    .tracker{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:var(--panel);
+      border:2px solid #cfe7d6;
+      border-radius:18px;
+      padding:10px 14px;
+      box-shadow:0 6px 14px rgba(23,49,38,0.08);
+    }
+    .tracker-label{
+      font-weight:700;
+      color:var(--green-dark);
+    }
+    .pollen-wrap{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .pollen{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 35%, #fff5bf 0 18%, #f6d96c 18% 58%, #d7aa26 58% 100%);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.55), 0 3px 8px rgba(172,133,14,.25);
+      position:relative;
+    }
+    .pollen::before, .pollen::after{
+      content:"";
+      position:absolute;
+      inset:-4px;
+      border:2px dashed rgba(228,193,68,.45);
+      border-radius:50%;
+    }
+    .pollen.lost{
+      filter:grayscale(1);
+      opacity:.26;
+    }
+    .progress-shell{
+      width:100%;
+      max-width:1080px;
+      margin:10px auto 0;
+      background:#dfeee4;
+      height:14px;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, #79d39a, #2f8f57);
+      transition:width .35s ease;
+    }
+    main{
+      max-width:1080px;
+      width:100%;
+      margin:0 auto;
+      padding:22px 16px 32px;
+      display:grid;
+      gap:18px;
+    }
+    .question-panel{
+      background:var(--panel);
+      border:2px solid #d5eadb;
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .question-panel[hidden]{display:none !important;}
+    .qp-head{
+      padding:18px 20px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      background:linear-gradient(180deg, #f9fff9, #eef8f1);
+    }
+    .qp-head h2{
+      margin:0;
+      font-size:25px;
+      line-height:1.1;
+    }
+    .qp-body{
+      padding:18px;
+      display:grid;
+      gap:16px;
+    }
+    .question-text{
+      font-size:22px;
+      line-height:1.4;
+      font-weight:700;
+    }
+    .highlight{
+      background:linear-gradient(180deg, rgba(244,200,77,.1), rgba(244,200,77,.7));
+      padding:0 6px;
+      border-radius:8px;
+      white-space:nowrap;
+    }
+    .question-grid{
+      display:grid;
+      grid-template-columns: minmax(250px, 420px) 1fr;
+      gap:18px;
+      align-items:start;
+    }
+    .diagram-card, .table-card, .screen-card, .review-box, .feedback-box, .summary-box{
+      background:var(--panel);
+      border:2px solid #d6eadb;
+      border-radius:22px;
+      box-shadow:var(--shadow);
+    }
+    .table-card{
+      overflow:auto;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:420px;
+      font-size:20px;
+    }
+    th, td{
+      border:2px solid #d2e6d8;
+      padding:12px 10px;
+      text-align:center;
+      vertical-align:middle;
+    }
+    th{
+      background:#eef8f1;
+      font-size:21px;
+    }
+    .screen-card{
+      padding:22px;
+      display:grid;
+      gap:18px;
+    }
+    .screen-title{
+      margin:0;
+      font-size:34px;
+      line-height:1.15;
+      color:var(--green-dark);
+    }
+    .instruction{
+      font-size:30px;
+      line-height:1.2;
+      font-weight:800;
+      background:linear-gradient(180deg, #f4fff7, #ddf4e5);
+      border:2px solid #c9e6d2;
+      border-radius:20px;
+      padding:16px 18px;
+    }
+    .screen-layout{
+      display:grid;
+      grid-template-columns: minmax(260px, 420px) 1fr;
+      gap:18px;
+      align-items:start;
+    }
+    .visual-box{
+      background:linear-gradient(180deg, #fbfffc, #f0faf3);
+      border:2px solid #d3e9d9;
+      border-radius:22px;
+      padding:14px;
+      min-height:250px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+    .options-grid{
+      display:grid;
+      gap:12px;
+    }
+    .option-btn, .choice-row{
+      width:100%;
+      text-align:left;
+      padding:18px 18px;
+      border:2px solid #cde7d4;
+      background:var(--panel);
+      font-size:24px;
+      font-weight:700;
+      color:var(--text);
+      box-shadow:0 8px 16px rgba(23,49,38,0.06);
+    }
+    .option-btn.selected, .choice-row.selected{
+      border-color:var(--green);
+      background:linear-gradient(180deg, #f1fff5, #dcf7e5);
+    }
+    .option-btn.correct, .choice-row.correct{
+      border-color:var(--green);
+      background:linear-gradient(180deg, #e8faee, #ccf0d8);
+    }
+    .option-btn.wrong, .choice-row.wrong{
+      border-color:var(--red);
+      background:linear-gradient(180deg, #fff3f3, #fde2e2);
+    }
+    .check-btn{
+      padding:16px 20px;
+      background:var(--green);
+      color:white;
+      font-size:24px;
+      font-weight:800;
+      box-shadow:0 10px 20px rgba(47,143,87,.22);
+    }
+    .check-btn[disabled]{
+      opacity:.5;
+      cursor:not-allowed;
+      transform:none;
+    }
+    .feedback-box{
+      padding:18px;
+      font-size:25px;
+      line-height:1.35;
+      background:linear-gradient(180deg, #f8fffa, #eef8f1);
+      display:none;
+    }
+    .feedback-box.show{
+      display:block;
+    }
+    .feedback-good{
+      color:var(--green-dark);
+      font-weight:800;
+    }
+    .feedback-bad{
+      color:#8e2b2b;
+      font-weight:800;
+    }
+    .controls-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:space-between;
+      align-items:center;
+    }
+    .big-btn{
+      background:linear-gradient(180deg, #2f8f57, #237748);
+      color:white;
+      padding:16px 22px;
+      font-size:24px;
+      font-weight:800;
+      box-shadow:0 10px 20px rgba(47,143,87,.22);
+    }
+    .big-btn.alt{
+      background:linear-gradient(180deg, #fdfefc, #ecf7ef);
+      color:var(--green-dark);
+      border:2px solid #cde7d4;
+      box-shadow:none;
+    }
+    .summary-box, .review-box{
+      padding:18px;
+      font-size:24px;
+      line-height:1.4;
+      display:grid;
+      gap:12px;
+      background:linear-gradient(180deg, #f9fff9, #edf8f1);
+    }
+    .mini-tag{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#e4f5ea;
+      border:2px solid #cde7d4;
+      font-size:18px;
+      font-weight:700;
+      color:var(--green-dark);
+    }
+    .row-label{
+      display:inline-grid;
+      place-items:center;
+      width:42px;
+      height:42px;
+      border-radius:12px;
+      background:#e4f5ea;
+      border:2px solid #cfe7d6;
+      font-weight:800;
+      margin-right:10px;
+      color:var(--green-dark);
+      flex:0 0 auto;
+    }
+    .choice-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .choice-copy{
+      display:grid;
+      gap:5px;
+      line-height:1.2;
+    }
+    .row-main{
+      font-size:22px;
+      font-weight:800;
+    }
+    .row-sub{
+      font-size:19px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .hidden{display:none !important;}
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(14,23,19,.56);
+      display:none;
+      place-items:center;
+      padding:20px;
+      z-index:30;
+    }
+    .modal.show{display:grid;}
+    .modal-card{
+      max-width:520px;
+      width:100%;
+      background:var(--panel);
+      border-radius:24px;
+      border:2px solid #d0e8d7;
+      box-shadow:0 18px 38px rgba(0,0,0,.28);
+      padding:22px;
+      display:grid;
+      gap:16px;
+      text-align:center;
+    }
+    .modal-card h3{
+      margin:0;
+      font-size:32px;
+      color:#8e2b2b;
+    }
+    .modal-card p{
+      margin:0;
+      font-size:24px;
+      line-height:1.35;
+    }
+    .spark{
+      width:100%;
+      max-width:220px;
+      justify-self:center;
+    }
+    svg{max-width:100%; height:auto;}
+    .label{
+      font: 700 18px Arial, sans-serif;
+      fill:#173126;
+    }
+    .tiny-label{
+      font: 700 15px Arial, sans-serif;
+      fill:#173126;
+    }
+    .light-line{
+      stroke:#3b6251;
+      stroke-width:3;
+      fill:none;
+    }
+    .petal{fill:#fff1bf; stroke:#cda843; stroke-width:3}
+    .leafy{fill:#d8f0de; stroke:#2f8f57; stroke-width:3}
+    .core{fill:#ffffff; stroke:#35594a; stroke-width:3}
+    .accent{fill:#f4c84d; stroke:#b78a15; stroke-width:3}
+    .accent2{fill:#ffc9cf; stroke:#bf6572; stroke-width:3}
+    .egg{fill:#ffd7dc; stroke:#bf6572; stroke-width:3}
+    .sperm{fill:#cfe8ff; stroke:#4e88b8; stroke-width:3}
+    .pollen-dot{fill:#f4c84d; stroke:#b78a15; stroke-width:2}
+    .hidden-part{opacity:0; transition:opacity .35s ease, transform .35s ease}
+    .show-part{opacity:1 !important; transform:translateY(0) !important}
+    .float-up{transform:translateY(12px)}
+    .float-side{transform:translateX(-10px)}
+    .pulse{
+      animation:pulse .8s ease 1;
+    }
+    @keyframes pulse{
+      0%{transform:scale(1)}
+      50%{transform:scale(1.06)}
+      100%{transform:scale(1)}
+    }
+    .sway{
+      animation:sway 1.2s ease-in-out infinite alternate;
+      transform-origin:center;
+    }
+    @keyframes sway{
+      from{transform:translateY(0px)}
+      to{transform:translateY(-4px)}
+    }
+    .drift{
+      animation:drift 2.4s ease-in-out infinite alternate;
+    }
+    @keyframes drift{
+      from{transform:translate(0,0)}
+      to{transform:translate(6px,-8px)}
+    }
+    @media (max-width: 880px){
+      .question-grid, .screen-layout{
+        grid-template-columns:1fr;
+      }
+      .instruction{font-size:27px}
+      .screen-title{font-size:30px}
+      h1{font-size:26px}
+      .question-text{font-size:20px}
+      .option-btn, .choice-row, .check-btn, .big-btn{font-size:22px}
+      table{font-size:18px}
+      th{font-size:19px}
+    }
+    @media (max-width: 560px){
+      .topbar-inner{align-items:flex-start}
+      .tracker{width:100%; justify-content:center}
+      .speech-toggle, .small-btn{padding:10px 12px}
+      .screen-card{padding:16px}
+      .instruction{font-size:24px}
+      .screen-title{font-size:27px}
+      .feedback-box, .summary-box, .review-box{font-size:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="title-wrap">
+          <div class="flower-badge" aria-hidden="true">🌼</div>
+          <div>
+            <h1>Plant reproduction match-up</h1>
+            <div class="sub">Look carefully. Match the parts by what they do.</div>
+          </div>
+        </div>
+        <div class="top-controls">
+          <button id="speechToggle" class="speech-toggle" aria-pressed="false">🔇 Read-aloud: OFF</button>
+          <div class="tracker" aria-live="polite">
+            <div class="tracker-label">Pollen puffs</div>
+            <div class="pollen-wrap" id="pollenWrap"></div>
+          </div>
+        </div>
+      </div>
+      <div class="progress-shell" aria-hidden="true">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <main>
+      <section id="questionPanel" class="question-panel" hidden></section>
+      <section id="screenMount" class="screen-card"></section>
+    </main>
+  </div>
+
+  <div id="restartModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="restartTitle">
+    <div class="modal-card">
+      <svg class="spark" viewBox="0 0 220 120" aria-hidden="true">
+        <circle cx="50" cy="60" r="17" class="pollen-dot"></circle>
+        <circle cx="88" cy="40" r="14" class="pollen-dot"></circle>
+        <circle cx="120" cy="68" r="15" class="pollen-dot"></circle>
+        <circle cx="160" cy="44" r="16" class="pollen-dot"></circle>
+        <circle cx="188" cy="70" r="13" class="pollen-dot"></circle>
+      </svg>
+      <h3 id="restartTitle">All pollen puffs are gone.</h3>
+      <p>Let’s restart and try again carefully.</p>
+      <button id="restartNowBtn" class="big-btn">Restart</button>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      screenIndex: 0,
+      pollen: 4,
+      speechOn: false,
+      selectedId: null,
+      answeredCorrectly: false,
+      currentOptions: [],
+      finalRows: [],
+      transferOptions: [],
+      showReview: false
+    };
+
+    const screenCount = 11;
+    const nonDemeritScreens = new Set([0, 8, 9, 10]);
+
+    const speechToggle = document.getElementById('speechToggle');
+    const pollenWrap = document.getElementById('pollenWrap');
+    const screenMount = document.getElementById('screenMount');
+    const questionPanel = document.getElementById('questionPanel');
+    const progressFill = document.getElementById('progressFill');
+    const restartModal = document.getElementById('restartModal');
+    const restartNowBtn = document.getElementById('restartNowBtn');
+
+    speechToggle.addEventListener('click', () => {
+      state.speechOn = !state.speechOn;
+      speechToggle.textContent = state.speechOn ? '🔇 Read-aloud: OFF' : '🔇 Read-aloud: OFF';
+      speechToggle.setAttribute('aria-pressed', String(state.speechOn));
+      if (!state.speechOn) {
+        window.speechSynthesis.cancel();
+      } else {
+        speakCurrentScreen();
+      }
+    });
+
+    restartNowBtn.addEventListener('click', () => {
+      restartModal.classList.remove('show');
+      resetAll();
+    });
+
+    function shuffle(arr){
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function updateProgress(){
+      const pct = (state.screenIndex) / (screenCount - 1) * 100;
+      progressFill.style.width = pct + '%';
+    }
+
+    function renderPollen(){
+      pollenWrap.innerHTML = '';
+      for (let i = 0; i < 4; i++){
+        const d = document.createElement('div');
+        d.className = 'pollen' + (i >= state.pollen ? ' lost' : '');
+        pollenWrap.appendChild(d);
+      }
+    }
+
+    function losePollen(){
+      if (state.pollen <= 0) return;
+      state.pollen -= 1;
+      renderPollen();
+      if (state.pollen <= 0){
+        window.speechSynthesis.cancel();
+        restartModal.classList.add('show');
+      }
+    }
+
+    function speak(text){
+      if (!state.speechOn || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text.replace(/\s+/g, ' ').trim());
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakCurrentScreen(){
+      const s = screens[state.screenIndex];
+      if (!s) return;
+      let text = s.title + '. ' + s.instruction + '. ';
+      if (s.options){
+        text += 'Options: ' + s.options.map(o => o.text).join('. ') + '.';
+      }
+      if (state.screenIndex === 0){
+        text += ' Full question shown. Tap Start.';
+      }
+      if (state.screenIndex === 8){
+        text += ' Choose one row for the original question.';
+      }
+      if (state.screenIndex === 9){
+        text += ' Transfer question.';
+      }
+      if (state.screenIndex === 10){
+        text += ' You finished the activity.';
+      }
+      speak(text);
+    }
+
+    function questionPanelHTML(collapsed=false){
+      return `
+        <div class="qp-head">
+          <h2>${collapsed ? 'Question panel' : 'Study the question'}</h2>
+          ${collapsed ? `<button class="small-btn" id="toggleQuestionBtn">Show question</button>` : `<span class="mini-tag">Clean recreated version</span>`}
+        </div>
+        <div class="qp-body ${collapsed ? 'hidden' : ''}" id="questionBody">
+          <div class="question-text">
+            Identify the <span class="highlight">human reproductive part that has the same functions as C and D</span> of a flower.
+          </div>
+          <div class="question-grid">
+            <div class="diagram-card">${renderQuestionFlower()}</div>
+            <div class="table-card">
+              <table aria-label="Answer options table">
+                <tr>
+                  <th></th>
+                  <th colspan="2">Human reproductive system</th>
+                </tr>
+                <tr>
+                  <th></th>
+                  <th>Same function as C</th>
+                  <th>Same function as D</th>
+                </tr>
+                <tr>
+                  <td>(1)</td>
+                  <td>Testis</td>
+                  <td>ovary</td>
+                </tr>
+                <tr>
+                  <td>(2)</td>
+                  <td>Testis</td>
+                  <td>ovules</td>
+                </tr>
+                <tr>
+                  <td>(3)</td>
+                  <td>Penis</td>
+                  <td>womb</td>
+                </tr>
+                <tr>
+                  <td>(4)</td>
+                  <td>Ovules</td>
+                  <td>ovary</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function attachQuestionToggle(){
+      const btn = document.getElementById('toggleQuestionBtn');
+      const body = document.getElementById('questionBody');
+      if (!btn || !body) return;
+      btn.addEventListener('click', () => {
+        body.classList.toggle('hidden');
+        btn.textContent = body.classList.contains('hidden') ? 'Show question' : 'Hide question';
+      });
+    }
+
+    function renderQuestionFlower(){
+      return `
+      <svg viewBox="0 0 380 360" role="img" aria-label="Flower diagram with labels C and D">
+        <path class="petal" d="M70,130 C50,60 120,30 170,88 C180,56 225,48 250,90 C305,40 345,76 310,136 C300,170 250,180 230,162 C216,220 164,220 148,163 C116,181 73,171 70,130 Z"/>
+        <path class="leafy" d="M140,170 C120,225 105,258 110,292 L142,288 C140,251 153,213 167,175 Z"/>
+        <path class="leafy" d="M240,170 C260,225 275,258 270,292 L238,288 C240,251 227,213 213,175 Z"/>
+        <rect x="176" y="206" width="28" height="118" rx="12" class="leafy"/>
+        <path class="core" d="M190,82 C170,86 154,103 154,134 L154,202 C154,223 168,240 190,240 C212,240 226,223 226,202 L226,134 C226,103 210,86 190,82 Z"/>
+        <path class="core" d="M190,84 L190,214" />
+        <path class="core" d="M190,84 C192,68 201,59 214,57" />
+        <ellipse cx="138" cy="126" rx="15" ry="23" class="accent"/>
+        <rect x="132" y="142" width="12" height="66" rx="6" class="core"/>
+        <ellipse cx="242" cy="126" rx="15" ry="23" class="accent"/>
+        <rect x="236" y="142" width="12" height="66" rx="6" class="core"/>
+        <path class="accent2" d="M190,118 C175,128 166,146 165,162 C164,181 172,199 190,214 C208,199 216,181 215,162 C214,146 205,128 190,118 Z"/>
+        <ellipse cx="176" cy="165" rx="8" ry="11" class="egg"/>
+        <ellipse cx="190" cy="176" rx="8" ry="11" class="egg"/>
+        <ellipse cx="204" cy="165" rx="8" ry="11" class="egg"/>
+        <line x1="312" y1="64" x2="245" y2="122" class="light-line"/>
+        <text x="321" y="60" class="label">C</text>
+        <line x1="318" y1="168" x2="208" y2="167" class="light-line"/>
+        <text x="326" y="174" class="label">D</text>
+      </svg>`;
+    }
+
+    function renderFlowerCOnly(){
+      return `
+      <svg viewBox="0 0 380 320" role="img" aria-label="Flower diagram with label C only">
+        <path class="petal" d="M75,120 C55,60 122,28 170,82 C183,55 225,48 252,88 C306,40 338,78 305,128 C296,160 250,170 230,156 C219,208 164,210 148,156 C118,172 78,160 75,120 Z"/>
+        <path class="leafy" d="M140,160 C121,210 110,236 114,270 L144,265 C142,233 152,197 166,165 Z"/>
+        <path class="leafy" d="M240,160 C259,210 270,236 266,270 L236,265 C238,233 228,197 214,165 Z"/>
+        <rect x="176" y="190" width="28" height="100" rx="12" class="leafy"/>
+        <path class="core" d="M190,76 C170,80 154,98 154,128 L154,188 C154,208 168,226 190,226 C212,226 226,208 226,188 L226,128 C226,98 210,80 190,76 Z"/>
+        <ellipse cx="138" cy="118" rx="15" ry="22" class="accent"/>
+        <rect x="132" y="134" width="12" height="58" rx="6" class="core"/>
+        <ellipse cx="242" cy="118" rx="15" ry="22" class="accent"/>
+        <rect x="236" y="134" width="12" height="58" rx="6" class="core"/>
+        <line x1="304" y1="58" x2="245" y2="115" class="light-line"/>
+        <text x="313" y="55" class="label">C</text>
+      </svg>`;
+    }
+
+    function renderAnther(){
+      return `
+      <svg viewBox="0 0 320 250" role="img" aria-label="Anther close-up">
+        <line x1="160" y1="190" x2="160" y2="235" class="light-line"/>
+        <ellipse cx="160" cy="104" rx="54" ry="72" class="accent"/>
+        <ellipse cx="160" cy="104" rx="18" ry="58" fill="#fff8d2" stroke="#c6a23f" stroke-width="3"/>
+        <text x="135" y="28" class="label">Anther</text>
+        <g id="pollenBurst" class="hidden-part float-up">
+          <circle cx="85" cy="68" r="10" class="pollen-dot drift"></circle>
+          <circle cx="95" cy="112" r="9" class="pollen-dot drift"></circle>
+          <circle cx="230" cy="70" r="11" class="pollen-dot drift"></circle>
+          <circle cx="245" cy="114" r="8" class="pollen-dot drift"></circle>
+          <circle cx="210" cy="38" r="9" class="pollen-dot drift"></circle>
+          <text x="52" y="152" class="tiny-label">pollen grains</text>
+        </g>
+      </svg>`;
+    }
+
+    function renderMaleSystem(){
+      return `
+      <svg viewBox="0 0 330 270" role="img" aria-label="Simple male reproductive system diagram">
+        <text x="38" y="26" class="label">Male reproductive system</text>
+        <path d="M154,40 C115,62 102,103 109,145 C115,176 131,195 146,208" class="light-line"/>
+        <path d="M176,40 C215,62 228,103 221,145 C215,176 199,195 184,208" class="light-line"/>
+        <ellipse cx="165" cy="38" rx="18" ry="16" fill="#cfe8ff" stroke="#4e88b8" stroke-width="3"/>
+        <path d="M146,208 C140,236 144,252 165,252 C186,252 190,236 184,208" fill="#f2f6ff" stroke="#4e88b8" stroke-width="3"/>
+        <ellipse id="leftTestis" cx="145" cy="198" rx="20" ry="26" fill="#d8f0de" stroke="#2f8f57" stroke-width="4"/>
+        <ellipse id="rightTestis" cx="185" cy="198" rx="20" ry="26" fill="#d8f0de" stroke="#2f8f57" stroke-width="4"/>
+        <text x="102" y="232" class="tiny-label">testis</text>
+        <g id="spermGroup" class="hidden-part float-side">
+          <g class="sway">
+            <circle cx="248" cy="156" r="7" class="sperm"></circle>
+            <path d="M255,156 C271,150 277,140 286,134" fill="none" stroke="#4e88b8" stroke-width="3"/>
+          </g>
+          <g class="sway" style="animation-delay:.2s">
+            <circle cx="252" cy="188" r="7" class="sperm"></circle>
+            <path d="M259,188 C274,195 286,199 294,208" fill="none" stroke="#4e88b8" stroke-width="3"/>
+          </g>
+          <text x="229" y="122" class="tiny-label">sperm</text>
+        </g>
+      </svg>`;
+    }
+
+    function renderFlowerDOnly(){
+      return `
+      <svg viewBox="0 0 380 320" role="img" aria-label="Flower diagram with label D only">
+        <path class="petal" d="M75,120 C55,60 122,28 170,82 C183,55 225,48 252,88 C306,40 338,78 305,128 C296,160 250,170 230,156 C219,208 164,210 148,156 C118,172 78,160 75,120 Z"/>
+        <path class="leafy" d="M140,160 C121,210 110,236 114,270 L144,265 C142,233 152,197 166,165 Z"/>
+        <path class="leafy" d="M240,160 C259,210 270,236 266,270 L236,265 C238,233 228,197 214,165 Z"/>
+        <rect x="176" y="190" width="28" height="100" rx="12" class="leafy"/>
+        <path class="core" d="M190,76 C170,80 154,98 154,128 L154,188 C154,208 168,226 190,226 C212,226 226,208 226,188 L226,128 C226,98 210,80 190,76 Z"/>
+        <path class="accent2" d="M190,112 C176,122 167,140 166,156 C165,176 173,193 190,207 C207,193 215,176 214,156 C213,140 204,122 190,112 Z"/>
+        <ellipse cx="176" cy="160" rx="8" ry="11" class="egg"/>
+        <ellipse cx="190" cy="171" rx="8" ry="11" class="egg"/>
+        <ellipse cx="204" cy="160" rx="8" ry="11" class="egg"/>
+        <line x1="305" y1="160" x2="209" y2="160" class="light-line"/>
+        <text x="313" y="166" class="label">D</text>
+      </svg>`;
+    }
+
+    function renderOvulesCloseup(){
+      return `
+      <svg viewBox="0 0 340 260" role="img" aria-label="Ovules close-up diagram">
+        <path d="M120,40 C85,70 72,105 72,130 C72,172 104,215 170,230 C236,215 268,172 268,130 C268,105 255,70 220,40 C200,55 184,63 170,63 C156,63 140,55 120,40 Z" class="accent2"/>
+        <ellipse cx="140" cy="128" rx="18" ry="24" class="egg"/>
+        <ellipse cx="170" cy="156" rx="18" ry="24" class="egg"/>
+        <ellipse cx="198" cy="128" rx="18" ry="24" class="egg"/>
+        <line x1="198" y1="50" x2="197" y2="92" class="light-line"/>
+        <text x="178" y="40" class="tiny-label">ovary</text>
+        <line x1="248" y1="118" x2="214" y2="124" class="light-line"/>
+        <text x="254" y="122" class="tiny-label">ovules</text>
+        <g id="eggInside" class="hidden-part float-up">
+          <circle cx="280" cy="132" r="38" class="egg"></circle>
+          <circle cx="280" cy="132" r="13" fill="#fff5f7" stroke="#bf6572" stroke-width="3"></circle>
+          <text x="230" y="194" class="tiny-label">female reproductive cell</text>
+        </g>
+      </svg>`;
+    }
+
+    function renderFemaleSystem(){
+      return `
+      <svg viewBox="0 0 340 260" role="img" aria-label="Simple female reproductive system diagram">
+        <text x="28" y="26" class="label">Female reproductive system</text>
+        <path d="M170,84 C148,84 136,100 136,118 L136,196 C136,214 150,228 170,228 C190,228 204,214 204,196 L204,118 C204,100 192,84 170,84 Z" fill="#fff9fc" stroke="#bf6572" stroke-width="4"/>
+        <path d="M136,118 C110,112 92,108 74,104" class="light-line"/>
+        <path d="M204,118 C230,112 248,108 266,104" class="light-line"/>
+        <ellipse id="leftOvary" cx="62" cy="102" rx="18" ry="14" fill="#ffd7dc" stroke="#bf6572" stroke-width="4"/>
+        <ellipse id="rightOvary" cx="278" cy="102" rx="18" ry="14" fill="#ffd7dc" stroke="#bf6572" stroke-width="4"/>
+        <text x="18" y="138" class="tiny-label">ovary</text>
+        <g id="eggGroup" class="hidden-part float-side">
+          <circle cx="285" cy="182" r="11" class="egg"></circle>
+          <circle cx="252" cy="202" r="11" class="egg"></circle>
+          <text x="223" y="232" class="tiny-label">egg cells</text>
+        </g>
+      </svg>`;
+    }
+
+    function renderReviewSummary(){
+      return `
+        <div class="review-box">
+          <div><span class="mini-tag">Key match 1</span></div>
+          <div><strong>C → anther</strong> → produces pollen grains → same human function: <strong>testis</strong></div>
+          <div><span class="mini-tag">Key match 2</span></div>
+          <div><strong>D → ovules</strong> → linked to female reproductive cells → same human function: <strong>ovary</strong></div>
+        </div>
+      `;
+    }
+
+    const baseFinalRows = [
+      { id:'r1', label:'(1)', main:'Testis', sub:'Same function as C · ovary for D', correct:true },
+      { id:'r2', label:'(2)', main:'Testis', sub:'Same function as C · ovules for D', correct:false },
+      { id:'r3', label:'(3)', main:'Penis', sub:'Same function as C · womb for D', correct:false },
+      { id:'r4', label:'(4)', main:'Ovules', sub:'Same function as C · ovary for D', correct:false }
+    ];
+
+    const baseTransferOptions = [
+      { id:'t1', text:'testis and ovary', correct:true },
+      { id:'t2', text:'penis and womb', correct:false },
+      { id:'t3', text:'testis and womb', correct:false },
+      { id:'t4', text:'ovary and testis', correct:false }
+    ];
+
+    const screens = [
+      {
+        title: 'Screen 1',
+        instruction: 'Read the question. When you are ready, tap Start.',
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(false);
+          return `
+            <h2 class="screen-title">Study the question</h2>
+            <div class="instruction">Read the question. When you are ready, tap Start.</div>
+            <div class="summary-box">
+              <div>Look for the parts labelled <strong>C</strong> and <strong>D</strong>.</div>
+              <div>Then match each one to a human reproductive part with the <strong>same function</strong>.</div>
+            </div>
+            <div class="controls-row">
+              <div class="mini-tag">Step 1 of ${screenCount}</div>
+              <button class="big-btn" id="beginBtn">Start</button>
+            </div>
+          `;
+        },
+        afterRender() {
+          document.getElementById('beginBtn').addEventListener('click', () => {
+            state.screenIndex++;
+            render();
+          });
+        }
+      },
+      {
+        title: 'Screen 2',
+        instruction: 'Choose what you need to do first.',
+        options: [
+          {id:'a', text:'Name C and D on the flower', correct:true},
+          {id:'b', text:'Pick the male human part first', correct:false},
+          {id:'c', text:'Choose the longest row', correct:false},
+          {id:'d', text:'Look only at D', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderQuestionFlower());
+        }
+      },
+      {
+        title: 'Screen 3',
+        instruction: 'Choose the name of part C.',
+        options: [
+          {id:'a', text:'anther', correct:true},
+          {id:'b', text:'petal', correct:false},
+          {id:'c', text:'stigma', correct:false},
+          {id:'d', text:'ovules', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderFlowerCOnly());
+        }
+      },
+      {
+        title: 'Screen 4',
+        instruction: 'Choose what the anther makes.',
+        options: [
+          {id:'a', text:'pollen grains', correct:true},
+          {id:'b', text:'eggs', correct:false},
+          {id:'c', text:'seeds', correct:false},
+          {id:'d', text:'fruit', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderAnther());
+        },
+        onCorrect() {
+          document.getElementById('pollenBurst')?.classList.add('show-part');
+        }
+      },
+      {
+        title: 'Screen 5',
+        instruction: 'Choose the human part that does the same job as C.',
+        options: [
+          {id:'a', text:'testis', correct:true},
+          {id:'b', text:'penis', correct:false},
+          {id:'c', text:'ovary', correct:false},
+          {id:'d', text:'womb', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderMaleSystem());
+        },
+        onCorrect() {
+          document.getElementById('leftTestis')?.classList.add('pulse');
+          document.getElementById('rightTestis')?.classList.add('pulse');
+          document.getElementById('spermGroup')?.classList.add('show-part');
+        }
+      },
+      {
+        title: 'Screen 6',
+        instruction: 'Follow the line to D. Choose its name.',
+        options: [
+          {id:'a', text:'ovary', correct:false},
+          {id:'b', text:'ovules', correct:true},
+          {id:'c', text:'petal', correct:false},
+          {id:'d', text:'stigma', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderFlowerDOnly());
+        }
+      },
+      {
+        title: 'Screen 7',
+        instruction: 'Choose the idea that helps you answer the question.',
+        options: [
+          {id:'a', text:'The ovules are linked to the female reproductive cells', correct:true},
+          {id:'b', text:'The ovules attract insects', correct:false},
+          {id:'c', text:'The ovules make petals', correct:false},
+          {id:'d', text:'The ovules carry pollen grains', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderOvulesCloseup());
+        },
+        onCorrect() {
+          document.getElementById('eggInside')?.classList.add('show-part');
+        }
+      },
+      {
+        title: 'Screen 8',
+        instruction: 'Choose the human part that does the same job as D.',
+        options: [
+          {id:'a', text:'ovary', correct:true},
+          {id:'b', text:'womb', correct:false},
+          {id:'c', text:'penis', correct:false},
+          {id:'d', text:'testis', correct:false}
+        ],
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          return genericMultipleChoiceScreen(this, renderFemaleSystem());
+        },
+        onCorrect() {
+          document.getElementById('leftOvary')?.classList.add('pulse');
+          document.getElementById('rightOvary')?.classList.add('pulse');
+          document.getElementById('eggGroup')?.classList.add('show-part');
+        }
+      },
+      {
+        title: 'Screen 9',
+        instruction: 'Now choose the best answer for the original question.',
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          state.finalRows = shuffle(baseFinalRows);
+          return renderFinalQuestion();
+        }
+      },
+      {
+        title: 'Screen 10',
+        instruction: 'Use the same idea again.',
+        render() {
+          questionPanel.hidden = false;
+          questionPanel.innerHTML = questionPanelHTML(true);
+          state.transferOptions = shuffle(baseTransferOptions);
+          return renderTransferQuestion();
+        }
+      },
+      {
+        title: 'Screen 11',
+        instruction: 'You finished the activity.',
+        render() {
+          questionPanel.hidden = true;
+          return `
+            <h2 class="screen-title">Great job</h2>
+            <div class="instruction">You used function matching to solve the question.</div>
+            ${state.showReview ? renderReviewSummary() : `
+              <div class="summary-box">
+                <div><strong>C</strong> matched <strong>testis</strong> because the anther produces pollen grains with male reproductive cells.</div>
+                <div><strong>D</strong> matched <strong>ovary</strong> because the ovules are linked to the female reproductive cells.</div>
+              </div>
+            `}
+            <div class="controls-row">
+              <button class="big-btn alt" id="reviewBtn">Review the 2 key matches</button>
+              <button class="big-btn" id="playAgainBtn">Play again</button>
+            </div>
+          `;
+        },
+        afterRender() {
+          document.getElementById('playAgainBtn').addEventListener('click', resetAll);
+          document.getElementById('reviewBtn').addEventListener('click', () => {
+            state.showReview = true;
+            render();
+          });
+        }
+      }
+    ];
+
+    function genericMultipleChoiceScreen(screen, visualHTML){
+      state.currentOptions = shuffle(screen.options);
+      return `
+        <h2 class="screen-title">${screen.title}</h2>
+        <div class="instruction">${screen.instruction}</div>
+        <div class="screen-layout">
+          <div class="visual-box">${visualHTML}</div>
+          <div class="options-grid">
+            ${state.currentOptions.map(opt => `
+              <button class="option-btn" data-id="${opt.id}" data-correct="${opt.correct}" type="button">${opt.text}</button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="feedback-box" id="feedbackBox"></div>
+        <div class="controls-row">
+          <div class="mini-tag">Step ${state.screenIndex + 1} of ${screenCount}</div>
+          <button class="big-btn hidden" id="nextBtn">Next</button>
+        </div>
+      `;
+    }
+
+    function renderFinalQuestion(){
+      return `
+        <h2 class="screen-title">Screen 9</h2>
+        <div class="instruction">Now choose the best answer for the original question.</div>
+        <div class="screen-layout">
+          <div class="visual-box">${renderQuestionFlower()}</div>
+          <div class="options-grid">
+            ${state.finalRows.map(row => `
+              <button class="choice-row" data-id="${row.id}" data-correct="${row.correct}" type="button">
+                <span class="row-label">${row.label}</span>
+                <span class="choice-copy">
+                  <span class="row-main">${row.main}</span>
+                  <span class="row-sub">${row.sub}</span>
+                </span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="feedback-box" id="feedbackBox"></div>
+        <div class="controls-row">
+          <div class="mini-tag">Step ${state.screenIndex + 1} of ${screenCount}</div>
+          <button class="big-btn hidden" id="nextBtn">Next</button>
+        </div>
+      `;
+    }
+
+    function renderTransferQuestion(){
+      return `
+        <h2 class="screen-title">Screen 10</h2>
+        <div class="instruction">A flower part produces pollen grains. Another flower part is linked to the female reproductive cells. Which human parts match these functions?</div>
+        <div class="screen-layout">
+          <div class="visual-box">
+            <div class="summary-box">
+              <div><span class="mini-tag">Think</span></div>
+              <div>Part 1 makes the male reproductive cells.</div>
+              <div>Part 2 matches the human part that makes egg cells.</div>
+            </div>
+          </div>
+          <div class="options-grid">
+            ${state.transferOptions.map(opt => `
+              <button class="option-btn" data-id="${opt.id}" data-correct="${opt.correct}" type="button">${opt.text}</button>
+            `).join('')}
+          </div>
+        </div>
+        <div class="feedback-box" id="feedbackBox"></div>
+        <div class="controls-row">
+          <div class="mini-tag">Step ${state.screenIndex + 1} of ${screenCount}</div>
+          <button class="big-btn hidden" id="nextBtn">Finish</button>
+        </div>
+      `;
+    }
+
+    function getFeedback(screenIndex, correct){
+      const feedbackMap = {
+        1: {
+          good: 'Yes. First identify the flower parts.',
+          bad: 'Start with the flower diagram before choosing a row.'
+        },
+        2: {
+          good: 'Yes. C is the anther.',
+          bad: 'Look at the part at the top of the filament. That tip is the anther.'
+        },
+        3: {
+          good: 'Yes. The anther produces pollen grains.',
+          bad: 'This part makes pollen grains. It does not make seeds or fruit.'
+        },
+        4: {
+          good: 'Yes. The testis produces the male reproductive cells.',
+          bad: 'Choose the part that makes sperm. Do not just pick any male body part.'
+        },
+        5: {
+          good: 'Yes. D points to the ovules, not the whole ovary.',
+          bad: 'Follow the line to the small parts inside the ovary.'
+        },
+        6: {
+          good: 'Yes. D helps you think about the female reproductive cells.',
+          bad: 'Think about reproduction. Which idea helps you answer the question?'
+        },
+        7: {
+          good: 'Yes. The ovary produces the female reproductive cells.',
+          bad: 'Choose the part that makes egg cells.'
+        },
+        8: {
+          good: 'Correct. C matches testis, and D matches ovary.',
+          bad: 'Check both parts in the same row. Match C first. Then match D.'
+        },
+        9: {
+          good: 'Well done. You matched by function again.',
+          bad: 'Think again: which part makes sperm, and which part makes egg cells?'
+        }
+      };
+      return correct ? feedbackMap[screenIndex].good : feedbackMap[screenIndex].bad;
+    }
+
+    function attachChoiceHandlers(){
+      const buttons = [...screenMount.querySelectorAll('.option-btn, .choice-row')];
+      const feedbackBox = document.getElementById('feedbackBox');
+      const nextBtn = document.getElementById('nextBtn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (nextBtn && !nextBtn.classList.contains('hidden') && btn.dataset.correct !== 'true') {
+            return;
+          }
+          buttons.forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          const correct = btn.dataset.correct === 'true';
+          if (correct) {
+            btn.classList.remove('wrong');
+            btn.classList.add('correct');
+            feedbackBox.className = 'feedback-box show';
+            feedbackBox.innerHTML = `<span class="feedback-good">✓ ${getFeedback(state.screenIndex, true)}</span>`;
+            speak(getFeedback(state.screenIndex, true));
+            nextBtn?.classList.remove('hidden');
+            screens[state.screenIndex].onCorrect?.();
+            buttons.forEach(b => {
+              if (b !== btn) b.disabled = true;
+            });
+            nextBtn?.focus();
+          } else {
+            btn.classList.add('wrong');
+            feedbackBox.className = 'feedback-box show';
+            feedbackBox.innerHTML = `<span class="feedback-bad">✗ ${getFeedback(state.screenIndex, false)}</span>`;
+            speak(getFeedback(state.screenIndex, false));
+            if (!nonDemeritScreens.has(state.screenIndex)) {
+              losePollen();
+            }
+          }
+        });
+      });
+      nextBtn?.addEventListener('click', () => {
+        state.screenIndex += 1;
+        render();
+      });
+    }
+
+    function render(){
+      updateProgress();
+      screenMount.innerHTML = screens[state.screenIndex].render();
+      attachQuestionToggle();
+      screens[state.screenIndex].afterRender?.();
+      attachChoiceHandlers();
+      speakCurrentScreen();
+    }
+
+    function resetAll(){
+      window.speechSynthesis.cancel();
+      state.screenIndex = 0;
+      state.pollen = 4;
+      state.showReview = false;
+      renderPollen();
+      render();
+    }
+
+    renderPollen();
+    render();
+  </script>
+</body>
+</html>

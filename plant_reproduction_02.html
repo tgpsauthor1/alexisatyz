@@ -1,0 +1,1620 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>plant_reproduction_2</title>
+  <style>
+    :root{
+      --bg:#f5fbf4;
+      --card:#ffffff;
+      --ink:#183026;
+      --muted:#5b7468;
+      --green:#2f7d4a;
+      --green-2:#75b37d;
+      --leaf:#dff0df;
+      --accent:#f6b84d;
+      --accent-2:#f28e7e;
+      --purple:#8a5fbf;
+      --good:#1e7c40;
+      --bad:#b43b2c;
+      --line:#cfe3d2;
+      --shadow:0 10px 28px rgba(35, 67, 46, 0.10);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, #eef8ec 0, #eef8ec 20%, transparent 20.5%) 0 0/220px 220px,
+        linear-gradient(180deg, #f7fcf7 0%, #eef7ee 100%);
+      color:var(--ink);
+    }
+    .app{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px 16px 28px;
+    }
+    .topbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .title-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .title-badge{
+      width:52px;
+      height:52px;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      background:linear-gradient(180deg, #dff4df, #cce8d0);
+      box-shadow:var(--shadow);
+      font-size:28px;
+    }
+    h1{
+      margin:0;
+      font-size:1.55rem;
+      line-height:1.1;
+    }
+    .subtitle{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:0.96rem;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button{
+      font:inherit;
+      border:none;
+      border-radius:16px;
+      padding:14px 18px;
+      cursor:pointer;
+      background:var(--green);
+      color:#fff;
+      box-shadow:var(--shadow);
+      min-height:52px;
+    }
+    button.secondary{
+      background:#e7f3e8;
+      color:var(--ink);
+      border:2px solid var(--line);
+      box-shadow:none;
+    }
+    button:disabled{
+      opacity:0.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .progress-wrap{
+      background:#e7f1e7;
+      border-radius:999px;
+      height:14px;
+      overflow:hidden;
+      margin:8px 0 16px;
+      border:1px solid #d4e5d6;
+    }
+    .progress{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--green), var(--green-2));
+      transition:width .25s ease;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns: 1fr 128px;
+      gap:16px;
+      align-items:start;
+    }
+    .main-card{
+      background:var(--card);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:18px;
+      min-height:650px;
+    }
+    .demerit{
+      position:sticky;
+      top:14px;
+      background:#fff8ec;
+      border:2px solid #f7ddb0;
+      border-radius:22px;
+      padding:14px 12px;
+      box-shadow:var(--shadow);
+      text-align:center;
+    }
+    .demerit h2{
+      font-size:1rem;
+      margin:0 0 6px;
+    }
+    .demerit p{
+      margin:0 0 8px;
+      font-size:.88rem;
+      color:#7a6841;
+    }
+    .puffs{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;
+      min-height:78px;
+    }
+    .puff{
+      width:24px;
+      height:24px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #fff9e7 0 25%, #ffd680 26% 52%, #f3b84d 53% 100%);
+      border:2px solid #e8b34f;
+      position:relative;
+    }
+    .puff::after{
+      content:"";
+      position:absolute;
+      width:8px;height:8px;
+      right:-2px; bottom:-2px;
+      background:#d5a04c;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(40deg);
+    }
+    .puff.lost{
+      opacity:.18;
+      filter:grayscale(1);
+    }
+    .screen-head{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .screen-head h2{
+      margin:0;
+      font-size:1.45rem;
+      line-height:1.15;
+    }
+    .screen-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:1.03rem;
+      max-width:700px;
+    }
+    #screenInstruction{
+      display:block;
+      width:100%;
+      background:linear-gradient(135deg, #fff4a8 0%, #ffd76a 100%);
+      border:4px solid #d48d12;
+      border-radius:24px;
+      box-shadow:0 14px 28px rgba(212, 141, 18, 0.22);
+      color:#13281f;
+      padding:16px 18px;
+      line-height:1.25;
+    }
+    .instruction-kicker{
+      display:block;
+      font-size:0.9rem;
+      font-weight:900;
+      letter-spacing:0.08em;
+      color:#7b4f00;
+      margin-bottom:8px;
+      text-transform:uppercase;
+    }
+    .instruction-main{
+      display:block;
+      font-size:1.2rem;
+      font-weight:900;
+      color:#13281f;
+    }
+    .mini-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .mini-actions button{
+      min-height:46px;
+      padding:10px 14px;
+      border-radius:14px;
+    }
+    .work-zone{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap:16px;
+      align-items:start;
+    }
+    .visual-card,.interaction-card,.question-card,.feedback,.build-area,.bank,.glossary{
+      border-radius:20px;
+      border:2px solid var(--line);
+      background:#fbfefb;
+    }
+    .visual-card{
+      padding:12px;
+      min-height:280px;
+      overflow:hidden;
+    }
+    .visual-card h3,.interaction-card h3,.question-card h3{
+      margin:0 0 10px;
+      font-size:1rem;
+      color:#2d5c43;
+    }
+    .interaction-card{
+      padding:14px;
+      min-height:280px;
+    }
+    .hint-line{
+      margin:0 0 12px;
+      color:#4a6458;
+      font-size:.95rem;
+    }
+    .options{
+      display:grid;
+      gap:12px;
+    }
+    .option{
+      width:100%;
+      text-align:left;
+      padding:16px 18px;
+      border-radius:18px;
+      background:#fff;
+      color:var(--ink);
+      border:2px solid #dbeadb;
+      box-shadow:none;
+      font-weight:700;
+    }
+    .option:hover{transform:translateY(-1px)}
+    .option.selected{
+      border-color:var(--green);
+      background:#ebf8ec;
+    }
+    .option.correct{
+      border-color:var(--good);
+      background:#e6f7ea;
+      color:var(--good);
+    }
+    .option.wrong{
+      border-color:var(--bad);
+      background:#fdeae7;
+      color:var(--bad);
+    }
+    .check-row{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .feedback{
+      margin-top:14px;
+      padding:14px 16px;
+      min-height:76px;
+      display:flex;
+      align-items:center;
+      font-weight:700;
+      color:#355545;
+    }
+    .feedback.good{
+      background:#e8f7eb;
+      border-color:#cbe8d0;
+      color:#1f6c37;
+    }
+    .feedback.bad{
+      background:#fdecea;
+      border-color:#f2c8c2;
+      color:#8d3025;
+    }
+    .footer-nav{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:16px;
+      flex-wrap:wrap;
+    }
+    .question-card{
+      margin-top:16px;
+      padding:14px 16px;
+    }
+    .question-card p, .question-card li{
+      margin:8px 0;
+      line-height:1.35;
+    }
+    .question-card ul{
+      margin:8px 0 0 18px;
+      padding:0;
+    }
+    .question-highlight{
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#fff0a8;
+      border:2px solid #f0c650;
+      font-weight:900;
+      color:#3b2c00;
+    }
+    .question-focus-line{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#ffffff;
+      border:2px dashed #e1bf57;
+      font-weight:800;
+      color:#5d4400;
+    }
+    .intro-question{
+      border-width:3px;
+      border-color:#f2c86b;
+      background:linear-gradient(180deg, #fffdf5 0%, #fff8dc 100%);
+      box-shadow:0 10px 22px rgba(223, 180, 72, 0.18);
+      min-height:auto;
+      padding:18px;
+    }
+    .intro-question h3{
+      font-size:1.18rem;
+      margin-bottom:12px;
+    }
+    .main-card.intro-mode .work-zone{
+      grid-template-columns:1fr;
+    }
+    .main-card.intro-mode #questionCard,
+    .main-card.intro-mode #feedback{
+      display:none;
+    }
+    .main-card.intro-mode .visual-card,
+    .main-card.intro-mode .interaction-card{
+      min-height:auto;
+    }
+    .build-area{
+      padding:14px;
+      background:#f8fcf8;
+      min-height:106px;
+      margin-bottom:12px;
+    }
+    .sentence{
+      line-height:2;
+      font-size:1.08rem;
+    }
+    .blank{
+      display:inline-flex;
+      min-width:120px;
+      min-height:44px;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      margin:4px 4px;
+      border-radius:14px;
+      border:2px dashed #7ead88;
+      background:#fff;
+      vertical-align:middle;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .blank.active{
+      outline:4px solid rgba(47, 125, 74, .16);
+      border-style:solid;
+      border-color:var(--green);
+      background:#edf8ef;
+    }
+    .blank.filled{
+      border-style:solid;
+      color:#225537;
+    }
+    .bank{
+      padding:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      min-height:78px;
+    }
+    .chip{
+      background:#fff;
+      color:var(--ink);
+      border:2px solid #d8e9da;
+      border-radius:999px;
+      padding:12px 16px;
+      min-height:48px;
+      box-shadow:none;
+      font-weight:700;
+    }
+    .chip.used{opacity:.45}
+    .tiny-note{
+      font-size:.9rem;
+      color:var(--muted);
+      margin-top:8px;
+    }
+    .guess-wrap{
+      display:grid;
+      gap:12px;
+    }
+    .guess-card{
+      border:2px solid #dcebdd;
+      border-radius:18px;
+      padding:14px;
+      background:#fff;
+    }
+    .guess-word{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    input[type="text"]{
+      min-height:50px;
+      border-radius:14px;
+      border:2px solid #cfe3d2;
+      padding:10px 14px;
+      font:inherit;
+      width:min(280px, 100%);
+    }
+    .helper{
+      font-weight:700;
+      color:#7c5f1d;
+      background:#fff5db;
+      border:2px solid #f3ddb0;
+      border-radius:12px;
+      padding:8px 10px;
+      display:inline-block;
+    }
+    .completion-order{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      min-height:64px;
+      margin-bottom:10px;
+    }
+    .small{
+      font-size:.94rem;
+      color:var(--muted);
+    }
+    dialog{
+      border:none;
+      border-radius:24px;
+      width:min(92vw, 540px);
+      padding:0;
+      box-shadow:0 18px 50px rgba(0,0,0,.24);
+    }
+    dialog::backdrop{
+      background:rgba(17, 33, 25, .42);
+    }
+    .modal-body{
+      padding:18px;
+    }
+    .modal-body h3{
+      margin:0 0 10px;
+    }
+    .modal-body p{
+      line-height:1.45;
+    }
+    .modal-footer{
+      padding:0 18px 18px;
+    }
+    .status-badge{
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#edf8ef;
+      color:#24573a;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    .screen-count{
+      color:var(--muted);
+      font-size:.95rem;
+      font-weight:700;
+    }
+    .flower-card-label{
+      font-weight:700;
+      fill:#284838;
+      font-size:16px;
+    }
+    .svg-caption{
+      fill:#4f685c;
+      font-size:12px;
+    }
+    .wind-guide{
+      fill:none;
+      stroke:#9ac7db;
+      stroke-width:3;
+      stroke-linecap:round;
+      stroke-dasharray:8 10;
+      opacity:.5;
+    }
+    .wind-guide.flow-1{animation:windMove 3.2s linear infinite;}
+    .wind-guide.flow-2{animation:windMove 3.8s linear infinite reverse;}
+    .pollen-dot{
+      fill:#f2bf59;
+      stroke:#c38b20;
+      stroke-width:1;
+    }
+    .stigma-pulse{
+      fill:none;
+      stroke:#b57ce3;
+      stroke-width:3;
+      opacity:.15;
+      transform-origin:124px 62px;
+      animation:stigmaPulse 2.4s ease-out infinite;
+    }
+    @keyframes windMove{
+      from{stroke-dashoffset:0;}
+      to{stroke-dashoffset:-72;}
+    }
+    @keyframes stigmaPulse{
+      0%{transform:scale(.78); opacity:.08;}
+      55%{transform:scale(1.08); opacity:.34;}
+      100%{transform:scale(1.28); opacity:0;}
+    }
+    @media (max-width: 900px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .demerit{
+        position:static;
+        order:-1;
+      }
+      .puffs{min-height:auto}
+      .work-zone{
+        grid-template-columns:1fr;
+      }
+      .main-card{
+        min-height:auto;
+      }
+    }
+    @media (max-width: 560px){
+      .app{padding:10px 10px 24px}
+      .main-card{padding:14px}
+      .screen-head h2{font-size:1.25rem}
+      .screen-head p{font-size:1rem}
+      .option{padding:15px}
+      .blank{min-width:92px}
+      .title-badge{width:46px;height:46px}
+      h1{font-size:1.34rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <div class="title-badge">🌼</div>
+        <div>
+          <h1>How are these flowers pollinated?</h1>
+          <div class="subtitle">Notice the clue. Name the method. Link the clue to what it does.</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="speakBtn" class="secondary" aria-label="Read this screen aloud">🔊 Read aloud</button>
+        <button id="restartBtn" class="secondary">↺ Restart</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap" aria-hidden="true">
+      <div id="progressBar" class="progress"></div>
+    </div>
+
+    <div class="layout">
+      <div class="main-card" id="mainCard">
+        <div class="screen-head">
+          <div>
+            <div id="screenCount" class="screen-count"></div>
+            <h2 id="screenTitle"></h2>
+            <p id="screenInstruction"></p>
+          </div>
+          <div class="mini-actions">
+            <button id="glossaryBtn" class="secondary">🌿 Glossary</button>
+            <button id="pollinatorBtn" class="secondary" style="display:none;">🐝 Pollinator note</button>
+          </div>
+        </div>
+
+        <div class="work-zone">
+          <div id="visualCard" class="visual-card"></div>
+          <div id="interactionCard" class="interaction-card"></div>
+        </div>
+
+        <div id="feedback" class="feedback">Tap or build your answer to begin.</div>
+
+        <div class="footer-nav">
+          <button id="backBtn" class="secondary">← Back</button>
+          <button id="nextBtn" disabled>Next →</button>
+        </div>
+
+        <div class="question-card" id="questionCard">
+          <h3>Question inside the app</h3>
+          <p><strong>2.</strong> The diagrams show flowers X and Y.</p>
+          <ul>
+            <li><strong>(a)</strong> State the method of pollination for Flower X and Flower Y.</li>
+            <li><strong>(b)</strong> Give a reason for each answer.</li>
+          </ul>
+          <p class="small"><strong>Flower X:</strong> small and dull coloured, without scent</p>
+          <p class="small"><strong>Flower Y:</strong> large, brightly coloured and scented</p>
+        </div>
+      </div>
+
+      <aside class="demerit" aria-label="Pollen puff chances">
+        <h2>Pollen puffs</h2>
+        <p>Read carefully so the pollen puffs do not blow away.</p>
+        <div id="puffs" class="puffs"></div>
+      </aside>
+    </div>
+  </div>
+
+  <dialog id="modal">
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button id="closeModalBtn">Close</button>
+    </div>
+  </dialog>
+
+  <script>
+    const TOTAL_PUFFS = 8;
+    let puffsLeft = TOTAL_PUFFS;
+    let current = 0;
+    let states = {};
+    let speaking = false;
+    let activeBlank = 0;
+
+    const questionTextForReadAloud =
+      "Question. The diagrams show flowers X and Y. Part A. State the method of pollination for Flower X and Flower Y. Part B. Give a reason for each answer. Flower X is small and dull coloured and has no scent. Flower Y is large, brightly coloured and scented.";
+
+
+    const introQuestionMarkup = `
+      <h3>Read the whole question first</h3>
+      <p><strong>2.</strong> The diagrams show <span class="question-highlight">flowers X and Y</span>.</p>
+      <ul>
+        <li><strong>(a)</strong> State the <span class="question-highlight">method of pollination</span> for <span class="question-highlight">Flower X</span> and <span class="question-highlight">Flower Y</span>.</li>
+        <li><strong>(b)</strong> Give a <span class="question-highlight">reason</span> for each answer.</li>
+      </ul>
+      <p class="small"><strong>Flower X:</strong> <span class="question-highlight">small</span> and <span class="question-highlight">dull coloured</span>, <span class="question-highlight">without scent</span></p>
+      <p class="small"><strong>Flower Y:</strong> <span class="question-highlight">large</span>, <span class="question-highlight">brightly coloured</span> and <span class="question-highlight">scented</span></p>
+      <div class="question-focus-line">Big jobs to notice: <span class="question-highlight">method of pollination</span> + <span class="question-highlight">reason</span>.</div>
+    `;
+
+    const screens = [
+      {
+        id:'introRead',
+        title:'Let’s read the whole question first',
+        instruction:'Read the whole question. Look at the highlighted words. Then tap “I am ready”.',
+        focus:'intro',
+        type:'single',
+        demerit:false,
+        options:[
+          {value:'ready', label:'I have read the question. I am ready.'}
+        ],
+        correct:['ready'],
+        good:'Great. Now we will answer it step by step.',
+        bad:''
+      },
+      {
+        id:'task',
+        title:'What must you write for each flower?',
+        instruction:'Tap the answer that matches the question best.',
+        focus:'pair',
+        type:'single',
+        demerit:true,
+        options:[
+          {value:'methodOnly', label:'Name the method only'},
+          {value:'methodReason', label:'Name the method and give a reason'}
+        ],
+        correct:['methodReason'],
+        good:'Yes. You need the method and a reason.',
+        bad:'Look again. The question asks for the method and a reason.'
+      },
+      {
+        id:'xClues',
+        title:'Which clues belong to Flower X?',
+        instruction:'Choose all the clues for Flower X, then tap Check.',
+        focus:'x',
+        type:'multi',
+        demerit:true,
+        options:[
+          {value:'feathery', label:'Feathery stigma'},
+          {value:'outside', label:'Anthers hanging outside'},
+          {value:'small', label:'Small petals'},
+          {value:'dull', label:'Dull-coloured petals'},
+          {value:'noscent', label:'Without scent'},
+          {value:'bright', label:'Brightly coloured petals'},
+          {value:'scent', label:'Strong scent'}
+        ],
+        correct:['feathery','outside','small','dull','noscent'],
+        good:'Yes. These are the important clues for Flower X.',
+        bad:'Pick the clues that match Flower X only.'
+      },
+      {
+        id:'xMethod',
+        title:'Which method fits Flower X?',
+        instruction:'Tap the best method of pollination for Flower X.',
+        focus:'x',
+        type:'single',
+        demerit:true,
+        options:[
+          {value:'animal', label:'Animal pollination'},
+          {value:'wind', label:'Wind pollination'}
+        ],
+        correct:['wind'],
+        good:'Yes. Flower X is wind-pollinated.',
+        bad:'Flower X is small, dull and without scent, so it is not built to attract animals.'
+      },
+      {
+        id:'xReasons',
+        title:'Which two reasons explain Flower X best?',
+        instruction:'Choose the two full reasons that explain wind pollination, then tap Check.',
+        focus:'x',
+        type:'multi',
+        demerit:true,
+        options:[
+          {value:'stigma', label:'It has a feathery stigma to collect pollen grains from the air.'},
+          {value:'anther', label:'It has anthers hanging outside the flower to scatter pollen grains.'},
+          {value:'bright', label:'It has bright petals to attract insects.'},
+          {value:'smell', label:'It has scent to attract animals.'}
+        ],
+        correct:['stigma','anther'],
+        good:'Yes. These are the two full linked reasons for Flower X.',
+        bad:'Choose the reasons that match wind pollination, not animal attraction.'
+      },
+      {
+        id:'yMethod',
+        title:'Which method fits Flower Y?',
+        instruction:'Tap an accepted answer for Flower Y.',
+        focus:'y',
+        type:'single',
+        demerit:true,
+        showPollinator:true,
+        options:[
+          {value:'wind', label:'Wind pollination'},
+          {value:'animal', label:'Animal pollination'},
+          {value:'insect', label:'Insect pollination'}
+        ],
+        correct:['animal','insect'],
+        good:'Yes. Animal pollination and insect pollination are both accepted here.',
+        bad:'Flower Y has bright petals and scent, so it is built to attract pollinators.'
+      },
+      {
+        id:'yReasons',
+        title:'Which two reasons explain Flower Y best?',
+        instruction:'Choose the two full reasons that explain Flower Y, then tap Check.',
+        focus:'y',
+        type:'multi',
+        demerit:true,
+        showPollinator:true,
+        options:[
+          {value:'petals', label:'It has large brightly coloured petals to attract animals or insects.'},
+          {value:'scent', label:'It has scent to attract animals or insects.'},
+          {value:'stigma', label:'It has a feathery stigma to collect pollen grains from the air.'},
+          {value:'anther', label:'It has anthers hanging outside the flower to scatter pollen grains.'}
+        ],
+        correct:['petals','scent'],
+        good:'Yes. These are the two full linked reasons for Flower Y.',
+        bad:'Pick the reasons that show how Flower Y attracts pollinators.'
+      },
+      {
+        id:'markScheme',
+        title:'Which answer gets the mark?',
+        instruction:'Tap the stronger answer for Flower X.',
+        focus:'x',
+        type:'single',
+        demerit:true,
+        options:[
+          {value:'weak', label:'Flower X has a feathery stigma.'},
+          {value:'strong', label:'Flower X has a feathery stigma to collect pollen grains from the air.'}
+        ],
+        correct:['strong'],
+        good:'Yes. The stronger answer gets the mark because it says how the clue helps pollination.',
+        bad:'Just naming the feature is too weak. The reason mark needs the link.'
+      },
+      {
+        id:'fullX',
+        title:'Build the full answer for Flower X',
+        instruction:'Fill all three blanks, then tap Check.',
+        focus:'x',
+        type:'fill',
+        demerit:true,
+        sentence:['Flower X is ', ' pollinated because it has a ', ' stigma to ', ' pollen grains from the air.'],
+        blanks:[
+          {accepted:['wind']},
+          {accepted:['feathery']},
+          {accepted:['collect']}
+        ],
+        options:['wind','animal','feathery','bright','collect','attract'],
+        good:'Yes. This is a full-credit answer for Flower X.',
+        bad:'Match the method to the clue, then match the clue to what it does.'
+      },
+      {
+        id:'fullY',
+        title:'Build the full answer for Flower Y',
+        instruction:'Fill all three blanks, then tap Check.',
+        focus:'y',
+        type:'fill',
+        demerit:true,
+        showPollinator:true,
+        sentence:['Flower Y is ', ' pollinated because it has ', ' to ', ' animals or insects.'],
+        blanks:[
+          {accepted:['animal','insect']},
+          {accepted:['large brightly coloured petals','scent']},
+          {accepted:['attract']}
+        ],
+        options:['animal','insect','wind','large brightly coloured petals','scent','attract','scatter'],
+        good:'Yes. This is a full-credit answer for Flower Y.',
+        bad:'Pick an accepted method, then a Flower Y clue, then what the clue helps to do.'
+      },
+
+      {
+        id:'guessX',
+        title:'Guess the missing words for Flower X',
+        instruction:'Type the missing word. Wrong tries are penalty-free here.',
+        focus:'x',
+        type:'guess',
+        demerit:false,
+        frame:['Flower X is ', ' pollinated because it has a ', ' stigma to ', ' pollen grains from the air.'],
+        words:[
+          {accepted:['wind']},
+          {accepted:['feathery']},
+          {accepted:['collect']}
+        ],
+        good:'Well done. You rebuilt the key words for Flower X.'
+      },
+      {
+        id:'guessY',
+        title:'Guess the missing words for Flower Y',
+        instruction:'Type the missing word. Animal or insect is accepted for the first blank.',
+        focus:'y',
+        type:'guess',
+        demerit:false,
+        showPollinator:true,
+        frame:['Flower Y is ', ' pollinated because it has scent or bright petals to ', ' animals or insects.'],
+        words:[
+          {accepted:['animal','insect']},
+          {accepted:['attract']}
+        ],
+        good:'Well done. You rebuilt the key words for Flower Y.'
+      },
+      {
+        id:'transfer',
+        title:'Try one new flower pair',
+        instruction:'Tap the best answer. This checks if you can use the idea on a new example.',
+        focus:'transfer',
+        type:'single',
+        demerit:false,
+        options:[
+          {value:'a', label:'Flower A is wind-pollinated because it has exposed anthers to scatter pollen grains.'},
+          {value:'b', label:'Flower A is insect-pollinated because it is small.'},
+          {value:'c', label:'Flower B is wind-pollinated because it has scent.'},
+          {value:'d', label:'Flower B is wind-pollinated because it is brightly coloured.'}
+        ],
+        correct:['a'],
+        good:'Yes. You chose the answer with the correct method and the correct reason.',
+        bad:'Choose the answer that has both the right method and the right clue-to-function link.'
+      }
+    ];
+
+    function shuffle(arr){
+      const copy = arr.slice();
+      for(let i=copy.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function shuffledNotSolved(arr, target){
+      let out = shuffle(arr);
+      const same = JSON.stringify(out) === JSON.stringify(target);
+      if(same && arr.length > 1) return shuffledNotSolved(arr, target);
+      return out;
+    }
+
+    function initStates(){
+      states = {};
+      screens.forEach((screen, index) => {
+        states[screen.id] = {
+          solved:false,
+          selected: screen.type === 'multi' ? [] : null,
+          fillSelections: screen.type === 'fill' ? new Array(screen.blanks.length).fill(null) : null,
+          fillOptions: screen.type === 'fill' ? shuffle(screen.options) : null,
+          sequenceBuilt: screen.type === 'sequence' ? [] : null,
+          sequenceOptions: screen.type === 'sequence' ? shuffledNotSolved(screen.sequence, screen.sequence) : null,
+          guessIndex: 0,
+          guessReveals: screen.type === 'guess' ? screen.words.map(() => 1) : null,
+          guessDone: screen.type === 'guess' ? screen.words.map(() => false) : null,
+          guessValues: screen.type === 'guess' ? screen.words.map(() => '') : null,
+          optionOrder: (screen.type === 'single' || screen.type === 'multi') ? shuffle(screen.options) : null,
+          lastFeedback: null,
+          checked:false
+        };
+      });
+    }
+
+    function updateProgress(){
+      const progress = (current)/(screens.length-1) * 100;
+      document.getElementById('progressBar').style.width = Math.max(0, Math.min(100, progress)) + '%';
+      document.getElementById('screenCount').textContent = `Screen ${current+1} of ${screens.length}`;
+      renderPuffs();
+    }
+
+    function renderPuffs(){
+      const holder = document.getElementById('puffs');
+      holder.innerHTML = '';
+      for(let i=0;i<TOTAL_PUFFS;i++){
+        const puff = document.createElement('div');
+        puff.className = 'puff' + (i >= puffsLeft ? ' lost' : '');
+        holder.appendChild(puff);
+      }
+    }
+
+    function losePuff(){
+      if(puffsLeft <= 0) return;
+      puffsLeft -= 1;
+      renderPuffs();
+      if(puffsLeft <= 0){
+        showModal(`
+          <div class="status-badge">Oops</div>
+          <h3>The pollen puffs blew away.</h3>
+          <p>Let’s restart and read each clue more carefully.</p>
+        `, () => restartAll());
+      }
+    }
+
+    function showModal(html, closeFn){
+      const modal = document.getElementById('modal');
+      document.getElementById('modalBody').innerHTML = html;
+      modal.showModal();
+      modal.dataset.closeFn = closeFn ? 'yes' : 'no';
+      modal._closeFn = closeFn || null;
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      const modal = document.getElementById('modal');
+      modal.close();
+      if(modal._closeFn){
+        const fn = modal._closeFn;
+        modal._closeFn = null;
+        fn();
+      }
+    });
+
+    function setFeedback(kind, text){
+      const el = document.getElementById('feedback');
+      el.className = 'feedback' + (kind ? ' ' + kind : '');
+      el.textContent = text;
+      states[screens[current].id].lastFeedback = text;
+    }
+
+    function maybeSpeak(text){
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function screenSpeechText(screen){
+      const state = states[screen.id];
+      let parts = [screen.title, screen.instruction, questionTextForReadAloud];
+      if(screen.type === 'single' || screen.type === 'multi'){
+        const list = state.optionOrder.map(o => o.label).join(' . ');
+        parts.push('Options. ' + list);
+      }
+      if(screen.type === 'fill'){
+        parts.push('Build the sentence by filling the blanks.');
+        parts.push('Option bank. ' + state.fillOptions.join(' . '));
+      }
+      if(screen.type === 'guess'){
+        parts.push('Type the missing word. The first helper letter is shown.');
+      }
+      if(screen.type === 'sequence'){
+        parts.push('Build the recap order.');
+        parts.push('Chips. ' + state.sequenceOptions.filter(x => !state.sequenceBuilt.includes(x)).join(' . '));
+      }
+      if(state.lastFeedback) parts.push('Feedback. ' + state.lastFeedback);
+      return parts.join(' ');
+    }
+
+    document.getElementById('speakBtn').addEventListener('click', () => {
+      maybeSpeak(screenSpeechText(screens[current]));
+    });
+
+    document.getElementById('glossaryBtn').addEventListener('click', () => {
+      showModal(`
+        <div class="status-badge">Glossary</div>
+        <h3>Quick flower words</h3>
+        <p><strong>Stigma:</strong> the flower part that receives pollen.</p>
+        <p><strong>Anther:</strong> the flower part that makes and releases pollen.</p>
+        <p><strong>Pollinator:</strong> an animal, such as an insect, that helps move pollen from one flower to another.</p>
+      `);
+    });
+
+    document.getElementById('pollinatorBtn').addEventListener('click', () => {
+      showModal(`
+        <div class="status-badge">Helpful note</div>
+        <h3>Why are both answers accepted?</h3>
+        <p>Insects are animals. So for Flower Y, <strong>animal pollination</strong> and <strong>insect pollination</strong> can both be accepted here.</p>
+      `);
+    });
+
+    document.getElementById('restartBtn').addEventListener('click', restartAll);
+    document.getElementById('backBtn').addEventListener('click', () => {
+      if(current > 0){
+        current -= 1;
+        renderScreen();
+      }
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if(current < screens.length - 1){
+        current += 1;
+        renderScreen();
+      }
+    });
+
+    function restartAll(){
+      if('speechSynthesis' in window) window.speechSynthesis.cancel();
+      puffsLeft = TOTAL_PUFFS;
+      current = 0;
+      activeBlank = 0;
+      initStates();
+      renderScreen();
+      const modal = document.getElementById('modal');
+      if(modal.open) modal.close();
+    }
+
+    function optionButton(label, extraClass = '', onClick = null){
+      const btn = document.createElement('button');
+      btn.className = 'option ' + extraClass;
+      btn.innerHTML = label;
+      if(onClick) btn.addEventListener('click', onClick);
+      return btn;
+    }
+
+    function renderScreen(){
+      const screen = screens[current];
+      const state = states[screen.id];
+      activeBlank = 0;
+
+      document.getElementById('screenTitle').textContent = screen.title;
+      document.getElementById('screenInstruction').innerHTML = '<span class="instruction-kicker">👉 Your job</span><span class="instruction-main"><strong>' + escapeHtml(screen.instruction) + '</strong></span>';
+      document.getElementById('nextBtn').disabled = !state.solved;
+      document.getElementById('backBtn').disabled = current === 0;
+      document.getElementById('pollinatorBtn').style.display = screen.showPollinator ? 'inline-flex' : 'none';
+      document.getElementById('mainCard').classList.toggle('intro-mode', screen.id === 'introRead');
+
+      updateProgress();
+      renderVisual(screen);
+      renderInteraction(screen);
+
+      if(screen.id === 'introRead' && !state.lastFeedback){
+        setFeedback('', '');
+      } else if(state.lastFeedback){
+        const kind = state.solved ? 'good' : (state.checked ? 'bad' : '');
+        setFeedback(kind, state.lastFeedback);
+      } else {
+        setFeedback('', 'Tap or build your answer to begin.');
+      }
+    }
+
+    function renderVisual(screen){
+      const box = document.getElementById('visualCard');
+      if(screen.id === 'introRead'){
+        box.className = 'visual-card intro-question';
+        box.innerHTML = introQuestionMarkup + `<div class="question-focus-line">Start by reading the highlighted parts. You do not need to answer the science yet.</div>`;
+        return;
+      }
+      box.className = 'visual-card';
+      box.innerHTML = `<h3>Flower clues</h3>${getVisualMarkup(screen.focus)}`;
+    }
+
+    function flowerSVGPair(focus){
+      const xFocus = (focus === 'x' || focus === 'pair') ? '#ecf7ee' : '#f8fbf8';
+      const yFocus = (focus === 'y' || focus === 'pair') ? '#fff4eb' : '#f8fbf8';
+      const animateX = (focus === 'x' || focus === 'pair');
+
+      const xAnimation = animateX ? `
+        <path d="M26 122 C58 108, 90 100, 122 92" class="wind-guide flow-1"/>
+        <path d="M18 146 C54 132, 86 118, 124 104" class="wind-guide flow-2"/>
+        <path d="M32 96 C70 82, 96 76, 124 70" class="wind-guide flow-1"/>
+        <circle cx="124" cy="62" r="12" class="stigma-pulse"/>
+        <circle cx="124" cy="62" r="18" class="stigma-pulse" style="animation-delay:1.2s"/>
+        <g aria-hidden="true">
+          <circle class="pollen-dot" r="3">
+            <animateMotion dur="3s" repeatCount="indefinite" path="M42 128 C62 118, 88 96, 124 62"/>
+            <animate attributeName="opacity" values="0;0.95;0.95;0" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pollen-dot" r="2.6">
+            <animateMotion dur="3.2s" begin="0.55s" repeatCount="indefinite" path="M42 128 C70 120, 90 104, 124 66"/>
+            <animate attributeName="opacity" values="0;0.9;0.9;0" dur="3.2s" begin="0.55s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pollen-dot" r="3">
+            <animateMotion dur="2.9s" begin="0.3s" repeatCount="indefinite" path="M206 128 C182 118, 154 98, 126 64"/>
+            <animate attributeName="opacity" values="0;0.95;0.95;0" dur="2.9s" begin="0.3s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pollen-dot" r="2.4">
+            <animateMotion dur="3.4s" begin="1.1s" repeatCount="indefinite" path="M206 128 C172 122, 148 94, 124 68"/>
+            <animate attributeName="opacity" values="0;0.85;0.85;0" dur="3.4s" begin="1.1s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pollen-dot" r="2.2">
+            <animateMotion dur="2.6s" begin="0.7s" repeatCount="indefinite" path="M18 144 C52 130, 90 118, 120 66"/>
+            <animate attributeName="opacity" values="0;0.8;0.8;0" dur="2.6s" begin="0.7s" repeatCount="indefinite"/>
+          </circle>
+          <circle class="pollen-dot" r="2.2">
+            <animateMotion dur="2.8s" begin="1.45s" repeatCount="indefinite" path="M30 102 C64 90, 92 84, 122 64"/>
+            <animate attributeName="opacity" values="0;0.8;0.8;0" dur="2.8s" begin="1.45s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      ` : '';
+
+      return `
+      <svg viewBox="0 0 520 290" width="100%" height="100%" aria-label="Cleaned-up redraw of flowers X and Y">
+        <rect x="8" y="10" width="238" height="268" rx="18" fill="${xFocus}" stroke="#cfe3d2" stroke-width="2"/>
+        <rect x="274" y="10" width="238" height="268" rx="18" fill="${yFocus}" stroke="#cfe3d2" stroke-width="2"/>
+
+        <text x="26" y="34" class="flower-card-label">Flower X</text>
+        <text x="292" y="34" class="flower-card-label">Flower Y</text>
+
+        <text x="26" y="254" class="svg-caption">small, dull coloured, without scent</text>
+        <text x="292" y="254" class="svg-caption">large, brightly coloured and scented</text>
+
+        <!-- X stem -->
+        <line x1="124" y1="212" x2="124" y2="120" stroke="#3d8a54" stroke-width="8" stroke-linecap="round"/>
+        <path d="M124 170 C92 160, 88 136, 96 122" fill="none" stroke="#4b9961" stroke-width="6" stroke-linecap="round"/>
+        <path d="M124 170 C157 162, 162 135, 150 120" fill="none" stroke="#4b9961" stroke-width="6" stroke-linecap="round"/>
+
+        <!-- X dull petals -->
+        <ellipse cx="124" cy="108" rx="22" ry="56" fill="#c8d4b6" stroke="#8ba07a" stroke-width="3"/>
+        <ellipse cx="92" cy="108" rx="14" ry="44" transform="rotate(-22 92 108)" fill="#bcc9a8" stroke="#8ba07a" stroke-width="3"/>
+        <ellipse cx="156" cy="108" rx="14" ry="44" transform="rotate(22 156 108)" fill="#bcc9a8" stroke="#8ba07a" stroke-width="3"/>
+        <circle cx="124" cy="106" r="10" fill="#8ba07a"/>
+
+        <!-- X stigma and style -->
+        ${xAnimation}
+        <line x1="124" y1="118" x2="124" y2="66" stroke="#8a5fbf" stroke-width="4" stroke-linecap="round"/>
+        <path d="M124 62 l-8 -8 m8 8 l-12 -4 m12 4 l10 -8 m-10 8 l14 -2 m-14 2 l-4 -12"
+              stroke="#8a5fbf" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <text x="27" y="72" class="svg-caption">feathery stigma</text>
+        <line x1="112" y1="62" x2="80" y2="68" stroke="#7c9b83" stroke-width="2"/>
+
+        <!-- X outside anthers -->
+        <line x1="92" y1="106" x2="50" y2="124" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="42" cy="128" rx="10" ry="5" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+        <line x1="156" y1="106" x2="196" y2="124" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="206" cy="128" rx="10" ry="5" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+        <text x="27" y="99" class="svg-caption">anthers hanging outside</text>
+        <line x1="135" y1="102" x2="88" y2="95" stroke="#7c9b83" stroke-width="2"/>
+
+        <!-- Y stem -->
+        <line x1="390" y1="214" x2="390" y2="136" stroke="#3d8a54" stroke-width="8" stroke-linecap="round"/>
+
+        <!-- Y bright petals -->
+        <ellipse cx="390" cy="102" rx="28" ry="66" fill="#ffb347" stroke="#e28b25" stroke-width="3"/>
+        <ellipse cx="350" cy="102" rx="24" ry="60" transform="rotate(-25 350 102)" fill="#ffcf70" stroke="#e28b25" stroke-width="3"/>
+        <ellipse cx="430" cy="102" rx="24" ry="60" transform="rotate(25 430 102)" fill="#f69679" stroke="#e28b25" stroke-width="3"/>
+        <ellipse cx="390" cy="74" rx="22" ry="42" transform="rotate(90 390 74)" fill="#ffd36f" stroke="#e28b25" stroke-width="3"/>
+        <circle cx="390" cy="110" r="13" fill="#e07752"/>
+
+        <!-- Y stigma inside -->
+        <line x1="390" y1="118" x2="390" y2="80" stroke="#8a5fbf" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="390" cy="77" r="6" fill="#8a5fbf"/>
+
+        <!-- Y anthers inside -->
+        <line x1="378" y1="110" x2="370" y2="88" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="368" cy="83" rx="7" ry="4" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+        <line x1="402" y1="110" x2="410" y2="88" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="412" cy="83" rx="7" ry="4" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+
+        <!-- scent swirls -->
+        <path d="M458 68 C472 56, 467 41, 452 38" fill="none" stroke="#f28e7e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M469 96 C483 84, 479 69, 463 66" fill="none" stroke="#f28e7e" stroke-width="3" stroke-linecap="round"/>
+        <text x="438" y="126" class="svg-caption">scent</text>
+      </svg>`;
+    }
+
+function flowerSVGTransfer(){
+      return `
+      <svg viewBox="0 0 520 290" width="100%" height="100%" aria-label="New pair of flowers for transfer">
+        <rect x="8" y="10" width="238" height="268" rx="18" fill="#f3fbf2" stroke="#cfe3d2" stroke-width="2"/>
+        <rect x="274" y="10" width="238" height="268" rx="18" fill="#fff5ee" stroke="#cfe3d2" stroke-width="2"/>
+        <text x="26" y="34" class="flower-card-label">Flower A</text>
+        <text x="292" y="34" class="flower-card-label">Flower B</text>
+
+        <text x="26" y="254" class="svg-caption">small petals, no scent, exposed anthers, feathery stigma</text>
+        <text x="292" y="254" class="svg-caption">large petals, scented, stigma inside flower</text>
+
+        <line x1="124" y1="212" x2="124" y2="120" stroke="#3d8a54" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="124" cy="108" rx="20" ry="50" fill="#c3d1b4" stroke="#8ba07a" stroke-width="3"/>
+        <ellipse cx="95" cy="108" rx="12" ry="38" transform="rotate(-25 95 108)" fill="#bcc9a8" stroke="#8ba07a" stroke-width="3"/>
+        <ellipse cx="153" cy="108" rx="12" ry="38" transform="rotate(25 153 108)" fill="#bcc9a8" stroke="#8ba07a" stroke-width="3"/>
+        <line x1="124" y1="118" x2="124" y2="66" stroke="#8a5fbf" stroke-width="4"/>
+        <path d="M124 62 l-9 -7 m9 7 l-11 -3 m11 3 l10 -8 m-10 8 l13 -2 m-13 2 l-3 -10"
+          stroke="#8a5fbf" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <line x1="92" y1="106" x2="52" y2="124" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="44" cy="128" rx="10" ry="5" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+        <line x1="156" y1="106" x2="196" y2="124" stroke="#a67b45" stroke-width="3"/>
+        <ellipse cx="206" cy="128" rx="10" ry="5" fill="#d8a155" stroke="#a67b45" stroke-width="2"/>
+
+        <line x1="390" y1="214" x2="390" y2="136" stroke="#3d8a54" stroke-width="8" stroke-linecap="round"/>
+        <ellipse cx="390" cy="102" rx="28" ry="66" fill="#ffb347" stroke="#e28b25" stroke-width="3"/>
+        <ellipse cx="350" cy="102" rx="24" ry="60" transform="rotate(-25 350 102)" fill="#ffcf70" stroke="#e28b25" stroke-width="3"/>
+        <ellipse cx="430" cy="102" rx="24" ry="60" transform="rotate(25 430 102)" fill="#f69679" stroke="#e28b25" stroke-width="3"/>
+        <circle cx="390" cy="110" r="13" fill="#e07752"/>
+        <line x1="390" y1="118" x2="390" y2="80" stroke="#8a5fbf" stroke-width="4"/>
+        <circle cx="390" cy="77" r="6" fill="#8a5fbf"/>
+        <path d="M458 68 C472 56, 467 41, 452 38" fill="none" stroke="#f28e7e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M469 96 C483 84, 479 69, 463 66" fill="none" stroke="#f28e7e" stroke-width="3" stroke-linecap="round"/>
+      </svg>`;
+    }
+
+    function getVisualMarkup(focus){
+      if(focus === 'transfer'){
+        return flowerSVGTransfer();
+      }
+      return flowerSVGPair(focus);
+    }
+
+    function renderInteraction(screen){
+      const box = document.getElementById('interactionCard');
+      const state = states[screen.id];
+      box.innerHTML = screen.id === 'introRead' ? '<h3>When you are ready</h3>' : '<h3>Your move</h3>';
+
+      if(screen.type === 'single'){
+        const note = document.createElement('p');
+        note.className = 'hint-line';
+        note.textContent = screen.id === 'introRead' ? 'When you have finished reading, tap the button below.' : 'Tap one answer.';
+        box.appendChild(note);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'options';
+
+        state.optionOrder.forEach(opt => {
+          let extra = '';
+          if(state.checked && state.selected === opt.value){
+            extra = screen.correct.includes(opt.value) ? 'correct' : 'wrong';
+          } else if(state.solved && state.selected === opt.value){
+            extra = 'correct';
+          }
+          const btn = optionButton(opt.label, extra, () => {
+            if(state.solved) return;
+            state.selected = opt.value;
+            state.checked = true;
+            if(screen.correct.includes(opt.value)){
+              state.solved = true;
+              state.lastFeedback = screen.good;
+              setFeedback('good', screen.good);
+              document.getElementById('nextBtn').disabled = false;
+            } else {
+              state.lastFeedback = screen.bad;
+              setFeedback('bad', screen.bad);
+              if(screen.demerit) losePuff();
+              document.getElementById('nextBtn').disabled = true;
+            }
+            renderInteraction(screen);
+          });
+          wrap.appendChild(btn);
+        });
+        box.appendChild(wrap);
+      }
+
+      if(screen.type === 'multi'){
+        const note = document.createElement('p');
+        note.className = 'hint-line';
+        note.textContent = 'Choose the answers, then tap Check.';
+        box.appendChild(note);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'options';
+
+        state.optionOrder.forEach(opt => {
+          const selected = state.selected.includes(opt.value);
+          let extra = selected ? 'selected' : '';
+          if(state.checked){
+            if(screen.correct.includes(opt.value) && selected) extra = 'correct';
+            if(!screen.correct.includes(opt.value) && selected) extra = 'wrong';
+          }
+          const btn = optionButton(opt.label, extra, () => {
+            if(state.solved) return;
+            if(selected){
+              state.selected = state.selected.filter(v => v !== opt.value);
+            } else {
+              state.selected = state.selected.concat(opt.value);
+            }
+            renderInteraction(screen);
+          });
+          wrap.appendChild(btn);
+        });
+        box.appendChild(wrap);
+
+        const row = document.createElement('div');
+        row.className = 'check-row';
+        const check = document.createElement('button');
+        check.textContent = 'Check';
+        check.disabled = state.selected.length === 0;
+        check.addEventListener('click', () => {
+          state.checked = true;
+          const ok = sameSet(state.selected, screen.correct);
+          if(ok){
+            state.solved = true;
+            state.lastFeedback = screen.good;
+            setFeedback('good', screen.good);
+            document.getElementById('nextBtn').disabled = false;
+          } else {
+            state.lastFeedback = screen.bad;
+            setFeedback('bad', screen.bad);
+            if(screen.demerit) losePuff();
+          }
+          renderInteraction(screen);
+        });
+        row.appendChild(check);
+        box.appendChild(row);
+      }
+
+      if(screen.type === 'fill'){
+        const note = document.createElement('p');
+        note.className = 'hint-line';
+        note.textContent = 'Tap a blank, then tap a word from the bank. Tap a filled blank to remove it.';
+        box.appendChild(note);
+
+        const build = document.createElement('div');
+        build.className = 'build-area';
+        const sent = document.createElement('div');
+        sent.className = 'sentence';
+
+        for(let i=0;i<screen.sentence.length;i++){
+          const textNode = document.createTextNode(screen.sentence[i]);
+          sent.appendChild(textNode);
+          if(i < screen.blanks.length){
+            const blank = document.createElement('span');
+            const val = state.fillSelections[i];
+            blank.className = 'blank' + (activeBlank === i ? ' active' : '') + (val ? ' filled' : '');
+            blank.textContent = val || `Blank ${i+1}`;
+            blank.addEventListener('click', () => {
+              if(state.solved) return;
+              if(state.fillSelections[i]){
+                state.fillSelections[i] = null;
+                state.fillOptions = resortOptions(screen, state.fillSelections);
+              }
+              activeBlank = i;
+              renderInteraction(screen);
+            });
+            sent.appendChild(blank);
+          }
+        }
+        build.appendChild(sent);
+        box.appendChild(build);
+
+        const bank = document.createElement('div');
+        bank.className = 'bank';
+        state.fillOptions.forEach(word => {
+          const usedElsewhere = state.fillSelections.includes(word);
+          if(usedElsewhere) return;
+          const chip = document.createElement('button');
+          chip.className = 'chip';
+          chip.textContent = word;
+          chip.addEventListener('click', () => {
+            if(state.solved) return;
+            const nextEmpty = state.fillSelections.findIndex(v => v === null);
+            const targetIndex = state.fillSelections[activeBlank] === null ? activeBlank : nextEmpty;
+            if(targetIndex === -1) return;
+            state.fillSelections[targetIndex] = word;
+            activeBlank = Math.min(screen.blanks.length - 1, Math.max(0, targetIndex + 1));
+            renderInteraction(screen);
+          });
+          bank.appendChild(chip);
+        });
+        box.appendChild(bank);
+
+        const tiny = document.createElement('div');
+        tiny.className = 'tiny-note';
+        tiny.textContent = 'Build the whole answer before you tap Check.';
+        box.appendChild(tiny);
+
+        const row = document.createElement('div');
+        row.className = 'check-row';
+        const check = document.createElement('button');
+        check.textContent = 'Check';
+        check.disabled = state.fillSelections.some(v => !v);
+        check.addEventListener('click', () => {
+          state.checked = true;
+          let ok = true;
+          screen.blanks.forEach((blank, index) => {
+            const chosen = state.fillSelections[index];
+            if(!blank.accepted.includes(chosen)) ok = false;
+          });
+          if(ok){
+            state.solved = true;
+            state.lastFeedback = screen.good;
+            setFeedback('good', screen.good);
+            document.getElementById('nextBtn').disabled = false;
+          } else {
+            state.lastFeedback = screen.bad;
+            setFeedback('bad', screen.bad);
+            if(screen.demerit) losePuff();
+          }
+          renderInteraction(screen);
+        });
+        row.appendChild(check);
+        box.appendChild(row);
+      }
+
+      if(screen.type === 'guess'){
+        const wrap = document.createElement('div');
+        wrap.className = 'guess-wrap';
+
+        const card = document.createElement('div');
+        card.className = 'guess-card';
+        const sentence = document.createElement('div');
+        sentence.className = 'sentence';
+        for(let i=0;i<screen.frame.length;i++){
+          sentence.append(document.createTextNode(screen.frame[i]));
+          if(i < screen.words.length){
+            const done = state.guessDone[i];
+            const span = document.createElement('span');
+            span.className = 'blank filled';
+            if(done){
+              span.textContent = state.guessValues[i];
+            } else if(i === state.guessIndex){
+              const helper = helperForGuess(screen.words[i], state.guessReveals[i]);
+              span.textContent = helper;
+            } else {
+              span.textContent = '...';
+            }
+            sentence.appendChild(span);
+          }
+        }
+        card.appendChild(sentence);
+        wrap.appendChild(card);
+
+        if(state.guessIndex < screen.words.length){
+          const helper = helperForGuess(screen.words[state.guessIndex], state.guessReveals[state.guessIndex]);
+
+          const row = document.createElement('div');
+          row.className = 'guess-word';
+          const helperChip = document.createElement('span');
+          helperChip.className = 'helper';
+          helperChip.textContent = 'Helper letters: ' + helper;
+          row.appendChild(helperChip);
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.placeholder = 'Type the missing word';
+          input.value = state.currentInput || '';
+          input.addEventListener('input', e => state.currentInput = e.target.value);
+          row.appendChild(input);
+
+          const check = document.createElement('button');
+          check.textContent = 'Check word';
+          check.addEventListener('click', () => {
+            const raw = (state.currentInput || '').trim().toLowerCase();
+            const accepted = screen.words[state.guessIndex].accepted;
+            if(accepted.includes(raw)){
+              state.guessDone[state.guessIndex] = true;
+              state.guessValues[state.guessIndex] = raw;
+              state.guessIndex += 1;
+              state.currentInput = '';
+              if(state.guessIndex >= screen.words.length){
+                state.solved = true;
+                state.lastFeedback = screen.good;
+                setFeedback('good', screen.good);
+                document.getElementById('nextBtn').disabled = false;
+              } else {
+                setFeedback('good', 'Good. Now type the next missing word.');
+              }
+            } else {
+              state.guessReveals[state.guessIndex] += 1;
+              setFeedback('bad', 'Not yet. One more helper letter is shown.');
+            }
+            renderInteraction(screen);
+          });
+          row.appendChild(check);
+          wrap.appendChild(row);
+        } else {
+          const doneNote = document.createElement('p');
+          doneNote.className = 'hint-line';
+          doneNote.textContent = screen.good;
+          wrap.appendChild(doneNote);
+        }
+
+        box.appendChild(wrap);
+      }
+
+      if(screen.type === 'sequence'){
+        const note = document.createElement('p');
+        note.className = 'hint-line';
+        note.textContent = 'Tap the recap chips to build the order. Then tap Check.';
+        box.appendChild(note);
+
+        const built = document.createElement('div');
+        built.className = 'completion-order';
+        state.sequenceBuilt.forEach(step => {
+          const chip = document.createElement('button');
+          chip.className = 'chip';
+          chip.textContent = step;
+          chip.addEventListener('click', () => {
+            if(state.solved) return;
+            state.sequenceBuilt = state.sequenceBuilt.filter(s => s !== step);
+            renderInteraction(screen);
+          });
+          built.appendChild(chip);
+        });
+        if(state.sequenceBuilt.length === 0){
+          const empty = document.createElement('div');
+          empty.className = 'small';
+          empty.textContent = 'Your order will appear here.';
+          built.appendChild(empty);
+        }
+        box.appendChild(built);
+
+        const bank = document.createElement('div');
+        bank.className = 'bank';
+        state.sequenceOptions.forEach(step => {
+          if(state.sequenceBuilt.includes(step)) return;
+          const chip = document.createElement('button');
+          chip.className = 'chip';
+          chip.textContent = step;
+          chip.addEventListener('click', () => {
+            if(state.solved) return;
+            state.sequenceBuilt = state.sequenceBuilt.concat(step);
+            renderInteraction(screen);
+          });
+          bank.appendChild(chip);
+        });
+        box.appendChild(bank);
+
+        const row = document.createElement('div');
+        row.className = 'check-row';
+        const check = document.createElement('button');
+        check.textContent = 'Check';
+        check.disabled = state.sequenceBuilt.length !== screen.sequence.length;
+        check.addEventListener('click', () => {
+          state.checked = true;
+          const ok = JSON.stringify(state.sequenceBuilt) === JSON.stringify(screen.sequence);
+          if(ok){
+            state.solved = true;
+            state.lastFeedback = screen.good;
+            setFeedback('good', screen.good);
+            document.getElementById('nextBtn').disabled = false;
+          } else {
+            state.lastFeedback = screen.bad;
+            setFeedback('bad', screen.bad);
+          }
+          renderInteraction(screen);
+        });
+        row.appendChild(check);
+        box.appendChild(row);
+      }
+    }
+
+    function resortOptions(screen, selected){
+      const unused = screen.options.filter(opt => !selected.includes(opt));
+      return shuffle(unused.concat(selected.filter(Boolean)));
+    }
+
+    function sameSet(a, b){
+      if(a.length !== b.length) return false;
+      const aa = a.slice().sort();
+      const bb = b.slice().sort();
+      return JSON.stringify(aa) === JSON.stringify(bb);
+    }
+
+    function helperForGuess(wordObj, revealCount){
+      const sample = wordObj.accepted[0];
+      return sample.slice(0, Math.min(revealCount, sample.length)) + '_'.repeat(Math.max(0, sample.length - revealCount));
+    }
+
+    restartAll();
+  </script>
+</body>
+</html>

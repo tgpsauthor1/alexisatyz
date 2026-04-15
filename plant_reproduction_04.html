@@ -1,0 +1,1246 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plant_reproduction_04</title>
+<style>
+  :root{
+    --bg:#f6fbf4;
+    --card:#ffffff;
+    --ink:#17311b;
+    --muted:#4a6350;
+    --line:#cfe3cf;
+    --green:#2f8f4e;
+    --green-dark:#22673a;
+    --green-soft:#e8f5e8;
+    --accent:#c62828;
+    --accent-soft:#fdeaea;
+    --gold:#f3b64b;
+    --gold-soft:#fff5dd;
+    --blue:#2b6cb0;
+    --blue-soft:#eaf3ff;
+    --shadow:0 10px 24px rgba(24,56,27,0.08);
+    --radius:20px;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:linear-gradient(180deg,#f8fcf6 0%, #eff8ef 100%);color:var(--ink);font-family:Arial, Helvetica, sans-serif;}
+  body{min-height:100vh}
+
+  .app-shell{
+    max-width:980px;
+    margin:0 auto;
+    padding:16px 16px 96px 16px;
+  }
+
+  .topbar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+    color:var(--green-dark);
+  }
+
+  .brand-badge{
+    width:46px;height:46px;border-radius:14px;background:var(--green-soft);
+    display:grid;place-items:center;font-size:26px;border:2px solid var(--line);
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .toggle{
+    border:none;
+    background:var(--blue-soft);
+    color:#174b80;
+    padding:12px 14px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .toggle.on{background:#d7ecff}
+
+  .speak-btn,.next-btn,.ghost-btn,.check-btn,.start-btn,.restart-btn,.small-btn{
+    border:none;
+    border-radius:16px;
+    padding:14px 18px;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+  }
+
+  .speak-btn{background:#eef4ff;color:#1c4f8a}
+  .ghost-btn{background:#f0f6f1;color:var(--green-dark);border:2px solid var(--line)}
+  .next-btn,.check-btn,.start-btn,.restart-btn{background:var(--green);color:#fff;box-shadow:var(--shadow)}
+  .next-btn[disabled], .check-btn[disabled], .start-btn[disabled]{opacity:0.45;cursor:not-allowed}
+  .small-btn{background:#fff;color:var(--green-dark);border:2px solid var(--line);padding:10px 12px;font-size:15px}
+  .small-btn.selected{background:var(--green-soft);border-color:var(--green)}
+
+  .card{
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+
+  .progress-wrap{
+    margin-bottom:14px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .progress-label{font-size:14px;color:var(--muted);font-weight:700}
+  .progress-bar{
+    flex:1 1 220px;
+    min-width:180px;
+    height:14px;
+    background:#edf5ec;
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, #2f8f4e 0%, #78be81 100%);
+    transition:width .25s ease;
+  }
+
+  .screen-title{
+    font-size:18px;
+    font-weight:700;
+    color:var(--green-dark);
+    margin-bottom:10px;
+  }
+
+  .instruction{
+    font-size:30px;
+    line-height:1.18;
+    font-weight:800;
+    color:#133e1f;
+    margin-bottom:18px;
+  }
+
+  .subtle{
+    color:var(--muted);
+    font-size:17px;
+    line-height:1.45;
+  }
+
+  .question-card{
+    background:#fbfff8;
+    border:2px solid #dcecd9;
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:18px;
+  }
+  .question-text{
+    font-size:18px;
+    line-height:1.5;
+  }
+  .hl{
+    background:#fff2a8;
+    border-radius:8px;
+    padding:0 4px;
+  }
+
+  .diagram-wrap{
+    background:#ffffff;
+    border:2px solid var(--line);
+    border-radius:20px;
+    padding:16px;
+    margin-top:16px;
+  }
+
+  .options{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:14px;
+    margin-top:10px;
+  }
+
+  .option-btn{
+    width:100%;
+    text-align:left;
+    border:3px solid #dfece0;
+    background:#ffffff;
+    color:var(--ink);
+    border-radius:18px;
+    padding:18px;
+    font-size:20px;
+    font-weight:700;
+    line-height:1.35;
+    cursor:pointer;
+  }
+  .option-btn:hover{border-color:#bfd8c2}
+  .option-btn.selected{border-color:var(--blue); background:var(--blue-soft)}
+  .option-btn.correct{border-color:var(--green); background:var(--green-soft)}
+  .option-btn.wrong{border-color:var(--accent); background:var(--accent-soft)}
+
+  .feedback{
+    margin-top:16px;
+    padding:16px 18px;
+    border-radius:18px;
+    font-size:19px;
+    font-weight:700;
+    line-height:1.4;
+    display:none;
+  }
+  .feedback.show{display:block}
+  .feedback.good{background:var(--green-soft); color:#184825; border:2px solid #b8deb9}
+  .feedback.bad{background:var(--accent-soft); color:#8b1f1f; border:2px solid #efc1c1}
+
+  .action-row{
+    margin-top:18px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-end;
+  }
+
+  .sequence-area{
+    display:grid;
+    gap:14px;
+  }
+
+  .sequence-slots{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    gap:12px;
+  }
+  .slot{
+    min-height:74px;
+    border:3px dashed #bdd7bf;
+    border-radius:18px;
+    background:#fbfffb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:10px;
+    font-size:19px;
+    font-weight:700;
+    color:var(--muted);
+  }
+  .slot.filled{
+    border-style:solid;
+    color:var(--ink);
+    background:#eef9ee;
+  }
+  .slot-num{
+    display:block;
+    font-size:14px;
+    color:var(--green-dark);
+    margin-bottom:6px;
+  }
+
+  .sequence-options{
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:12px;
+  }
+  .sequence-btn{
+    border:3px solid #dfece0;
+    background:#fff;
+    border-radius:18px;
+    padding:16px;
+    font-size:18px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+  }
+  .sequence-btn.selected{
+    background:#eaf3ff;
+    border-color:var(--blue);
+  }
+  .sequence-btn.used{
+    opacity:0.5;
+  }
+
+  .cycle-strip{
+    margin-top:14px;
+    border:2px solid #e6efe4;
+    background:#fcfffb;
+    border-radius:18px;
+    padding:12px;
+  }
+  .cycle-title{
+    font-size:15px;
+    color:var(--muted);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .cycle-flow{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .cycle-chip{
+    background:#f2f8f2;
+    border:2px solid #d8e8d8;
+    color:#36543c;
+    padding:8px 10px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:700;
+  }
+  .cycle-chip.focus{
+    background:#fff6dc;
+    border-color:#f0c86a;
+    color:#835b08;
+  }
+  .arrow{font-weight:900;color:#89a48d}
+
+  .statement-grid{
+    display:grid;
+    gap:12px;
+  }
+
+  .statement-card{
+    border:3px solid #dfece0;
+    border-radius:18px;
+    background:#fff;
+    padding:16px;
+    font-size:20px;
+    line-height:1.4;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .statement-card.selected{border-color:var(--blue); background:var(--blue-soft)}
+  .statement-card.correct{border-color:var(--green); background:var(--green-soft)}
+  .statement-card.wrong{border-color:var(--accent); background:var(--accent-soft)}
+
+  .question-panel{
+    margin-top:18px;
+  }
+  .question-details{
+    border:2px solid var(--line);
+    border-radius:18px;
+    background:#f9fdf8;
+    overflow:hidden;
+  }
+  .question-summary{
+    list-style:none;
+    padding:14px 16px;
+    cursor:pointer;
+    font-weight:800;
+    color:#204c2c;
+    font-size:18px;
+    user-select:none;
+  }
+  .question-summary::-webkit-details-marker{display:none}
+  .question-summary::after{
+    content:"▼";
+    float:right;
+    font-size:14px;
+    transform:translateY(4px);
+    color:#496a50;
+  }
+  .question-details[open] .question-summary::after{
+    content:"▲";
+  }
+  .question-panel-body{
+    padding:0 16px 16px 16px;
+  }
+
+  .monster-meter{
+    position:fixed;
+    right:16px;
+    top:88px;
+    width:180px;
+    background:#fffdf8;
+    border:2px solid #f0ddad;
+    border-radius:22px;
+    padding:12px;
+    box-shadow:var(--shadow);
+    z-index:20;
+  }
+  .monster-title{
+    font-size:15px;
+    font-weight:800;
+    color:#80580e;
+    margin-bottom:8px;
+  }
+  .monster-sub{
+    font-size:13px;
+    color:#775d2b;
+    margin-bottom:10px;
+  }
+  .meter-track{
+    position:relative;
+    height:74px;
+    border-radius:18px;
+    background:linear-gradient(180deg,#fff8ea 0%, #fff2d3 100%);
+    border:2px solid #f2dfa9;
+    overflow:hidden;
+  }
+  .plant{
+    position:absolute;
+    right:8px;
+    bottom:6px;
+    font-size:36px;
+  }
+  .monster{
+    position:absolute;
+    bottom:8px;
+    left:8px;
+    font-size:36px;
+    transition:left .25s ease;
+  }
+  .chance-dots{
+    margin-top:10px;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+  }
+  .chance-dot{
+    width:14px;height:14px;border-radius:50%;
+    background:#d7e7d7;border:2px solid #b6cfb7;
+  }
+  .chance-dot.lost{background:#f0c1c1;border-color:#e19f9f}
+
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(14,31,18,.5);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:30;
+    padding:16px;
+  }
+  .modal-backdrop.show{display:flex}
+  .modal{
+    max-width:520px;
+    width:100%;
+    background:#fff;
+    border-radius:24px;
+    border:2px solid #f0ddad;
+    padding:24px;
+    box-shadow:0 24px 56px rgba(0,0,0,.18);
+    text-align:center;
+  }
+  .modal h2{margin:0 0 10px 0;font-size:30px;color:#7a560f}
+  .modal p{font-size:19px;line-height:1.45;color:#4f4f4f}
+
+  .completion{
+    text-align:center;
+    padding:10px 0;
+  }
+  .completion h2{
+    font-size:34px;
+    color:var(--green-dark);
+    margin:8px 0 12px;
+  }
+  .takeaway{
+    display:grid;
+    gap:12px;
+    margin-top:16px;
+  }
+  .takeaway .statement-card{
+    cursor:default;
+  }
+
+  .tiny-note{
+    font-size:14px;
+    color:var(--muted);
+    line-height:1.4;
+  }
+
+  @media (max-width: 980px){
+    .monster-meter{
+      position:static;
+      width:auto;
+      margin:0 auto 14px auto;
+    }
+    .app-shell{padding-bottom:28px}
+  }
+
+  @media (max-width: 760px){
+    .options, .sequence-options, .sequence-slots{
+      grid-template-columns:1fr;
+    }
+    .instruction{font-size:26px}
+    .option-btn, .statement-card{font-size:19px}
+  }
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="monsterMeter" class="monster-meter" aria-live="polite"></div>
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">🌱</div>
+        <div>
+          <div>Plant Reproduction Helper</div>
+          <div class="tiny-note">Question-by-question practice</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button id="toggleReadBtn" class="toggle" type="button" aria-pressed="false">Read aloud: Off</button>
+        <button id="speakBtn" class="speak-btn" type="button">🔊 Read this screen</button>
+      </div>
+    </div>
+
+    <div id="app" class="card"></div>
+  </div>
+
+  <div id="gameOver" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+    <div class="modal">
+      <h2 id="gameOverTitle">Oh no!</h2>
+      <p>The hungry monster reached the chilli plant. Start again and read each screen carefully.</p>
+      <button id="restartBtn" class="restart-btn" type="button">Start again</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const QUESTION_TEXT = `
+4. The diagram below shows the fruit of a chilli.
+
+Which of the following statements about X are correct?
+
+A. They can grow into new plants.
+B. They help in the fertilisation process.
+C. They were the pollen grains of the flower.
+D. They were formed from the ovules of the flower.
+
+(1) A and B only
+(2) A and D only
+(3) B and C only
+(4) C and D only
+  `.trim();
+
+  const state = {
+    screenIndex: 0,
+    maxDemerits: 4,
+    demerits: 0,
+    autoRead: false,
+    questionOpen: false,
+    orders: {},
+    screenState: {},
+    transferDone: false
+  };
+
+  const app = document.getElementById('app');
+  const monsterMeter = document.getElementById('monsterMeter');
+  const toggleReadBtn = document.getElementById('toggleReadBtn');
+  const speakBtn = document.getElementById('speakBtn');
+  const gameOver = document.getElementById('gameOver');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const screens = [
+    {
+      id: 'intro',
+      kind: 'intro',
+      title: 'Question time',
+      instruction: 'Read the full question. Then tap “I have read it.”',
+      speakParts: [
+        'Question time.',
+        'Read the full question. Then tap I have read it.',
+        QUESTION_TEXT
+      ]
+    },
+    {
+      id: 'nameX',
+      kind: 'single',
+      title: 'Find X',
+      instruction: 'Tap the best name for X.',
+      prompt: 'X points to the small round parts inside the chilli fruit.',
+      options: [
+        { value: 'seeds', label: 'Seeds' },
+        { value: 'pollen', label: 'Pollen grains' },
+        { value: 'skin', label: 'The fruit skin' },
+        { value: 'petals', label: 'Petals' }
+      ],
+      correct: 'seeds',
+      feedbackCorrect: 'Yes. X points to the seeds inside the fruit.',
+      feedbackWrong: 'Look at the small round parts inside the fruit. Those are seeds.',
+      usesDemerit: true
+    },
+    {
+      id: 'seedJob',
+      kind: 'single',
+      title: 'What seeds do',
+      instruction: 'Tap what a seed can do.',
+      prompt: 'Think about what happens later in the plant life cycle.',
+      options: [
+        { value: 'grow', label: 'Grow into a new plant' },
+        { value: 'fertilise', label: 'Help in fertilisation' },
+        { value: 'pollen', label: 'Turn into pollen grains' },
+        { value: 'petals', label: 'Make petals first' }
+      ],
+      correct: 'grow',
+      feedbackCorrect: 'Yes. A seed can grow into a new plant.',
+      feedbackWrong: 'Think about germination and growth. A seed can grow into a new plant.',
+      usesDemerit: true
+    },
+    {
+      id: 'cycle',
+      kind: 'order',
+      title: 'Important steps',
+      instruction: 'Tap the first 3 steps that matter for this question. Then tap Check.',
+      prompt: 'Use the plant cycle. Pick the steps in the correct order.',
+      options: [
+        { value: 'pollination', label: 'Pollination' },
+        { value: 'fertilisation', label: 'Fertilisation' },
+        { value: 'fruitsAndSeeds', label: 'Fruits and seeds form' }
+      ],
+      correctOrder: ['pollination', 'fertilisation', 'fruitsAndSeeds'],
+      feedbackCorrect: 'Yes. First comes pollination, then fertilisation, then fruits and seeds form.',
+      feedbackWrong: 'Start with what happens before fertilisation. Seeds form later.',
+      usesDemerit: true
+    },
+    {
+      id: 'beforeFertilisation',
+      kind: 'single',
+      title: 'Before fertilisation',
+      instruction: 'Tap the thing that helps in fertilisation.',
+      prompt: 'This question is asking about seeds. Do not mix them up with earlier flower parts.',
+      options: [
+        { value: 'seed', label: 'Seeds' },
+        { value: 'pollen', label: 'Pollen grains' },
+        { value: 'fruit', label: 'The fruit' },
+        { value: 'leaf', label: 'Leaves' }
+      ],
+      correct: 'pollen',
+      feedbackCorrect: 'Yes. Pollen grains help in fertilisation. Seeds do not.',
+      feedbackWrong: 'Focus on what happens before fertilisation. Pollen grains help in fertilisation.',
+      usesDemerit: true
+    },
+    {
+      id: 'ovuleToSeed',
+      kind: 'single',
+      title: 'After fertilisation',
+      instruction: 'Tap the part that becomes a seed.',
+      prompt: 'Think about what the seed was formed from.',
+      options: [
+        { value: 'ovule', label: 'Ovules' },
+        { value: 'petal', label: 'Petals' },
+        { value: 'leaf', label: 'Leaves' },
+        { value: 'sepal', label: 'Sepals' }
+      ],
+      correct: 'ovule',
+      feedbackCorrect: 'Yes. Seeds are formed from ovules after fertilisation.',
+      feedbackWrong: 'Look for the flower part that changes into a seed. It is the ovule.',
+      usesDemerit: true
+    },
+    {
+      id: 'trueStatements',
+      kind: 'multi',
+      title: 'Check the statements',
+      instruction: 'Tap all the true statements about X. Then tap Check.',
+      prompt: 'Decide which statements fit seeds.',
+      options: [
+        { value: 'A', label: 'A. They can grow into new plants.' },
+        { value: 'B', label: 'B. They help in the fertilisation process.' },
+        { value: 'C', label: 'C. They were the pollen grains of the flower.' },
+        { value: 'D', label: 'D. They were formed from the ovules of the flower.' }
+      ],
+      correctSet: ['A', 'D'],
+      feedbackCorrect: 'Yes. A and D are true for seeds.',
+      feedbackWrong: 'Check which statements are about seeds now, and which belong to the earlier fertilisation stage.',
+      usesDemerit: true
+    },
+    {
+      id: 'originalAnswer',
+      kind: 'single',
+      title: 'Back to the question',
+      instruction: 'Now answer the original question.',
+      prompt: 'Choose the numbered option that matches A and D only.',
+      options: [
+        { value: '1', label: '(1) A and B only' },
+        { value: '2', label: '(2) A and D only' },
+        { value: '3', label: '(3) B and C only' },
+        { value: '4', label: '(4) C and D only' }
+      ],
+      correct: '2',
+      feedbackCorrect: 'Yes. The correct answer is option 2.',
+      feedbackWrong: 'You need the option that matches A and D only.',
+      usesDemerit: true
+    },
+    {
+      id: 'transfer',
+      kind: 'single',
+      title: 'One more quick check',
+      instruction: 'Try this new question.',
+      prompt: 'A tomato fruit contains seeds. Which option is correct?\n\nA. They can grow into new tomato plants.\nB. They were pollen grains.\nC. They were formed from ovules.\nD. They help in pollination.\n\n(1) A and C only\n(2) A and D only\n(3) B and C only\n(4) C and D only',
+      options: [
+        { value: '1', label: '(1) A and C only' },
+        { value: '2', label: '(2) A and D only' },
+        { value: '3', label: '(3) B and C only' },
+        { value: '4', label: '(4) C and D only' }
+      ],
+      correct: '1',
+      feedbackCorrect: 'Yes. Tomato seeds can grow into new plants, and they were formed from ovules.',
+      feedbackWrong: 'Use the same idea again: seeds can grow into new plants, and they were formed from ovules.',
+      usesDemerit: false
+    },
+    {
+      id: 'complete',
+      kind: 'complete',
+      title: 'Finished',
+      instruction: 'You are done.',
+      speakParts: [
+        'Finished.',
+        'You are done.',
+        'Seeds inside a fruit can grow into new plants. Seeds are formed from ovules after fertilisation.'
+      ]
+    }
+  ];
+
+  toggleReadBtn.addEventListener('click', () => {
+    state.autoRead = !state.autoRead;
+    toggleReadBtn.classList.toggle('on', state.autoRead);
+    toggleReadBtn.setAttribute('aria-pressed', String(state.autoRead));
+    toggleReadBtn.textContent = state.autoRead ? 'Read aloud: On' : 'Read aloud: Off';
+    if (state.autoRead) speakCurrentScreen();
+    else window.speechSynthesis && window.speechSynthesis.cancel();
+  });
+
+  speakBtn.addEventListener('click', () => speakCurrentScreen());
+
+  restartBtn.addEventListener('click', () => {
+    gameOver.classList.remove('show');
+    const keepAutoRead = state.autoRead;
+    state.screenIndex = 0;
+    state.demerits = 0;
+    state.questionOpen = false;
+    state.orders = {};
+    state.screenState = {};
+    state.autoRead = keepAutoRead;
+    render();
+  });
+
+  function shuffle(array){
+    const copy = array.slice();
+    for(let i = copy.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function getShuffledOptions(screen){
+    if(state.orders[screen.id]) return state.orders[screen.id];
+    let order = shuffle(screen.options);
+    if(screen.kind === 'order'){
+      const joined = order.map(o => o.value).join('|');
+      const correctJoined = screen.correctOrder.join('|');
+      if(joined === correctJoined){
+        order = shuffle(screen.options);
+      }
+    }
+    state.orders[screen.id] = order;
+    return order;
+  }
+
+  function applyDemerit(){
+    state.demerits += 1;
+    updateMonsterMeter();
+    if(state.demerits >= state.maxDemerits){
+      window.speechSynthesis && window.speechSynthesis.cancel();
+      gameOver.classList.add('show');
+    }
+  }
+
+  function updateMonsterMeter(){
+    const remaining = Math.max(0, state.maxDemerits - state.demerits);
+    const percent = (state.demerits / state.maxDemerits) * 70;
+    let dots = '';
+    for(let i = 0; i < state.maxDemerits; i++){
+      dots += `<div class="chance-dot ${i < state.demerits ? 'lost' : ''}"></div>`;
+    }
+    monsterMeter.innerHTML = `
+      <div class="monster-title">Hungry monster meter</div>
+      <div class="monster-sub">${remaining} chance${remaining === 1 ? '' : 's'} left</div>
+      <div class="meter-track" aria-hidden="true">
+        <div class="monster" style="left:${8 + percent}%">👾</div>
+        <div class="plant">🌶️🌿</div>
+      </div>
+      <div class="chance-dots">${dots}</div>
+    `;
+  }
+
+  function questionHtml(highlight = false){
+    const questionLines = `
+      <div class="question-text">
+        <strong>4.</strong> The diagram below shows the <span class="${highlight ? 'hl' : ''}">fruit of a chilli</span>.<br><br>
+        Which of the following statements about <span class="${highlight ? 'hl' : ''}">X</span> are correct?<br><br>
+        A. They can grow into new plants.<br>
+        B. They help in the fertilisation process.<br>
+        C. They were the pollen grains of the flower.<br>
+        D. They were formed from the ovules of the flower.<br><br>
+        (1) A and B only<br>
+        (2) A and D only<br>
+        (3) B and C only<br>
+        (4) C and D only
+      </div>
+    `;
+    return `
+      <div class="question-card">
+        ${questionLines}
+        <div class="diagram-wrap">
+          ${chilliSvg()}
+        </div>
+      </div>
+    `;
+  }
+
+  function chilliSvg(){
+    return `
+      <svg viewBox="0 0 760 270" width="100%" role="img" aria-label="A clean diagram of a chilli fruit cut open. The label X points directly to seeds inside the fruit.">
+        <defs>
+          <marker id="arrowHead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#17311b"></path>
+          </marker>
+        </defs>
+        <rect x="0" y="0" width="760" height="270" fill="#ffffff"></rect>
+        <path d="M90 143 C155 87, 295 78, 624 92 C645 114, 652 144, 632 174 C298 182, 146 190, 92 143 Z" fill="#fff9f5" stroke="#17311b" stroke-width="4"></path>
+        <path d="M112 144 C160 118, 279 108, 573 118 C582 130, 582 143, 573 156 C281 159, 160 164, 112 144 Z" fill="#fefefe" stroke="#17311b" stroke-width="3"></path>
+        <path d="M138 119 C218 127, 332 131, 541 126" stroke="#17311b" stroke-width="3" fill="none"></path>
+        <path d="M139 165 C225 165, 332 162, 540 157" stroke="#17311b" stroke-width="3" fill="none"></path>
+        <g fill="#f6f1cf" stroke="#8c8256" stroke-width="2">
+          <circle cx="230" cy="123" r="9"></circle>
+          <circle cx="268" cy="120" r="9"></circle>
+          <circle cx="309" cy="125" r="9"></circle>
+          <circle cx="343" cy="124" r="9"></circle>
+          <circle cx="381" cy="127" r="9"></circle>
+          <circle cx="419" cy="129" r="9"></circle>
+          <circle cx="459" cy="131" r="9"></circle>
+
+          <circle cx="196" cy="158" r="9"></circle>
+          <circle cx="286" cy="160" r="9"></circle>
+          <circle cx="325" cy="162" r="9"></circle>
+          <circle cx="364" cy="162" r="9"></circle>
+          <circle cx="402" cy="161" r="9"></circle>
+          <circle cx="437" cy="159" r="9"></circle>
+          <circle cx="489" cy="156" r="9"></circle>
+        </g>
+        <text x="350" y="52" font-size="40" font-weight="800" fill="#17311b">X</text>
+        <line x1="354" y1="62" x2="309" y2="125" stroke="#17311b" stroke-width="4" marker-end="url(#arrowHead)"></line>
+        <line x1="362" y1="62" x2="343" y2="124" stroke="#17311b" stroke-width="4" marker-end="url(#arrowHead)"></line>
+      </svg>
+    `;
+  }
+
+  function renderQuestionPanel(){
+    if(state.screenIndex === 0) return '';
+    return `
+      <div class="question-panel">
+        <details class="question-details" ${state.questionOpen ? 'open' : ''}>
+          <summary class="question-summary">Show full question and diagram</summary>
+          <div class="question-panel-body">
+            ${questionHtml(false)}
+          </div>
+        </details>
+      </div>
+    `;
+  }
+
+  function attachQuestionToggle(){
+    const details = app.querySelector('.question-details');
+    if(!details) return;
+    details.addEventListener('toggle', () => {
+      state.questionOpen = details.open;
+    });
+  }
+
+  function speakCurrentScreen(){
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const screen = screens[state.screenIndex];
+    let text = '';
+    if(screen.speakParts){
+      text = screen.speakParts.join(' ');
+    } else {
+      const title = screen.title || '';
+      const instruction = screen.instruction || '';
+      const prompt = screen.prompt || '';
+      const options = (screen.options || []).map(o => o.label).join('. ');
+      const feedbackEl = app.querySelector('.feedback.show');
+      const feedback = feedbackEl ? feedbackEl.textContent : '';
+      text = [title, instruction, prompt, options, feedback].filter(Boolean).join(' ');
+    }
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function maybeAutoRead(){
+    if(state.autoRead) speakCurrentScreen();
+  }
+
+  function setProgress(){
+    const checkableCount = screens.filter(s => !['intro','complete'].includes(s.kind)).length;
+    const completed = Math.min(checkableCount, Math.max(0, state.screenIndex));
+    const progress = Math.round((completed / checkableCount) * 100);
+    const fill = app.querySelector('.progress-fill');
+    const text = app.querySelector('.progress-label');
+    if(fill) fill.style.width = progress + '%';
+    if(text) text.textContent = 'Progress: ' + progress + '%';
+  }
+
+  function goNext(){
+    if(state.screenIndex < screens.length - 1){
+      state.screenIndex += 1;
+      render();
+    }
+  }
+
+  function renderIntro(screen){
+    app.innerHTML = `
+      <div class="progress-wrap">
+        <div class="progress-label">Progress: 0%</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+      <div class="screen-title">${screen.title}</div>
+      <div class="instruction">${screen.instruction}</div>
+      ${questionHtml(true)}
+      <div class="action-row">
+        <button class="start-btn" id="introNext" type="button">I have read it</button>
+      </div>
+    `;
+    document.getElementById('introNext').addEventListener('click', goNext);
+    setProgress();
+    maybeAutoRead();
+  }
+
+  function renderSingle(screen){
+    const order = getShuffledOptions(screen);
+    app.innerHTML = `
+      <div class="progress-wrap">
+        <div class="progress-label">Progress</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+      <div class="screen-title">${screen.title}</div>
+      <div class="instruction">${screen.instruction}</div>
+      <div class="subtle">${escapeHtml(screen.prompt)}</div>
+      <div class="options" id="optionsArea">
+        ${order.map(o => `
+          <button class="option-btn" type="button" data-value="${o.value}">
+            ${escapeHtml(o.label)}
+          </button>
+        `).join('')}
+      </div>
+      <div class="feedback" id="feedbackBox" aria-live="polite"></div>
+      <div class="action-row">
+        <button class="next-btn" id="nextBtn" type="button" disabled>Next</button>
+      </div>
+      ${renderQuestionPanel()}
+    `;
+
+    let solved = false;
+    app.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(solved) return;
+        const value = btn.dataset.value;
+        const feedback = document.getElementById('feedbackBox');
+        app.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        if(value === screen.correct){
+          solved = true;
+          btn.classList.remove('selected');
+          btn.classList.add('correct');
+          feedback.className = 'feedback show good';
+          feedback.textContent = screen.feedbackCorrect;
+          document.getElementById('nextBtn').disabled = false;
+        } else {
+          btn.classList.add('wrong');
+          feedback.className = 'feedback show bad';
+          feedback.textContent = screen.feedbackWrong;
+          setTimeout(() => btn.classList.remove('wrong','selected'), 600);
+          if(screen.usesDemerit) applyDemerit();
+        }
+        if(state.autoRead) speakCurrentScreen();
+      });
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', goNext);
+    attachQuestionToggle();
+    setProgress();
+    maybeAutoRead();
+  }
+
+  function renderOrder(screen){
+    const order = getShuffledOptions(screen);
+    state.screenState[screen.id] = state.screenState[screen.id] || { selected: [], solved: false };
+    const local = state.screenState[screen.id];
+
+    function redraw(){
+      app.innerHTML = `
+        <div class="progress-wrap">
+          <div class="progress-label">Progress</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        <div class="screen-title">${screen.title}</div>
+        <div class="instruction">${screen.instruction}</div>
+        <div class="subtle">${escapeHtml(screen.prompt)}</div>
+
+        <div class="sequence-area">
+          <div class="sequence-slots">
+            ${[0,1,2].map(i => `
+              <div class="slot ${local.selected[i] ? 'filled' : ''}">
+                <div>
+                  <span class="slot-num">Step ${i + 1}</span>
+                  ${local.selected[i] ? escapeHtml(labelForValue(order, local.selected[i])) : 'Tap a step below'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="sequence-options">
+            ${order.map(o => `
+              <button class="sequence-btn ${local.selected.includes(o.value) ? 'used' : ''}" type="button" data-value="${o.value}" ${local.solved ? 'disabled' : ''}>
+                ${escapeHtml(o.label)}
+              </button>
+            `).join('')}
+          </div>
+
+          <div>
+            <button class="small-btn" id="clearOrderBtn" type="button" ${local.solved ? 'disabled' : ''}>Clear choices</button>
+          </div>
+
+          <div class="cycle-strip">
+            <div class="cycle-title">Full plant cycle</div>
+            <div class="cycle-flow">
+              <span class="cycle-chip focus">Pollination</span><span class="arrow">→</span>
+              <span class="cycle-chip focus">Fertilisation</span><span class="arrow">→</span>
+              <span class="cycle-chip focus">Fruits and seeds form</span><span class="arrow">→</span>
+              <span class="cycle-chip">Dispersal</span><span class="arrow">→</span>
+              <span class="cycle-chip">Germination</span><span class="arrow">→</span>
+              <span class="cycle-chip">Seedling</span><span class="arrow">→</span>
+              <span class="cycle-chip">Leaves appear</span><span class="arrow">→</span>
+              <span class="cycle-chip">Flowers appear</span><span class="arrow">→</span>
+              <span class="cycle-chip">Adult plant</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback ${local.feedbackType ? 'show ' + local.feedbackType : ''}" id="feedbackBox">${local.feedbackText || ''}</div>
+        <div class="action-row">
+          <button class="check-btn" id="checkOrderBtn" type="button" ${local.selected.length !== 3 || local.solved ? 'disabled' : ''}>Check</button>
+          <button class="next-btn" id="nextBtn" type="button" ${local.solved ? '' : 'disabled'}>Next</button>
+        </div>
+        ${renderQuestionPanel()}
+      `;
+      bind();
+      attachQuestionToggle();
+      setProgress();
+      maybeAutoRead();
+    }
+
+    function bind(){
+      app.querySelectorAll('.sequence-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const value = btn.dataset.value;
+          if(local.solved) return;
+          if(local.selected.includes(value)) return;
+          if(local.selected.length < 3){
+            local.selected.push(value);
+            redraw();
+          }
+        });
+      });
+
+      document.getElementById('clearOrderBtn').addEventListener('click', () => {
+        if(local.solved) return;
+        local.selected = [];
+        local.feedbackText = '';
+        local.feedbackType = '';
+        redraw();
+      });
+
+      document.getElementById('checkOrderBtn').addEventListener('click', () => {
+        const guess = local.selected.join('|');
+        const answer = screen.correctOrder.join('|');
+        if(guess === answer){
+          local.solved = true;
+          local.feedbackType = 'good';
+          local.feedbackText = screen.feedbackCorrect;
+        } else {
+          local.feedbackType = 'bad';
+          local.feedbackText = screen.feedbackWrong;
+          if(screen.usesDemerit) applyDemerit();
+        }
+        redraw();
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', goNext);
+    }
+
+    redraw();
+  }
+
+  function renderMulti(screen){
+    const order = getShuffledOptions(screen);
+    state.screenState[screen.id] = state.screenState[screen.id] || { selected: [], solved: false, feedbackText: '', feedbackType: '' };
+    const local = state.screenState[screen.id];
+
+    function redraw(){
+      app.innerHTML = `
+        <div class="progress-wrap">
+          <div class="progress-label">Progress</div>
+          <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+        <div class="screen-title">${screen.title}</div>
+        <div class="instruction">${screen.instruction}</div>
+        <div class="subtle">${escapeHtml(screen.prompt)}</div>
+
+        <div class="statement-grid">
+          ${order.map(o => {
+            let cls = 'statement-card';
+            if(local.selected.includes(o.value)) cls += ' selected';
+            if(local.showMarking){
+              if(screen.correctSet.includes(o.value)) cls += ' correct';
+              else if(local.selected.includes(o.value)) cls += ' wrong';
+            }
+            return `<button class="${cls}" type="button" data-value="${o.value}" ${local.solved ? 'disabled' : ''}>${escapeHtml(o.label)}</button>`;
+          }).join('')}
+        </div>
+
+        <div class="feedback ${local.feedbackType ? 'show ' + local.feedbackType : ''}" id="feedbackBox">${local.feedbackText || ''}</div>
+        <div class="action-row">
+          <button class="check-btn" id="checkMultiBtn" type="button" ${local.selected.length === 0 || local.solved ? 'disabled' : ''}>Check</button>
+          <button class="next-btn" id="nextBtn" type="button" ${local.solved ? '' : 'disabled'}>Next</button>
+        </div>
+        ${renderQuestionPanel()}
+      `;
+      bind();
+      attachQuestionToggle();
+      setProgress();
+      maybeAutoRead();
+    }
+
+    function bind(){
+      app.querySelectorAll('.statement-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if(local.solved) return;
+          local.showMarking = false;
+          local.feedbackText = '';
+          local.feedbackType = '';
+          const value = btn.dataset.value;
+          if(local.selected.includes(value)){
+            local.selected = local.selected.filter(v => v !== value);
+          } else {
+            local.selected = local.selected.concat(value);
+          }
+          redraw();
+        });
+      });
+
+      document.getElementById('checkMultiBtn').addEventListener('click', () => {
+        const guess = local.selected.slice().sort().join('|');
+        const answer = screen.correctSet.slice().sort().join('|');
+        local.showMarking = true;
+        if(guess === answer){
+          local.solved = true;
+          local.feedbackType = 'good';
+          local.feedbackText = screen.feedbackCorrect;
+        } else {
+          local.feedbackType = 'bad';
+          local.feedbackText = screen.feedbackWrong;
+          if(screen.usesDemerit) applyDemerit();
+        }
+        redraw();
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', goNext);
+    }
+
+    redraw();
+  }
+
+  function renderComplete(screen){
+    app.innerHTML = `
+      <div class="progress-wrap">
+        <div class="progress-label">Progress: 100%</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+
+      <div class="completion">
+        <div class="screen-title">${screen.title}</div>
+        <div class="instruction">${screen.instruction}</div>
+        <h2>Great job!</h2>
+        <p class="subtle">You used the question carefully and matched the science idea to each statement.</p>
+
+        <div class="takeaway">
+          <div class="statement-card">Seeds inside a fruit can grow into new plants.</div>
+          <div class="statement-card">Seeds are formed from ovules after fertilisation.</div>
+        </div>
+
+        <div class="action-row" style="justify-content:center;">
+          <button class="restart-btn" id="playAgainBtn" type="button">Play again</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('playAgainBtn').addEventListener('click', () => {
+      const keepAutoRead = state.autoRead;
+      state.screenIndex = 0;
+      state.demerits = 0;
+      state.questionOpen = false;
+      state.orders = {};
+      state.screenState = {};
+      state.autoRead = keepAutoRead;
+      render();
+    });
+
+    maybeAutoRead();
+  }
+
+  function labelForValue(optionList, value){
+    const found = optionList.find(o => o.value === value);
+    return found ? found.label : value;
+  }
+
+  function escapeHtml(text){
+    return String(text)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;')
+      .replaceAll('\n', '<br>');
+  }
+
+  function render(){
+    updateMonsterMeter();
+    const screen = screens[state.screenIndex];
+    if(screen.kind === 'intro') renderIntro(screen);
+    else if(screen.kind === 'single') renderSingle(screen);
+    else if(screen.kind === 'order') renderOrder(screen);
+    else if(screen.kind === 'multi') renderMulti(screen);
+    else if(screen.kind === 'complete') renderComplete(screen);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

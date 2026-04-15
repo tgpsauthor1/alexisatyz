@@ -1,0 +1,1452 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>plant_reproduction_07</title>
+<style>
+  :root {
+    --bg: #f6f8f2;
+    --card: #ffffff;
+    --ink: #183025;
+    --muted: #5a6b60;
+    --line: #d8e1d4;
+    --green: #2f7a47;
+    --green-dark: #1f5b33;
+    --danger: #a63a33;
+    --ok: #216c42;
+    --wrong-bg: #fff1ef;
+    --right-bg: #edf9f0;
+    --shadow: 0 10px 28px rgba(18, 48, 37, 0.09);
+    --radius: 22px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: radial-gradient(circle at top, #fcfff8 0%, var(--bg) 50%, #edf3ea 100%);
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 18px 14px 28px;
+  }
+  .topbar {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    border-radius: 20px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .topbar-left h1 {
+    font-size: 1.18rem;
+    margin: 0 0 4px;
+  }
+  .topbar-left .sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .topbar-right {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .control-btn {
+    border: 2px solid #cfe0d0;
+    background: #f7fbf5;
+    color: var(--ink);
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 48px;
+  }
+  .control-btn:focus-visible, .choice-btn:focus-visible, .nav-btn:focus-visible, .tiny-btn:focus-visible {
+    outline: 3px solid #1933cc33;
+    outline-offset: 2px;
+  }
+  .demerit-bar {
+    width: 100%;
+    background: #f9fbf8;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 10px 12px;
+  }
+  .demerit-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.92rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .plant-track {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    align-items: center;
+  }
+  .plant-stage {
+    padding: 6px 4px;
+    border-radius: 16px;
+    border: 1px solid #dce7d8;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 88px;
+    transition: transform 0.25s ease, opacity 0.25s ease, background 0.25s ease;
+  }
+  .plant-stage svg {
+    width: 54px;
+    height: 54px;
+    display: block;
+  }
+  .plant-stage .label {
+    font-size: 0.72rem;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .plant-stage.current {
+    border-color: #8fbb98;
+    background: #f3fbef;
+    transform: translateY(-2px);
+  }
+  .plant-stage.past {
+    opacity: 0.42;
+    filter: grayscale(0.16);
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    overflow: hidden;
+  }
+  .screen-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .screen-tag {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .instruction {
+    font-size: clamp(1.2rem, 1rem + 1vw, 1.7rem);
+    font-weight: 800;
+    margin: 8px 0 14px;
+    color: var(--green-dark);
+  }
+  .body-copy {
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0 0 12px;
+  }
+  .soft-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 8px 0 0;
+  }
+  .panel {
+    background: #fbfdf9;
+    border: 1px solid #d8e6d6;
+    border-radius: 18px;
+    padding: 12px;
+  }
+  .image-frame {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #d9e2d5;
+    background: #fff;
+  }
+  .image-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .question-text {
+    margin-top: 12px;
+    background: #f8fbf6;
+    border: 1px solid #dbe7d7;
+    border-radius: 18px;
+    padding: 14px;
+  }
+  .question-text ol {
+    margin: 8px 0 0 24px;
+    padding: 0;
+  }
+  .hl {
+    background: #fff3a1;
+    padding: 0 3px;
+    border-radius: 6px;
+  }
+  .choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .choice-grid.one-col {
+    grid-template-columns: 1fr;
+  }
+  .choice-btn {
+    width: 100%;
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 18px;
+    min-height: 74px;
+    border: 2px solid #d4e2d4;
+    background: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .choice-btn:hover {
+    transform: translateY(-1px);
+  }
+  .choice-btn.selected {
+    border-color: var(--green);
+    background: #eff9f0;
+  }
+  .choice-btn.correct {
+    border-color: var(--ok);
+    background: var(--right-bg);
+  }
+  .choice-btn.incorrect {
+    border-color: var(--danger);
+    background: var(--wrong-bg);
+  }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feedback {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid #d9e3d4;
+    display: none;
+    font-weight: 700;
+  }
+  .feedback.show {
+    display: block;
+  }
+  .feedback.correct {
+    background: var(--right-bg);
+    color: var(--ok);
+    border-color: #bee5c9;
+  }
+  .feedback.incorrect {
+    background: var(--wrong-bg);
+    color: var(--danger);
+    border-color: #e7c2bc;
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .nav-btn {
+    border: none;
+    border-radius: 18px;
+    min-height: 52px;
+    min-width: 120px;
+    padding: 12px 18px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .nav-btn.primary {
+    background: linear-gradient(180deg, #3d9154, #2d7442);
+    color: white;
+  }
+  .nav-btn.secondary {
+    background: #eef5eb;
+    color: var(--ink);
+    border: 2px solid #d7e4d4;
+  }
+  .nav-btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .tiny-btn {
+    border: 2px solid #cfe0d0;
+    background: #fff;
+    color: var(--ink);
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 42px;
+  }
+  .question-toggle-wrap {
+    margin-top: 14px;
+  }
+  .question-panel {
+    margin-top: 10px;
+    display: none;
+  }
+  .question-panel.open {
+    display: block;
+  }
+  .status-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .chip {
+    background: #edf6eb;
+    border: 1px solid #d4e7d1;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--green-dark);
+  }
+  .diagram-legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .legend-pill {
+    background: #f7fbf4;
+    border: 1px solid #dbe7d9;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.86rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .prompt-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .statement-box {
+    background: #f8fbf6;
+    border: 1px solid #dbe7d8;
+    border-radius: 18px;
+    padding: 14px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .statement-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .statement-card {
+    background: #fff;
+    border: 1px solid #d8e5d5;
+    border-radius: 18px;
+    padding: 12px;
+  }
+  .statement-card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    flex: 1 1 120px;
+  }
+  .result-line {
+    font-weight: 800;
+    color: var(--green-dark);
+  }
+  .split-anim {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .anim-card {
+    background: #fcfdfb;
+    border: 1px solid #dbe6d8;
+    border-radius: 18px;
+    padding: 12px;
+  }
+  .anim-title {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .popup {
+    margin-top: 10px;
+    border: 1px solid #dbe6d8;
+    border-radius: 16px;
+    background: #fbfdf9;
+    overflow: hidden;
+  }
+  .popup summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    font-weight: 800;
+  }
+  .popup .popup-body {
+    padding: 0 14px 14px;
+    color: var(--muted);
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 38, 28, 0.58);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 20;
+  }
+  .overlay.show {
+    display: flex;
+  }
+  .overlay-card {
+    max-width: 560px;
+    width: 100%;
+    background: #fff;
+    border-radius: 24px;
+    padding: 22px;
+    border: 1px solid #d9e4d7;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+  .overlay-card h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: var(--danger);
+  }
+  .summary-list {
+    margin: 10px 0 0 20px;
+  }
+  .footer-note {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .diagram-svg {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .loop-root .root-line {
+    stroke-dasharray: 120;
+    stroke-dashoffset: 120;
+    animation: growRoot 3s infinite ease-in-out;
+  }
+  .loop-root .shoot-line {
+    stroke-dasharray: 90;
+    stroke-dashoffset: 90;
+    animation: growShoot 3s infinite ease-in-out;
+  }
+  .loop-food .food-dot {
+    animation: moveFoodToRoot 2.4s infinite linear;
+  }
+  .loop-food .dot-shoot {
+    animation-name: moveFoodToShoot;
+  }
+  .loop-food .food-dot.d2 { animation-delay: .6s; }
+  .loop-food .food-dot.d3 { animation-delay: 1.2s; }
+  .loop-food .food-dot.d4 { animation-delay: 1.8s; }
+  .loop-food .growth-tip {
+    animation: pulseGrowth 1.5s infinite ease-in-out;
+  }
+  .loop-food .shoot-tip { animation-delay: .55s; }
+  .live-side .oxy {
+    animation: bubbleUp 2.2s infinite ease-in;
+  }
+  .live-side .oxy.o2 { animation-delay: .6s; }
+  .live-side .oxy.o3 { animation-delay: 1.1s; }
+  .rot-side .seed-shell {
+    animation: rotSeed 3s infinite ease-in-out;
+    transform-origin: center;
+  }
+  .rot-side .rot-spot {
+    animation: pulseSpot 3s infinite ease-in-out;
+  }
+  .rot-side .cross-line {
+    animation: pulseCross 1.6s infinite ease-in-out;
+  }
+
+  @keyframes growRoot {
+    0% { stroke-dashoffset: 120; }
+    35% { stroke-dashoffset: 10; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes growShoot {
+    0%, 30% { stroke-dashoffset: 90; }
+    65% { stroke-dashoffset: 24; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes moveFoodToRoot {
+    0% { opacity: 0; transform: translate(0px, 0px); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-30px, 54px); }
+  }
+  @keyframes moveFoodToShoot {
+    0% { opacity: 0; transform: translate(0px, 0px); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(18px, -40px); }
+  }
+  @keyframes pulseGrowth {
+    0%, 100% { opacity: .55; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.18); }
+  }
+  @keyframes bubbleUp {
+    0% { opacity: 0; transform: translateY(16px); }
+    25% { opacity: 0.95; }
+    100% { opacity: 0; transform: translateY(-18px); }
+  }
+  @keyframes rotSeed {
+    0%, 100% { fill: #b88e62; transform: scale(1); }
+    50% { fill: #7b5942; transform: scale(0.96); }
+  }
+  @keyframes pulseSpot {
+    0%, 100% { opacity: .15; r: 3; }
+    50% { opacity: .6; r: 5; }
+  }
+  @keyframes pulseCross {
+    0%,100% { opacity: .4; }
+    50% { opacity: .95; }
+  }
+
+  @media (max-width: 760px) {
+    .choice-grid, .two-col, .split-anim, .statement-grid {
+      grid-template-columns: 1fr;
+    }
+    .topbar {
+      padding: 12px;
+    }
+    .plant-track {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .plant-stage {
+      min-height: 78px;
+      padding: 6px 2px;
+    }
+    .plant-stage svg {
+      width: 42px;
+      height: 42px;
+    }
+    .plant-stage .label {
+      font-size: 0.62rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="app"></div>
+</div>
+
+<div id="gameOver" class="overlay" aria-hidden="true">
+  <div class="overlay-card">
+    <h2>The plant has withered.</h2>
+    <p class="body-copy">Too many rushed taps made the plant slowly languish until it died. Let us restart and read each clue carefully.</p>
+    <div class="center" style="margin:16px 0;">
+      <div id="deadPlantLarge"></div>
+    </div>
+    <button id="restartAllBtn" class="nav-btn primary">Restart the whole interactive</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const QUESTION_IMAGE = "data:image/png;base64,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";
+  const state = {
+    screen: 0,
+    readAloud: false,
+    questionPanelOpen: false,
+    demeritsUsed: 0,
+    demeritsMax: 4,
+    completedScreens: {},
+    screenOrders: {},
+    multiSelections: {},
+    choiceSelections: {},
+    feedback: null,
+    gameOver: false
+  };
+
+  const app = document.getElementById('app');
+  const overlay = document.getElementById('gameOver');
+  const restartAllBtn = document.getElementById('restartAllBtn');
+  document.getElementById('deadPlantLarge').innerHTML = makePlantSvg(4);
+
+  const questionTextHTML = `
+    <p><strong>Germination</strong></p>
+    <p>The diagram below shows the <span class="hl">development of a seed from A to E</span>.</p>
+    <ol>
+      <li>First leaves appear at A.</li>
+      <li>The root of the seedling appears first.</li>
+      <li>The seedling needs sunlight to make food during A to B.</li>
+      <li>Oxygen is not needed at A as the seed cannot get oxygen.</li>
+    </ol>
+    <p style="margin-top:10px;"><span class="hl">Which of the following statements are correct?</span></p>
+  `;
+
+  const screens = [
+    {
+      id: 'read-question',
+      title: 'Read the full question',
+      step: 'Screen 1 of 11',
+      instruction: 'Tap “I have read the question.”',
+      build() {
+        return `
+          <div class="image-frame"><img src="${QUESTION_IMAGE}" alt="Original worksheet question on germination" /></div>
+          <div class="question-text">${questionTextHTML}</div>
+        `;
+      },
+      actionsHtml() {
+        return `<button class="nav-btn primary" data-action="complete-screen">I have read the question</button>`;
+      },
+      onAction(action) {
+        if (action === 'complete-screen') {
+          markComplete();
+          state.screen += 1;
+          rerender();
+        }
+      },
+      speakText() {
+        return 'Read the full question. The diagram shows the development of a seed from A to E. Then decide which statements are correct. Tap I have read the question when you are ready.';
+      },
+      noDemerit: true
+    },
+    {
+      id: 'root-first',
+      title: 'Notice what appears first',
+      step: 'Screen 2 of 11',
+      instruction: 'Tap the part that appears first.',
+      build() {
+        const options = getShuffledOptions('root-first', [
+          { key:'root', label:'root', correct:true },
+          { key:'leaf', label:'leaf', correct:false },
+          { key:'flower', label:'flower', correct:false }
+        ]);
+        return `
+          <div class="panel center">${renderRootAnimation()}</div>
+          <div class="diagram-legend">
+            <span class="legend-pill">The animation loops.</span>
+            <span class="legend-pill">Watch which part comes out first.</span>
+          </div>
+          <div class="choice-grid" style="margin-top:14px;">
+            ${renderChoiceButtons('root-first', options.map(opt => ({...opt, label: opt.label.charAt(0).toUpperCase()+opt.label.slice(1)})))}
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. The root appears first.',
+        wrongLeaf: 'Look at the earliest change again. Leaves come later.',
+        wrongFlower: 'Flowers do not appear in these early germination stages.'
+      },
+      correctChoice: 'root',
+      customWrong(choice) {
+        return choice === 'flower' ? this.feedback.wrongFlower : this.feedback.wrongLeaf;
+      },
+      speakText() {
+        return 'Tap the part that appears first. Watch the root grow before the shoot and leaves.';
+      }
+    },
+    {
+      id: 'statement-1',
+      title: 'Check statement 1',
+      step: 'Screen 3 of 11',
+      instruction: 'Tap whether statement 1 is correct or incorrect.',
+      build() {
+        const options = getShuffledOptions('statement-1', [
+          { key:'correct', label:'Correct', correct:false },
+          { key:'incorrect', label:'Incorrect', correct:true }
+        ]);
+        return `
+          <div class="two-col">
+            <div>
+              <div class="statement-box">Statement 1: First leaves appear at A.</div>
+              <div class="choice-grid one-col">
+                ${renderChoiceButtons('statement-1', options)}
+              </div>
+            </div>
+            <div class="panel">
+              ${renderCleanSequence({ highlightStages:['A','D','E'], labelNote:'A has no leaves. D is the first stage with leaves.' })}
+            </div>
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. There are no leaves at A. The first leaves appear later.',
+        wrong: 'At A, you only see the seed. Check where leaves are first visible.'
+      },
+      correctChoice: 'incorrect',
+      speakText() {
+        return 'Check statement 1. Tap whether the statement is correct or incorrect. There are no leaves at A.';
+      }
+    },
+    {
+      id: 'statement-2',
+      title: 'Check statement 2',
+      step: 'Screen 4 of 11',
+      instruction: 'Tap whether statement 2 is correct or incorrect.',
+      build() {
+        const options = getShuffledOptions('statement-2', [
+          { key:'correct', label:'Correct', correct:true },
+          { key:'incorrect', label:'Incorrect', correct:false }
+        ]);
+        return `
+          <div class="two-col">
+            <div>
+              <div class="statement-box">Statement 2: The root of the seedling appears first.</div>
+              <div class="choice-grid one-col">
+                ${renderChoiceButtons('statement-2', options)}
+              </div>
+            </div>
+            <div class="panel">
+              ${renderCleanSequence({ highlightStages:['A','B','C'], emphasis:'B' })}
+              <p class="soft-note">Look closely at the earliest change from A to B.</p>
+            </div>
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. The root appears before the leaves.',
+        wrong: 'Look at the earliest visible change. The root comes first.'
+      },
+      correctChoice: 'correct',
+      speakText() {
+        return 'Check statement 2. Tap whether the root of the seedling appears first. The earliest visible change is the root.';
+      }
+    },
+    {
+      id: 'food-source',
+      title: 'Where does the young seedling get food?',
+      step: 'Screen 5 of 11',
+      instruction: 'Tap the best answer.',
+      build() {
+        const options = getShuffledOptions('food-source', [
+          { key:'sunlight', label:'Sunlight', correct:false },
+          { key:'seedLeaves', label:'Stored food in the seed leaves', correct:true },
+          { key:'waterOnly', label:'Water only', correct:false }
+        ]);
+        return `
+          <div class="two-col">
+            <div class="panel center">${renderFoodAnimation()}<p class="soft-note">From A to B, the seedling has no true leaves yet.</p></div>
+            <div>
+              <div class="choice-grid one-col">
+                ${renderChoiceButtons('food-source', options)}
+              </div>
+              <details class="popup">
+                <summary>What are seed leaves?</summary>
+                <div class="popup-body">Seed leaves are the first seed parts that store food for the young plant at the start.</div>
+              </details>
+            </div>
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. At this stage, the seedling uses stored food in the seed leaves.',
+        sunlight: 'Not yet. From A to B there are no leaves to make food.',
+        waterOnly: 'Water helps growth, but it is not the food source here.'
+      },
+      correctChoice: 'seedLeaves',
+      customWrong(choice) {
+        return choice === 'waterOnly' ? this.feedback.waterOnly : this.feedback.sunlight;
+      },
+      speakText() {
+        return 'Tap the best answer. From A to B there are no true leaves yet. The animation shows stored food from the seed leaves helping the root and shoot grow.';
+      }
+    },
+    {
+      id: 'statement-3',
+      title: 'Check statement 3',
+      step: 'Screen 6 of 11',
+      instruction: 'Tap whether statement 3 is correct or incorrect.',
+      build() {
+        const options = getShuffledOptions('statement-3', [
+          { key:'correct', label:'Correct', correct:false },
+          { key:'incorrect', label:'Incorrect', correct:true }
+        ]);
+        return `
+          <div class="two-col">
+            <div>
+              <div class="statement-box">Statement 3: The seedling needs sunlight to make food during A to B.</div>
+              <div class="choice-grid one-col">
+                ${renderChoiceButtons('statement-3', options)}
+              </div>
+            </div>
+            <div class="panel center">${renderFoodAnimation()}<p class="soft-note">A to B shows no true leaves yet, so sunlight is not the food source here.</p></div>
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. During A to B, the seedling uses stored food from the seed leaves.',
+        wrong: 'Check whether leaves are present from A to B.'
+      },
+      correctChoice: 'incorrect',
+      speakText() {
+        return 'Check statement 3. During A to B, the seedling does not have leaves to make food using sunlight.';
+      }
+    },
+    {
+      id: 'oxygen-needed',
+      title: 'Does a germinating seed need oxygen?',
+      step: 'Screen 7 of 11',
+      instruction: 'Tap the best answer.',
+      build() {
+        const options = getShuffledOptions('oxygen-needed', [
+          { key:'needed', label:'Oxygen is needed.', correct:true },
+          { key:'notNeeded', label:'Oxygen is not needed.', correct:false },
+          { key:'laterOnly', label:'Oxygen is needed only after leaves appear.', correct:false }
+        ]);
+        return `
+          <div class="split-anim">
+            <div class="anim-card">
+              <div class="anim-title">Oxygen is available</div>
+              ${renderOxygenAnimation(true)}
+            </div>
+            <div class="anim-card">
+              <div class="anim-title">Oxygen is removed</div>
+              ${renderOxygenAnimation(false)}
+            </div>
+          </div>
+          <div class="choice-grid one-col" style="margin-top:14px;">
+            ${renderChoiceButtons('oxygen-needed', options)}
+          </div>
+          <details class="popup">
+            <summary>How can a seed get oxygen in the soil?</summary>
+            <div class="popup-body">Soil has tiny air spaces. A living seed can still get oxygen there.</div>
+          </details>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. A germinating seed is alive and needs oxygen.',
+        notNeeded: 'Living things need oxygen, even before leaves appear.',
+        laterOnly: 'Oxygen is needed throughout germination, not only later.'
+      },
+      correctChoice: 'needed',
+      customWrong(choice) {
+        return choice === 'laterOnly' ? this.feedback.laterOnly : this.feedback.notNeeded;
+      },
+      speakText() {
+        return 'Tap the best answer. A living seed needs oxygen. When oxygen is removed, the seed dies and rots.';
+      }
+    },
+    {
+      id: 'statement-4',
+      title: 'Check statement 4',
+      step: 'Screen 8 of 11',
+      instruction: 'Tap whether statement 4 is correct or incorrect.',
+      build() {
+        const options = getShuffledOptions('statement-4', [
+          { key:'correct', label:'Correct', correct:false },
+          { key:'incorrect', label:'Incorrect', correct:true }
+        ]);
+        return `
+          <div class="two-col">
+            <div>
+              <div class="statement-box">Statement 4: Oxygen is not needed at A as the seed cannot get oxygen.</div>
+              <div class="choice-grid one-col">
+                ${renderChoiceButtons('statement-4', options)}
+              </div>
+            </div>
+            <div class="panel">
+              ${renderOxygenAnimation(false)}
+              <p class="soft-note">Being in the soil does not mean oxygen is absent or unnecessary.</p>
+            </div>
+          </div>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. The statement is incorrect. The seed still needs oxygen at A.',
+        wrong: 'Being in the soil does not mean oxygen is absent or unnecessary.'
+      },
+      correctChoice: 'incorrect',
+      speakText() {
+        return 'Check statement 4. The seed still needs oxygen at stage A, so the statement is incorrect.';
+      }
+    },
+    {
+      id: 'build-pattern',
+      title: 'Build the pattern',
+      step: 'Screen 9 of 11',
+      instruction: 'Set each statement to Correct or Incorrect. Then tap Check.',
+      build() {
+        const vals = state.multiSelections['build-pattern'] || {};
+        return `
+          <div class="statement-grid">
+            ${[1,2,3,4].map(n => `
+              <div class="statement-card">
+                <h4>Statement ${n}</h4>
+                <div class="toggle-row">
+                  <button class="choice-btn toggle-btn ${vals[n]==='correct' ? 'selected' : ''}" data-multi="correct" data-item="${n}">Correct</button>
+                  <button class="choice-btn toggle-btn ${vals[n]==='incorrect' ? 'selected' : ''}" data-multi="incorrect" data-item="${n}">Incorrect</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="prompt-row">
+            <button class="nav-btn primary" data-action="check-pattern">Check</button>
+          </div>
+        `;
+      },
+      multiCheck: true,
+      onAction(action) {
+        if (action === 'check-pattern') {
+          const vals = state.multiSelections['build-pattern'] || {};
+          const allDone = [1,2,3,4].every(n => vals[n]);
+          if (!allDone) {
+            showFeedback('incorrect', 'Choose an answer for all four statements first.');
+            rerender();
+            return;
+          }
+          const ok = vals[1]==='incorrect' && vals[2]==='correct' && vals[3]==='incorrect' && vals[4]==='incorrect';
+          if (ok) {
+            showFeedback('correct', 'Good. Only statement 2 is correct, so the final answer is option 2.');
+            markComplete();
+          } else {
+            applyDemerit();
+            showFeedback('incorrect', 'Check the statements again. Only one statement is correct.');
+          }
+          rerenderIfGameOverNotShown();
+        }
+      },
+      speakText() {
+        return 'Set each statement to correct or incorrect. Then tap check. Only statement 2 is correct, so the final answer is option 2.';
+      }
+    },
+    {
+      id: 'transfer',
+      title: 'Quick transfer check',
+      step: 'Screen 10 of 11',
+      instruction: 'Tap True or False.',
+      build() {
+        const options = getShuffledOptions('transfer', [
+          { key:'true', label:'True', correct:false },
+          { key:'false', label:'False', correct:true }
+        ]);
+        return `
+          <div class="statement-box">A seed needs sunlight before it has leaves.</div>
+          <div class="choice-grid one-col">
+            ${renderChoiceButtons('transfer', options)}
+          </div>
+          <p class="soft-note">This last check does not use demerits.</p>
+        `;
+      },
+      feedback: {
+        correct: 'Yes. Before leaves appear, the young seedling uses stored food.',
+        wrong: 'False. Before leaves appear, the seedling uses stored food from the seed leaves.'
+      },
+      correctChoice: 'false',
+      noDemerit: true,
+      speakText() {
+        return 'Quick transfer check. Tap true or false. A seed needs sunlight before it has leaves.';
+      }
+    },
+    {
+      id: 'complete',
+      title: 'You finished',
+      step: 'Screen 11 of 11',
+      instruction: 'Tap Finish.',
+      build() {
+        return `
+          <div class="panel">
+            <div class="status-chips">
+              <span class="chip">Root appears first</span>
+              <span class="chip">Seed leaves store food</span>
+              <span class="chip">Seeds need oxygen</span>
+            </div>
+            <p class="body-copy"><span class="result-line">Final answer: option 2.</span></p>
+            <ul class="summary-list">
+              <li>Statement 1 is incorrect. The first leaves appear later, not at A.</li>
+              <li>Statement 2 is correct. The root appears first.</li>
+              <li>Statement 3 is incorrect. From A to B, the seedling uses stored food in the seed leaves.</li>
+              <li>Statement 4 is incorrect. A germinating seed still needs oxygen.</li>
+            </ul>
+            <p class="footer-note">File name: plant_reproduction_07.html</p>
+          </div>
+        `;
+      },
+      actionsHtml() {
+        return `<button class="nav-btn primary" data-action="restart-finish">Finish</button>`;
+      },
+      onAction(action) {
+        if (action === 'restart-finish') {
+          restartAll();
+        }
+      },
+      noDemerit: true,
+      speakText() {
+        return 'You finished. Root appears first. The young seedling uses stored food in the seed leaves. Germinating seeds need oxygen. The final answer is option 2.';
+      }
+    }
+  ];
+
+  restartAllBtn.addEventListener('click', () => {
+    restartAll();
+  });
+
+  function makePlantSvg(stage) {
+    const leaf1 = ['#58a95a','#74b96a','#a7b95a','#927552','#6f5a4d'][stage];
+    const leaf2 = ['#79c66c','#9bc97d','#c2b862','#9f7855','#7b6256'][stage];
+    const stem = ['#2f7a47','#467d4f','#6f7a41','#7a5c41','#65544d'][stage];
+    const droop = [0,8,18,28,35][stage];
+    const stemCurve = [0,4,10,16,22][stage];
+    const face = stage === 4 ? `<line x1="20" y1="39" x2="28" y2="47" stroke="#7b6256" stroke-width="2"/><line x1="28" y1="39" x2="20" y2="47" stroke="#7b6256" stroke-width="2"/>` : '';
+    return `
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <rect x="16" y="50" width="32" height="8" rx="2" fill="#8a5b3d" />
+        <rect x="14" y="46" width="36" height="6" rx="3" fill="#a56d47" />
+        <path d="M32 46 C${32-stemCurve} 35, ${32+stemCurve/2} 28, 32 18" fill="none" stroke="${stem}" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="${24 + droop*0.18}" cy="${26 + droop*0.45}" rx="11" ry="6" transform="rotate(${-30 - droop} ${24 + droop*0.18} ${26 + droop*0.45})" fill="${leaf1}" />
+        <ellipse cx="${40 - droop*0.18}" cy="${24 + droop*0.5}" rx="11" ry="6" transform="rotate(${25 + droop} ${40 - droop*0.18} ${24 + droop*0.5})" fill="${leaf2}" />
+        <ellipse cx="32" cy="16" rx="7" ry="5" fill="${stage < 4 ? leaf2 : '#7b6256'}" />
+        ${face}
+      </svg>
+    `;
+  }
+
+  function renderHeader(screenObj) {
+    const stageLabels = ['Healthy','Droopy','Yellowing','Wilted','Dead'];
+    const currentStage = Math.min(state.demeritsUsed, 4);
+    return `
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1>Plant Reproduction Interactive</h1>
+          <div class="sub">${screenObj.step} · plant_reproduction_07.html</div>
+        </div>
+        <div class="topbar-right">
+          <button class="control-btn" data-action="toggle-read">
+            Read aloud: ${state.readAloud ? 'On' : 'Off'}
+          </button>
+          <button class="control-btn" data-action="read-now">Read this screen</button>
+          <button class="control-btn" data-action="restart-all">Restart</button>
+        </div>
+        <div class="demerit-bar">
+          <div class="demerit-head">
+            <strong>Plant health tracker</strong>
+            <span>${state.demeritsUsed} / ${state.demeritsMax} wrong checks</span>
+          </div>
+          <div class="plant-track">
+            ${stageLabels.map((label, i) => `
+              <div class="plant-stage ${i < currentStage ? 'past' : ''} ${i === currentStage ? 'current' : ''}">
+                ${makePlantSvg(i)}
+                <div class="label">${label}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderQuestionToggle(currentScreenId) {
+    if (currentScreenId === 'read-question') return '';
+    return `
+      <div class="question-toggle-wrap">
+        <button class="tiny-btn" data-action="toggle-question">
+          ${state.questionPanelOpen ? 'Hide original question' : 'See original question'}
+        </button>
+        <div class="question-panel ${state.questionPanelOpen ? 'open' : ''}">
+          <div class="panel">
+            <div class="image-frame"><img src="${QUESTION_IMAGE}" alt="Original worksheet question on germination" /></div>
+            <div class="question-text">${questionTextHTML}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+
+  function renderChoiceButtons(screenId, options) {
+    const selected = state.choiceSelections[screenId];
+    const currentScreenId = screens[state.screen].id;
+    return options.map(opt => {
+      const classes = ['choice-btn'];
+      if (selected === opt.key) {
+        if (currentScreenId === screenId && state.feedback) {
+          classes.push(state.feedback.type === 'correct' ? 'correct' : 'incorrect');
+        } else if (state.completedScreens[screenId]) {
+          classes.push('correct');
+        } else {
+          classes.push('selected');
+        }
+      }
+      return `<button class="${classes.join(' ')}" data-choice="${opt.key}">${opt.label}</button>`;
+    }).join('');
+  }
+
+  function renderScreen() {
+    const screenObj = screens[state.screen];
+    const content = screenObj.build();
+    const canGoNext = !!state.completedScreens[screenObj.id];
+    const feedbackBlock = state.feedback ? `
+      <div class="feedback show ${state.feedback.type}">${state.feedback.text}</div>
+    ` : `<div class="feedback"></div>`;
+
+    const actionButtons = screenObj.actionsHtml ? screenObj.actionsHtml() : `
+      <div class="nav-row">
+        <button class="nav-btn secondary" data-action="back" ${state.screen === 0 ? 'disabled' : ''}>Back</button>
+        <button class="nav-btn primary" data-action="next" ${canGoNext ? '' : 'disabled'}>Next</button>
+      </div>
+    `;
+
+    app.innerHTML = `
+      ${renderHeader(screenObj)}
+      <div class="card">
+        <div class="screen-top">
+          <div class="screen-tag">${screenObj.title}</div>
+        </div>
+        <div class="instruction">${screenObj.instruction}</div>
+        ${content}
+        ${feedbackBlock}
+        ${actionButtons}
+        ${renderQuestionToggle(screenObj.id)}
+      </div>
+    `;
+    bindEvents();
+    if (state.readAloud) speakCurrentScreen();
+  }
+
+  function bindEvents() {
+    app.querySelectorAll('[data-choice]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const choice = btn.dataset.choice;
+        handleChoice(choice);
+      });
+    });
+    app.querySelectorAll('[data-multi]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.dataset.item;
+        const val = btn.dataset.multi;
+        state.multiSelections['build-pattern'] = state.multiSelections['build-pattern'] || {};
+        state.multiSelections['build-pattern'][item] = val;
+        rerender();
+      });
+    });
+    app.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        handleAction(action);
+      });
+    });
+  }
+
+  function handleChoice(choice) {
+    const screenObj = screens[state.screen];
+    if (screenObj.multiCheck) return;
+    state.choiceSelections[screenObj.id] = choice;
+    const isCorrect = choice === screenObj.correctChoice;
+    if (isCorrect) {
+      markComplete();
+      showFeedback('correct', screenObj.feedback.correct);
+    } else {
+      if (!screenObj.noDemerit) applyDemerit();
+      const text = screenObj.customWrong ? screenObj.customWrong(choice) : screenObj.feedback.wrong;
+      showFeedback('incorrect', text);
+    }
+    rerenderIfGameOverNotShown();
+  }
+
+  function handleAction(action) {
+    const screenObj = screens[state.screen];
+    if (action === 'toggle-read') {
+      state.readAloud = !state.readAloud;
+      if (!state.readAloud && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+      rerender();
+      return;
+    }
+    if (action === 'read-now') {
+      speakCurrentScreen(true);
+      return;
+    }
+    if (action === 'restart-all') {
+      restartAll();
+      return;
+    }
+    if (action === 'toggle-question') {
+      state.questionPanelOpen = !state.questionPanelOpen;
+      rerender();
+      return;
+    }
+    if (action === 'back') {
+      if (state.screen > 0) {
+        state.screen -= 1;
+        state.feedback = null;
+        rerender();
+      }
+      return;
+    }
+    if (action === 'next') {
+      if (state.completedScreens[screenObj.id]) {
+        state.screen = Math.min(state.screen + 1, screens.length - 1);
+        state.feedback = null;
+        rerender();
+      }
+      return;
+    }
+    if (screenObj.onAction) {
+      screenObj.onAction(action);
+    }
+  }
+
+  function markComplete() {
+    const screenObj = screens[state.screen];
+    state.completedScreens[screenObj.id] = true;
+  }
+
+  function showFeedback(type, text) {
+    state.feedback = { type, text };
+  }
+
+  function applyDemerit() {
+    state.demeritsUsed += 1;
+    if (state.demeritsUsed >= state.demeritsMax) {
+      state.gameOver = true;
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden', 'false');
+      if (state.readAloud) {
+        speakText('The plant has withered. Let us restart and read each clue carefully.');
+      }
+    }
+  }
+
+  function rerenderIfGameOverNotShown() {
+    if (!state.gameOver) rerender();
+  }
+
+  function restartAll() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    state.screen = 0;
+    state.readAloud = false;
+    state.questionPanelOpen = false;
+    state.demeritsUsed = 0;
+    state.completedScreens = {};
+    state.screenOrders = {};
+    state.multiSelections = {};
+    state.choiceSelections = {};
+    state.feedback = null;
+    state.gameOver = false;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    rerender();
+  }
+
+  function getShuffledOptions(key, arr) {
+    if (!state.screenOrders[key]) {
+      const copy = arr.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      const correctIndex = copy.findIndex(x => x.correct);
+      if (correctIndex === 0 && copy.length > 1) {
+        const swapWith = 1 + Math.floor(Math.random() * (copy.length - 1));
+        [copy[0], copy[swapWith]] = [copy[swapWith], copy[0]];
+      }
+      state.screenOrders[key] = copy;
+    }
+    return state.screenOrders[key];
+  }
+
+  function speakCurrentScreen(force = false) {
+    if (!('speechSynthesis' in window)) return;
+    if (!state.readAloud && !force) return;
+    window.speechSynthesis.cancel();
+    const screenObj = screens[state.screen];
+    const feedbackText = state.feedback ? ` Feedback: ${state.feedback.text}` : '';
+    speakText(`${screenObj.title}. ${screenObj.speakText ? screenObj.speakText() : screenObj.instruction}${feedbackText}`);
+  }
+
+  function speakText(text) {
+    if (!('speechSynthesis' in window)) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    utter.lang = 'en-SG';
+    window.speechSynthesis.speak(utter);
+  }
+
+  function renderCleanSequence(opts) {
+    const highlightStages = opts.highlightStages || [];
+    const emphasis = opts.emphasis || '';
+    const labelNote = opts.labelNote ? `<p class="soft-note">${opts.labelNote}</p>` : '';
+    const stageClass = (letter) => highlightStages.includes(letter) ? 'fill="#fff8cc" stroke="#e2be3d"' : 'fill="#f8fbf7" stroke="#dbe6d8"';
+    const scale = (letter) => emphasis === letter ? 1.08 : 1;
+    return `
+      <svg class="diagram-svg" viewBox="0 0 760 220" role="img" aria-label="Clean germination sequence from A to E">
+        <defs>
+          <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#69836f"></polygon>
+          </marker>
+        </defs>
+        ${['A','B','C','D','E'].map((letter, idx) => `
+          <g transform="translate(${42 + idx*142},18) scale(${scale(letter)})">
+            <rect x="-8" y="-4" width="116" height="160" rx="18" ${stageClass(letter)} stroke-width="2"></rect>
+            ${drawStage(letter)}
+            <text x="48" y="148" text-anchor="middle" font-size="20" font-weight="800" fill="#355b43">${letter}</text>
+          </g>
+        `).join('')}
+        ${[0,1,2,3].map(i => `<line x1="${126 + i*142}" y1="86" x2="${164 + i*142}" y2="86" stroke="#69836f" stroke-width="3" marker-end="url(#arrowHead)" />`).join('')}
+      </svg>
+      ${labelNote}
+    `;
+  }
+
+  function drawStage(letter) {
+    if (letter === 'A') return `
+      <ellipse cx="48" cy="78" rx="20" ry="28" fill="#b88e62" stroke="#876448" stroke-width="2"/>
+      <path d="M48 52 C44 60, 44 96, 50 104" fill="none" stroke="#e6c49b" stroke-width="2"/>
+      <rect x="18" y="112" width="60" height="16" rx="8" fill="#d0b39a" opacity=".25"/>
+    `;
+    if (letter === 'B') return `
+      <ellipse cx="48" cy="70" rx="20" ry="28" fill="#b88e62" stroke="#876448" stroke-width="2"/>
+      <path d="M48 52 C44 60, 44 96, 50 104" fill="none" stroke="#e6c49b" stroke-width="2"/>
+      <path d="M48 95 C46 112, 42 124, 45 132" fill="none" stroke="#d9e8cf" stroke-width="4" stroke-linecap="round"/>
+      <path d="M45 128 C37 132, 36 137, 34 141" fill="none" stroke="#d9e8cf" stroke-width="3" stroke-linecap="round"/>
+    `;
+    if (letter === 'C') return `
+      <ellipse cx="48" cy="70" rx="18" ry="24" fill="#b88e62" stroke="#876448" stroke-width="2"/>
+      <path d="M48 92 C48 112, 44 126, 47 140" fill="none" stroke="#d9e8cf" stroke-width="4" stroke-linecap="round"/>
+      <path d="M47 133 C38 136, 36 142, 33 146" fill="none" stroke="#d9e8cf" stroke-width="3" stroke-linecap="round"/>
+      <path d="M50 62 C57 55, 60 49, 59 44" fill="none" stroke="#5a9150" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="61" cy="42" rx="8" ry="5" transform="rotate(-24 61 42)" fill="#8bcf7e"/>
+    `;
+    if (letter === 'D') return `
+      <path d="M48 132 C48 110, 50 84, 50 52" fill="none" stroke="#557e42" stroke-width="4" stroke-linecap="round"/>
+      <path d="M48 130 C38 138, 36 144, 34 149" fill="none" stroke="#d9e8cf" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="39" cy="68" rx="13" ry="8" transform="rotate(-26 39 68)" fill="#9ad47d" stroke="#6aa35b"/>
+      <ellipse cx="61" cy="64" rx="13" ry="8" transform="rotate(28 61 64)" fill="#9ad47d" stroke="#6aa35b"/>
+      <ellipse cx="50" cy="48" rx="7" ry="5" fill="#6fbf6a"/>
+    `;
+    return `
+      <path d="M48 136 C48 114, 50 88, 52 42" fill="none" stroke="#3c6f3f" stroke-width="4" stroke-linecap="round"/>
+      <path d="M49 132 C38 142, 35 147, 33 151" fill="none" stroke="#d9e8cf" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="38" cy="78" rx="13" ry="8" transform="rotate(-26 38 78)" fill="#7bcf70" stroke="#4a9750"/>
+      <ellipse cx="60" cy="68" rx="13" ry="8" transform="rotate(28 60 68)" fill="#7bcf70" stroke="#4a9750"/>
+      <ellipse cx="54" cy="44" rx="18" ry="10" transform="rotate(18 54 44)" fill="#7fc870" stroke="#4a9750"/>
+      <ellipse cx="44" cy="54" rx="9" ry="6" transform="rotate(-30 44 54)" fill="#9ddd82" stroke="#5aa45a"/>
+    `;
+  }
+
+  function renderRootAnimation() {
+    return `
+      <svg class="diagram-svg loop-root" viewBox="0 0 420 220" role="img" aria-label="Animation showing the root growing before the shoot and leaves">
+        <rect x="24" y="138" width="372" height="24" rx="12" fill="#d7b89e"></rect>
+        <ellipse cx="210" cy="96" rx="28" ry="38" fill="#b88e62" stroke="#876448" stroke-width="3"></ellipse>
+        <path d="M210 58 C205 69, 205 121, 214 131" fill="none" stroke="#e6c49b" stroke-width="3"></path>
+        <path class="root-line" d="M210 130 C209 150, 197 170, 202 190" fill="none" stroke="#d7ebcf" stroke-width="6" stroke-linecap="round"></path>
+        <path class="shoot-line" d="M214 74 C224 66, 234 58, 236 43" fill="none" stroke="#4e8b46" stroke-width="6" stroke-linecap="round"></path>
+        <ellipse cx="242" cy="38" rx="14" ry="8" transform="rotate(-20 242 38)" fill="#8bcf7e"></ellipse>
+        <text x="40" y="30" font-size="18" font-weight="800" fill="#2d5f38">Root grows first</text>
+      </svg>
+    `;
+  }
+
+  function renderFoodAnimation() {
+    return `
+      <svg class="diagram-svg loop-food" viewBox="0 0 520 250" role="img" aria-label="Animation showing stored food in the seed leaves being used by the young seedling to grow before true leaves appear">
+        <rect x="40" y="182" width="440" height="24" rx="12" fill="#d7b89e"></rect>
+
+        <path d="M190 180 C188 162, 185 146, 186 130" fill="none" stroke="#d8ebd3" stroke-width="7" stroke-linecap="round"></path>
+        <path d="M186 128 C178 143, 170 160, 160 182" fill="none" stroke="#d8ebd3" stroke-width="5" stroke-linecap="round"></path>
+        <path d="M190 126 C196 115, 202 102, 204 90" fill="none" stroke="#7ca66c" stroke-width="5" stroke-linecap="round"></path>
+
+        <ellipse cx="170" cy="126" rx="28" ry="18" transform="rotate(-24 170 126)" fill="#e7bf71" stroke="#b88e62" stroke-width="2"></ellipse>
+        <ellipse cx="204" cy="122" rx="28" ry="18" transform="rotate(24 204 122)" fill="#e7bf71" stroke="#b88e62" stroke-width="2"></ellipse>
+
+        <circle class="growth-tip root-tip" cx="160" cy="182" r="6" fill="#d8ebd3"></circle>
+        <circle class="growth-tip shoot-tip" cx="204" cy="90" r="6" fill="#7ca66c"></circle>
+
+        <circle class="food-dot dot-root d1" cx="190" cy="126" r="5" fill="#ef8d2f"></circle>
+        <circle class="food-dot dot-root d2" cx="190" cy="126" r="5" fill="#ef8d2f"></circle>
+        <circle class="food-dot dot-shoot d3" cx="190" cy="126" r="5" fill="#ef8d2f"></circle>
+        <circle class="food-dot dot-shoot d4" cx="190" cy="126" r="5" fill="#ef8d2f"></circle>
+
+        <text x="36" y="34" font-size="18" font-weight="800" fill="#2d5f38">Stored food in the seed leaves helps the seedling grow</text>
+        <text x="114" y="96" font-size="16" font-weight="700" fill="#7a5a2e">seed leaves</text>
+        <text x="82" y="216" font-size="16" font-weight="700" fill="#6a8d62">root grows</text>
+        <text x="228" y="84" font-size="16" font-weight="700" fill="#487845">shoot grows</text>
+        <text x="334" y="84" font-size="16" font-weight="700" fill="#7d322e">no true leaves yet</text>
+      </svg>
+    `;
+  }
+
+    function renderOxygenAnimation(isLive) {
+    if (isLive) {
+      return `
+        <svg class="diagram-svg live-side" viewBox="0 0 340 220" role="img" aria-label="Animation showing a germinating seed with oxygen">
+          <rect x="20" y="146" width="300" height="28" rx="14" fill="#d7b89e"></rect>
+          <ellipse cx="164" cy="106" rx="24" ry="34" fill="#b88e62" stroke="#876448" stroke-width="3"></ellipse>
+          <path d="M165 138 C160 153, 154 168, 156 188" fill="none" stroke="#d7ebcf" stroke-width="6" stroke-linecap="round"></path>
+          <path d="M171 80 C182 70, 191 57, 192 44" fill="none" stroke="#4f8c45" stroke-width="6" stroke-linecap="round"></path>
+          <ellipse cx="197" cy="38" rx="14" ry="8" transform="rotate(18 197 38)" fill="#88d07a"></ellipse>
+          <circle class="oxy o1" cx="112" cy="72" r="8" fill="#80cfff"></circle>
+          <circle class="oxy o2" cx="92" cy="98" r="7" fill="#80cfff"></circle>
+          <circle class="oxy o3" cx="122" cy="116" r="6" fill="#80cfff"></circle>
+          <text x="26" y="28" font-size="17" font-weight="800" fill="#2d5f38">oxygen is available</text>
+        </svg>
+      `;
+    }
+    return `
+      <svg class="diagram-svg rot-side" viewBox="0 0 340 220" role="img" aria-label="Animation showing a seed dying and rotting when oxygen is removed">
+        <rect x="20" y="146" width="300" height="28" rx="14" fill="#d7b89e"></rect>
+        <ellipse class="seed-shell" cx="164" cy="106" rx="24" ry="34" fill="#8f6b50" stroke="#614532" stroke-width="3"></ellipse>
+        <circle class="rot-spot" cx="154" cy="96" r="4" fill="#55372c"></circle>
+        <circle class="rot-spot" cx="174" cy="118" r="4" fill="#55372c"></circle>
+        <line class="cross-line" x1="78" y1="42" x2="118" y2="82" stroke="#c65b52" stroke-width="6" stroke-linecap="round"></line>
+        <line class="cross-line" x1="118" y1="42" x2="78" y2="82" stroke="#c65b52" stroke-width="6" stroke-linecap="round"></line>
+        <text x="26" y="28" font-size="17" font-weight="800" fill="#7d322e">oxygen is removed</text>
+        <text x="122" y="196" font-size="16" font-weight="800" fill="#7d322e">seed dies and rots</text>
+      </svg>
+    `;
+  }
+
+  function rerender() {
+    renderScreen();
+  }
+
+  renderScreen();
+})();
+</script>
+</body>
+</html>
