@@ -1,0 +1,1814 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>internal_transfer_total_unchanged_6</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --ink:#15263c;
+      --muted:#59697e;
+      --line:#d8e3ef;
+      --accent:#1f6feb;
+      --accent-soft:#eef5ff;
+      --warm:#ffb44d;
+      --warm-soft:#fff5e7;
+      --good:#1f8f47;
+      --good-soft:#eaf8ef;
+      --bad:#c73b3b;
+      --bad-soft:#fff2f2;
+      --shadow:0 10px 24px rgba(16,24,40,.08);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    body{min-height:100vh}
+    button,input{font:inherit}
+
+    .app{
+      max-width:1160px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .title-wrap h1{
+      margin:0;
+      font-size:clamp(1.65rem, 3vw, 2.3rem);
+      line-height:1.1;
+    }
+    .title-wrap p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:1rem;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 18px;
+      min-height:52px;
+      background:var(--accent);
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow:var(--shadow);
+    }
+    .btn.secondary{
+      background:#fff;
+      color:var(--ink);
+      border:2px solid var(--line);
+      box-shadow:none;
+    }
+    .btn.ghost{
+      background:transparent;
+      color:var(--accent);
+      border:2px solid var(--accent);
+      box-shadow:none;
+    }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .btn:focus-visible,
+    .option:focus-visible,
+    .chip:focus-visible,
+    .model-card:focus-visible,
+    .strategy-card:focus-visible,
+    .mini-btn:focus-visible,
+    .question-toggle:focus-visible,
+    input:focus-visible,
+    .bar-card:focus-visible{
+      outline:4px solid #93c5fd;
+      outline-offset:3px;
+    }
+
+    .progress-wrap{margin:10px 0 16px}
+    .progress-label{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .progress{
+      width:100%;
+      height:16px;
+      background:#dbe6f3;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg, var(--accent), #7fb0fb);
+      transition:width .35s ease;
+    }
+
+    .screen-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+      min-height:620px;
+    }
+
+    .screen-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .screen-head h2{
+      margin:0;
+      font-size:clamp(1.4rem, 2.6vw, 2rem);
+      line-height:1.15;
+    }
+    .tag{
+      background:var(--accent-soft);
+      color:var(--accent);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .action-box{
+      background:#eef6ff;
+      border:3px solid #b9d7ff;
+      border-radius:20px;
+      padding:16px 18px;
+      font-weight:700;
+      font-size:1.08rem;
+      margin-bottom:12px;
+    }
+    .explain-box{
+      background:var(--warm-soft);
+      border:3px solid #f1c483;
+      border-radius:20px;
+      padding:14px 18px;
+      margin-bottom:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1.2fr .95fr;
+      gap:18px;
+    }
+    @media (max-width: 920px){
+      .grid-2{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:#fbfcfe;
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+    }
+
+    .question-card{
+      margin-top:16px;
+      background:#fff;
+      border:2px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+    }
+    .question-toggle{
+      width:100%;
+      text-align:left;
+      border:none;
+      background:#fff;
+      padding:16px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .question-body{
+      display:none;
+      border-top:2px solid var(--line);
+      padding:16px 18px 18px;
+    }
+    .question-body.open{display:block}
+
+    .q-line{
+      margin:0 0 10px;
+      line-height:1.5;
+      font-size:1.05rem;
+    }
+    .q-line:last-child{margin-bottom:0}
+
+    .chip{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      min-height:62px;
+      padding:14px 18px;
+      font-weight:700;
+      cursor:pointer;
+      color:var(--ink);
+    }
+
+    .option-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:14px;
+    }
+    .option,
+    .mini-btn,
+    .bar-card{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-height:88px;
+      background:#fff;
+      border:3px solid var(--line);
+      border-radius:22px;
+      cursor:pointer;
+      padding:16px;
+      font-weight:700;
+      color:var(--ink);
+    }
+
+    .sentence-grid{
+      display:grid;
+      gap:12px;
+    }
+    .sentence-card{
+      min-height:92px;
+      justify-content:flex-start;
+      text-align:left;
+      line-height:1.45;
+    }
+
+    .chip.selected,
+    .option.selected,
+    .mini-btn.selected,
+    .model-card.selected,
+    .strategy-card.selected,
+    .bar-card.selected{
+      border-color:var(--accent);
+      background:var(--accent-soft);
+      transform:translateY(-1px);
+    }
+
+    .feedback{
+      display:none;
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:18px;
+      font-weight:700;
+    }
+    .feedback.good{
+      display:block;
+      background:var(--good-soft);
+      border:2px solid #bde3ca;
+      color:#125c2f;
+    }
+    .feedback.bad{
+      display:block;
+      background:var(--bad-soft);
+      border:2px solid #f3c3c3;
+      color:#8b2222;
+    }
+
+    .nav-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .scene{
+      background:linear-gradient(180deg,#fdfefe,#f4f8fd);
+      border:2px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      min-height:300px;
+      position:relative;
+      overflow:hidden;
+    }
+    .scene-title{
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .bottles{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:end;
+    }
+    .bottle-card{
+      background:#fff;
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:12px;
+      min-height:210px;
+      position:relative;
+    }
+    .bottle-card h3{
+      margin:0 0 10px;
+      font-size:1.1rem;
+    }
+
+    .bottle{
+      height:136px;
+      border-radius:22px 22px 18px 18px;
+      background:linear-gradient(180deg,#dff3ff,#cceaff);
+      border:3px solid #8ac3e8;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+    }
+    .juice-fill{
+      width:100%;
+      background:linear-gradient(180deg,#ffbe63,#eb9724);
+      border-radius:18px 18px 0 0;
+      transition:height .7s ease;
+    }
+    .bottle-label{
+      position:absolute;
+      left:0; right:0; bottom:10px;
+      text-align:center;
+      font-weight:700;
+      color:#6b4300;
+      text-shadow:0 1px 0 rgba(255,255,255,.55);
+    }
+
+    .brace{
+      margin:10px auto 0;
+      width:94%;
+      border-top:4px solid var(--ink);
+      position:relative;
+      height:34px;
+    }
+    .brace::before,
+    .brace::after{
+      content:"";
+      position:absolute;
+      top:-4px;
+      width:4px;
+      height:22px;
+      background:var(--ink);
+    }
+    .brace::before{left:0}
+    .brace::after{right:0}
+    .brace-label{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top:10px;
+      background:#fff;
+      padding:2px 10px;
+      border-radius:999px;
+      font-weight:700;
+    }
+
+    .transfer-chip{
+      position:absolute;
+      top:88px;
+      left:18%;
+      background:#d4efff;
+      border:3px solid #7abfe8;
+      color:#084061;
+      font-weight:700;
+      padding:10px 14px;
+      border-radius:999px;
+      box-shadow:0 6px 16px rgba(0,0,0,.08);
+    }
+    .transfer-chip.animate{animation:moveRight 2.2s ease-in-out infinite alternate}
+    .transfer-chip.reverse{animation:moveLeft 2.2s ease-in-out infinite alternate}
+    @keyframes moveRight{
+      0%{transform:translateX(0) translateY(0)}
+      100%{transform:translateX(320px) translateY(28px)}
+    }
+    @keyframes moveLeft{
+      0%{transform:translateX(320px) translateY(28px)}
+      100%{transform:translateX(0) translateY(0)}
+    }
+
+    .model-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      gap:14px;
+    }
+    .model-card{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:22px;
+      padding:14px;
+      cursor:pointer;
+      min-height:250px;
+    }
+    .model-card h4{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:1.02rem;
+    }
+    .model-caption{
+      margin-top:10px;
+      color:var(--muted);
+      text-align:center;
+      font-weight:700;
+      min-height:42px;
+    }
+
+    .compare-stack{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+    .compare-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:nowrap;
+    }
+    .compare-label{
+      width:78px;
+      flex:0 0 78px;
+      font-weight:700;
+      font-size:.95rem;
+    }
+    .seg{
+      width:120px;
+      flex:0 0 120px;
+      height:44px;
+      border-radius:14px;
+      border:3px solid #d79a3d;
+      background:#ffe2b2;
+      position:relative;
+      overflow:hidden;
+    }
+    .seg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,#ffbf67,#eb9c2c);
+      opacity:.94;
+    }
+    .seg.extra{
+      width:78px;
+      flex:0 0 78px;
+      border-color:#7abfe8;
+      background:#d4efff;
+    }
+    .seg.extra::after{
+      background:linear-gradient(180deg,#9dd8f7,#68bce8);
+    }
+
+    .equation{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:1.45rem;
+      font-weight:700;
+      background:#fff;
+      border:2px dashed #bed3ef;
+      border-radius:18px;
+      padding:16px;
+      margin:12px 0;
+    }
+    .blank{
+      min-width:94px;
+      min-height:38px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-bottom:4px solid var(--ink);
+      padding:0 8px 4px;
+    }
+
+    .input-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    .answer-input{
+      min-height:64px;
+      width:min(240px,100%);
+      border-radius:18px;
+      border:3px solid var(--line);
+      padding:12px 14px;
+      font-size:1.2rem;
+      font-weight:700;
+    }
+
+    .mini-panel{
+      margin-top:14px;
+      background:#f8fbff;
+      border:2px solid #cfe1fb;
+      border-radius:20px;
+      padding:14px;
+    }
+    .mini-panel h4{
+      margin:0 0 10px;
+      font-size:1.05rem;
+    }
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .story-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 780px){
+      .story-grid{grid-template-columns:1fr}
+    }
+    .story-card{
+      border:2px solid var(--line);
+      background:#fff;
+      border-radius:20px;
+      padding:14px;
+    }
+    .story-card h4{margin:0 0 10px}
+    .story-line{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      margin-top:8px;
+      border-radius:14px;
+      background:#f8fbff;
+      font-weight:700;
+    }
+
+    .compare-banner{
+      margin-top:14px;
+      background:#eef7ff;
+      border:2px solid #c7ddfb;
+      border-radius:18px;
+      padding:14px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .strategy-layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+    @media (max-width: 900px){
+      .strategy-layout{grid-template-columns:1fr}
+    }
+    .strategy-zone{
+      background:#fbfcfe;
+      border:2px solid var(--line);
+      border-radius:22px;
+      padding:14px;
+      min-height:260px;
+    }
+    .strategy-zone h4{margin:0 0 12px}
+    .strategy-list{
+      display:grid;
+      gap:10px;
+    }
+    .strategy-card{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      padding:14px;
+      cursor:pointer;
+      text-align:left;
+      font-weight:700;
+    }
+    .ordered-card{
+      border:3px solid #a7d4b6;
+      background:#f2fbf5;
+      border-radius:18px;
+      padding:14px;
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:700;
+    }
+    .ordered-num{
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      background:var(--good);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      font-weight:700;
+    }
+
+    .end-banner{
+      margin-top:16px;
+      background:linear-gradient(135deg,#eefaf2,#def5e8);
+      border:2px solid #bfe7ca;
+      border-radius:22px;
+      padding:18px;
+      font-weight:700;
+      font-size:1.15rem;
+    }
+
+    .muted{color:var(--muted)}
+    .center{text-align:center}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Orange Juice Transfer Interactive</h1>
+        <p>Keep the total the same. Remove the extra part. Work backwards to Bottle B at first.</p>
+      </div>
+      <div class="controls">
+        <button class="btn secondary" id="readAloudBtn" type="button">🔊 Read aloud</button>
+        <button class="btn secondary" id="restartBtn" type="button">↺ Restart</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">Step 1 of 15</span>
+        <span id="progressName">Read the problem</span>
+      </div>
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+    </div>
+
+    <div class="screen-card" id="appScreen"></div>
+
+    <div class="question-card">
+      <button class="question-toggle" id="questionToggle" type="button">
+        <span>Show question</span>
+        <span id="questionArrow">▼</span>
+      </button>
+      <div class="question-body" id="questionBody">
+        <p class="q-line">There was a total of <strong>1 l 800 ml</strong> of orange juice in Bottle A and Bottle B.</p>
+        <p class="q-line">After Jack poured <strong>500 ml</strong> of orange juice from <strong>Bottle A into Bottle B</strong>, Bottle A had <strong>200 ml more</strong> orange juice than Bottle B.</p>
+        <p class="q-line">How much orange juice was there in <strong>Bottle B at first</strong>?</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const QUESTION_TEXT = [
+      "There was a total of 1 litre 800 millilitres of orange juice in Bottle A and Bottle B.",
+      "After Jack poured 500 millilitres of orange juice from Bottle A into Bottle B, Bottle A had 200 millilitres more orange juice than Bottle B.",
+      "How much orange juice was there in Bottle B at first?"
+    ].join(" ");
+
+    const screenMeta = [
+      {title:"Read the problem", short:"Read the problem"},
+      {title:"Change to millilitres", short:"Change to ml"},
+      {title:"What are we finding?", short:"Find the target"},
+      {title:"Which way did the juice move?", short:"Transfer direction"},
+      {title:"Does the total change?", short:"Total stays the same"},
+      {title:"Which bottle has more after?", short:"Who has more?"},
+      {title:"Choose the after model", short:"Choose the model"},
+      {title:"Which part is the extra 200 ml?", short:"Find the extra part"},
+      {title:"Remove the extra part", short:"Remove the difference"},
+      {title:"Find the smaller equal bar", short:"Divide by 2"},
+      {title:"What does 800 ml mean?", short:"Check 800"},
+      {title:"Add or subtract to go back?", short:"Work backwards"},
+      {title:"Find Bottle B at first", short:"Find the start"},
+      {title:"Check the story", short:"Check the story"},
+      {title:"Consolidate the strategy", short:"Consolidate"}
+    ];
+
+    const strategyCorrect = [
+      "The total stays 1800 ml.",
+      "After the transfer, Bottle A is 200 ml more than Bottle B.",
+      "Take away the extra 200 ml to get 1600 ml.",
+      "1600 ÷ 2 = 800 ml, so Bottle B had 800 ml after.",
+      "Subtract 500 ml to find Bottle B at first."
+    ];
+
+    const state = {
+      screen: 0,
+      selected: null,
+      feedbackType: "",
+      feedbackText: "",
+      unlocked: false,
+      attempts: {},
+      s2Input: "",
+      s10Input: "",
+      s12Stage: 0,
+      s12PracticeSelected: null,
+      s12PracticePassed: false,
+      s13Input: "",
+      s15Chosen: [],
+      s15Pool: [
+        "Subtract 500 ml to find Bottle B at first.",
+        "1600 ÷ 2 = 800 ml, so Bottle B had 800 ml after.",
+        "Take away the extra 200 ml to get 1600 ml.",
+        "After the transfer, Bottle A is 200 ml more than Bottle B.",
+        "The total stays 1800 ml."
+      ]
+    };
+
+    const appScreen = document.getElementById("appScreen");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const progressName = document.getElementById("progressName");
+
+    function normalizeNumber(value){
+      return String(value || "").replace(/[,\s$]/g, "");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function clearFeedback(){
+      state.feedbackType = "";
+      state.feedbackText = "";
+    }
+
+    function setFeedback(type, text){
+      state.feedbackType = type;
+      state.feedbackText = text;
+      render();
+    }
+
+    function markAttempt(key){
+      state.attempts[key] = (state.attempts[key] || 0) + 1;
+    }
+
+    function updateProgress(){
+      const pct = ((state.screen + 1) / screenMeta.length) * 100;
+      progressBar.style.width = pct + "%";
+      progressText.textContent = `Step ${state.screen + 1} of ${screenMeta.length}`;
+      progressName.textContent = screenMeta[state.screen].short;
+    }
+
+    function feedbackHtml(){
+      if(!state.feedbackText) return "";
+      return `<div class="feedback ${state.feedbackType}">${state.feedbackText}</div>`;
+    }
+
+    function navHtml(showBack = true, nextDisabled = !state.unlocked){
+      return `
+        <div class="nav-row">
+          <button class="btn secondary" type="button" data-action="back" ${showBack ? "" : "style='visibility:hidden'"}>← Back</button>
+          <button class="btn" type="button" data-action="next" ${nextDisabled ? "disabled" : ""}>Next →</button>
+        </div>
+      `;
+    }
+
+    function renderQuestionWithChips(){
+      return `
+        <div class="panel">
+          <p class="q-line">There was a total of
+            <button class="chip ${state.selected === '1l800ml' ? 'selected' : ''}" type="button" data-action="select-chip" data-value="1l800ml">1 l 800 ml</button>
+            of orange juice in Bottle A and Bottle B.
+          </p>
+          <p class="q-line">After Jack poured
+            <button class="chip ${state.selected === '500' ? 'selected' : ''}" type="button" data-action="select-chip" data-value="500">500 ml</button>
+            of orange juice from Bottle A into Bottle B, Bottle A had 200 ml more orange juice than Bottle B.
+          </p>
+          <p class="q-line">How much orange juice was there in Bottle B at first?</p>
+        </div>
+      `;
+    }
+
+    function renderScreen1(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Read the problem</h2>
+          <div class="tag">Tap the total</div>
+        </div>
+        <div class="action-box">Tap the total amount of orange juice.</div>
+        <div class="explain-box">Look for the amount in both bottles together.</div>
+
+        <div class="grid-2">
+          <div>
+            ${renderQuestionWithChips()}
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s1">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+          <div class="scene">
+            <div class="scene-title">Which containers are in the story?</div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:80%"></div>
+                  <div class="bottle-label">Orange juice in A</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:38%"></div>
+                  <div class="bottle-label">Orange juice in B</div>
+                </div>
+              </div>
+            </div>
+            <div class="brace"><div class="brace-label">Total together</div></div>
+          </div>
+        </div>
+        ${navHtml(false)}
+      `;
+    }
+
+    function renderScreen2(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Change to millilitres</h2>
+          <div class="tag">Use one unit</div>
+        </div>
+        <div class="action-box">Type the total in millilitres.</div>
+        <div class="explain-box">1 l = 1000 ml, so 1 l 800 ml = 1000 ml + 800 ml.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Change the total to ml</div>
+            <div class="equation">1 l 800 ml = <span class="blank">? ml</span></div>
+            <div class="compare-banner">1 l = 1000 ml</div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s2Input"><strong>Total = </strong></label>
+              <input id="s2Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s2Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s2">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s2Input = document.getElementById("s2Input");
+      if(s2Input) s2Input.addEventListener("input", e => state.s2Input = e.target.value);
+    }
+
+    function renderScreen3(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>What are we finding?</h2>
+          <div class="tag">Keep the target clear</div>
+        </div>
+        <div class="action-box">Tap what we need to find.</div>
+        <div class="explain-box">Do not stop at the wrong amount. We need Bottle B at first.</div>
+
+        <div class="option-grid">
+          <button class="option ${state.selected === 'Aafter' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Aafter">Bottle A after</button>
+          <button class="option ${state.selected === 'Bafter' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Bafter">Bottle B after</button>
+          <button class="option ${state.selected === 'Bfirst' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Bfirst">Bottle B at first</button>
+          <button class="option ${state.selected === 'total' ? 'selected' : ''}" type="button" data-action="select-option" data-value="total">The total amount</button>
+        </div>
+
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s3">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen4(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Which way did the juice move?</h2>
+          <div class="tag">Read the transfer carefully</div>
+        </div>
+        <div class="action-box">Which way did the 500 ml move?</div>
+        <div class="explain-box">Read the words carefully: from Bottle A into Bottle B.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Pouring 500 ml</div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:66%"></div>
+                  <div class="bottle-label">Loses 500 ml</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:52%"></div>
+                  <div class="bottle-label">Gets 500 ml</div>
+                </div>
+              </div>
+            </div>
+            <div class="transfer-chip animate">500 ml</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'aToB' ? 'selected' : ''}" type="button" data-action="select-option" data-value="aToB">From Bottle A to Bottle B</button>
+              <button class="option ${state.selected === 'bToA' ? 'selected' : ''}" type="button" data-action="select-option" data-value="bToA">From Bottle B to Bottle A</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s4">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen5(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Does the total change?</h2>
+          <div class="tag">See the transfer</div>
+        </div>
+        <div class="action-box">Did the total stay 1800 ml or change?</div>
+        <div class="explain-box">The juice moved from Bottle A to Bottle B, but it stayed inside the two bottles.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Watch the transfer</div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:66%"></div>
+                  <div class="bottle-label">Loses 500 ml</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:52%"></div>
+                  <div class="bottle-label">Gets 500 ml</div>
+                </div>
+              </div>
+            </div>
+            <div class="brace"><div class="brace-label">Total = 1800 ml</div></div>
+            <div class="transfer-chip animate">500 ml</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'same' ? 'selected' : ''}" type="button" data-action="select-option" data-value="same">The total stays the same.</button>
+              <button class="option ${state.selected === 'change' ? 'selected' : ''}" type="button" data-action="select-option" data-value="change">The total changes.</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s5">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen6(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Which bottle has more after?</h2>
+          <div class="tag">Read the comparison</div>
+        </div>
+        <div class="action-box">After the transfer, which bottle has more juice?</div>
+        <div class="explain-box">The question says Bottle A had 200 ml more than Bottle B.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After the transfer</div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:70%"></div>
+                  <div class="bottle-label">Larger after amount</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:56%"></div>
+                  <div class="bottle-label">Smaller after amount</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'A' ? 'selected' : ''}" type="button" data-action="select-option" data-value="A">Bottle A</button>
+              <button class="option ${state.selected === 'B' ? 'selected' : ''}" type="button" data-action="select-option" data-value="B">Bottle B</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s6">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function modelCard(title, value, kind){
+      let rows = "";
+      if(kind === "correct"){
+        rows = `
+          <div class="compare-stack">
+            <div class="compare-row"><div class="compare-label">Bottle A</div><div class="seg"></div><div class="seg extra"></div></div>
+            <div class="compare-row"><div class="compare-label">Bottle B</div><div class="seg"></div></div>
+          </div>
+        `;
+      } else if(kind === "reversed"){
+        rows = `
+          <div class="compare-stack">
+            <div class="compare-row"><div class="compare-label">Bottle A</div><div class="seg"></div></div>
+            <div class="compare-row"><div class="compare-label">Bottle B</div><div class="seg"></div><div class="seg extra"></div></div>
+          </div>
+        `;
+      } else {
+        rows = `
+          <div class="compare-stack">
+            <div class="compare-row"><div class="compare-label">Bottle A</div><div class="seg"></div><div class="seg"></div></div>
+            <div class="compare-row"><div class="compare-label">Bottle B</div><div class="seg"></div></div>
+          </div>
+        `;
+      }
+
+      const caption = kind === "correct"
+        ? "Bottle A = Bottle B and 200 ml more"
+        : kind === "reversed"
+        ? "This makes Bottle B larger, so it does not match"
+        : "This does not show the extra 200 ml part";
+
+      return `
+        <button class="model-card ${state.selected === value ? 'selected' : ''}" type="button" data-action="select-option" data-value="${value}">
+          <h4>${title}</h4>
+          ${rows}
+          <div class="brace"><div class="brace-label">1800 ml</div></div>
+          <div class="model-caption">${caption}</div>
+        </button>
+      `;
+    }
+
+    function renderScreen7(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Choose the after model</h2>
+          <div class="tag">Match “200 ml more”</div>
+        </div>
+        <div class="action-box">Tap the model that matches the after situation.</div>
+        <div class="explain-box">Bottle A has the same amount as Bottle B, and 200 ml more.</div>
+
+        <div class="model-grid">
+          ${modelCard("Model A", "correct", "correct")}
+          ${modelCard("Model B", "reversed", "reversed")}
+          ${modelCard("Model C", "noExtra", "noExtra")}
+        </div>
+
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s7">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen8(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Which part is the extra 200 ml?</h2>
+          <div class="tag">Find the difference</div>
+        </div>
+        <div class="action-box">Tap the extra 200 ml part.</div>
+        <div class="explain-box">Look for the unmatched extra part on Bottle A.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After comparison model</div>
+            <div class="compare-stack">
+              <div class="compare-row">
+                <div class="compare-label">Bottle A</div>
+                <div class="seg"></div>
+                <button class="bar-card ${state.selected === 'extra' ? 'selected' : ''}" type="button" data-action="select-option" data-value="extra" style="min-height:46px;padding:0;width:78px;flex:0 0 78px;">200 ml</button>
+              </div>
+              <div class="compare-row">
+                <div class="compare-label">Bottle B</div>
+                <button class="bar-card ${state.selected === 'sameBar' ? 'selected' : ''}" type="button" data-action="select-option" data-value="sameBar" style="min-height:46px;padding:0;width:120px;flex:0 0 120px;">same bar</button>
+              </div>
+            </div>
+            <div class="brace"><div class="brace-label">1800 ml</div></div>
+          </div>
+          <div class="panel">
+            <p class="q-line">Tap the unmatched extra part on Bottle A.</p>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s8">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen9(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Remove the extra part</h2>
+          <div class="tag">Make 2 equal bars</div>
+        </div>
+        <div class="action-box">1800 ml − 200 ml = ?</div>
+        <div class="explain-box">When we take away the extra 200 ml, the amount left is the 2 equal bars.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Take away the extra 200 ml</div>
+            <div class="compare-stack">
+              <div class="compare-row"><div class="compare-label">Total</div><div class="seg" style="width:180px;flex:0 0 180px;"></div><div class="seg extra"></div></div>
+            </div>
+            <div class="equation">1800 − 200 = <span class="blank">?</span></div>
+            <div class="compare-banner">The amount left is 2 equal bars.</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === '1600' ? 'selected' : ''}" type="button" data-action="select-option" data-value="1600">1600 ml</button>
+              <button class="option ${state.selected === '2000' ? 'selected' : ''}" type="button" data-action="select-option" data-value="2000">2000 ml</button>
+              <button class="option ${state.selected === '1000' ? 'selected' : ''}" type="button" data-action="select-option" data-value="1000">1000 ml</button>
+              <button class="option ${state.selected === '900' ? 'selected' : ''}" type="button" data-action="select-option" data-value="900">900 ml</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s9">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen10(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find the smaller equal bar</h2>
+          <div class="tag">Divide by 2</div>
+        </div>
+        <div class="action-box">Type the amount in one equal bar.</div>
+        <div class="explain-box">1600 ml is the amount in 2 equal bars, so divide by 2.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">2 equal bars</div>
+            <div class="compare-stack">
+              <div class="compare-row"><div class="compare-label">Equal bar 1</div><div class="seg"></div></div>
+              <div class="compare-row"><div class="compare-label">Equal bar 2</div><div class="seg"></div></div>
+            </div>
+            <div class="brace"><div class="brace-label">1600 ml</div></div>
+            <div class="equation">1600 ÷ 2 = <span class="blank">?</span></div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s10Input"><strong>One equal bar = </strong></label>
+              <input id="s10Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s10Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s10">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s10Input = document.getElementById("s10Input");
+      if(s10Input) s10Input.addEventListener("input", e => state.s10Input = e.target.value);
+    }
+
+    function renderScreen11(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>What does 800 ml mean?</h2>
+          <div class="tag">Keep the referent clear</div>
+        </div>
+        <div class="action-box">800 ml is what?</div>
+        <div class="explain-box">The smaller equal bar is Bottle B after the transfer.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After comparison model</div>
+            <div class="compare-stack">
+              <div class="compare-row"><div class="compare-label">Bottle A</div><div class="seg"></div><div class="seg extra"></div></div>
+              <div class="compare-row"><div class="compare-label">Bottle B</div><div class="seg blue"></div></div>
+            </div>
+            <div class="compare-banner">Bottle B after = 800 ml</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'Aafter' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Aafter">Bottle A after</button>
+              <button class="option ${state.selected === 'Bafter' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Bafter">Bottle B after</button>
+              <button class="option ${state.selected === 'extra' ? 'selected' : ''}" type="button" data-action="select-option" data-value="extra">The extra 200 ml</button>
+              <button class="option ${state.selected === 'total' ? 'selected' : ''}" type="button" data-action="select-option" data-value="total">The total amount</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s11">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen12(){
+      const showHint = state.s12Stage >= 1;
+      const showPractice = state.s12Stage >= 2 && !state.s12PracticePassed;
+      const practiceDone = state.s12PracticePassed;
+
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Add or subtract to go back?</h2>
+          <div class="tag">Work backwards</div>
+        </div>
+        <div class="action-box">To go back to Bottle B at first, do we add or subtract 500 ml?</div>
+        <div class="explain-box">Bottle B had 800 ml after receiving 500 ml. We are going back to before it received that juice.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Rewind the pour</div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:70%"></div>
+                  <div class="bottle-label">After: 1000 ml</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:56%"></div>
+                  <div class="bottle-label">After: 800 ml</div>
+                </div>
+              </div>
+            </div>
+            <div class="transfer-chip reverse">500 ml</div>
+          </div>
+
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'add' ? 'selected' : ''}" type="button" data-action="select-option" data-value="add">Add 500 ml</button>
+              <button class="option ${state.selected === 'subtract' ? 'selected' : ''}" type="button" data-action="select-option" data-value="subtract">Subtract 500 ml</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s12">Check</button>
+            </div>
+            ${feedbackHtml()}
+
+            ${showHint ? `
+              <div class="mini-panel">
+                <h4>Helpful clue</h4>
+                <p class="q-line">Bottle B received 500 ml, so before that it had <strong>less</strong>.</p>
+              </div>
+            ` : ``}
+
+            ${showPractice ? `
+              <div class="mini-panel">
+                <h4>Quick practice</h4>
+                <p class="q-line">After getting 5 counters, a box has 12. Before getting them, did it have more or less?</p>
+                <div class="mini-grid">
+                  <button class="mini-btn ${state.s12PracticeSelected === 'more' ? 'selected' : ''}" type="button" data-action="select-practice" data-value="more">More</button>
+                  <button class="mini-btn ${state.s12PracticeSelected === 'less' ? 'selected' : ''}" type="button" data-action="select-practice" data-value="less">Less</button>
+                </div>
+                <div class="input-row">
+                  <button class="btn secondary" type="button" data-action="check-s12-practice">Check quick practice</button>
+                </div>
+              </div>
+            ` : ``}
+
+            ${practiceDone ? `
+              <div class="mini-panel">
+                <h4>Good. Now go back to Bottle B.</h4>
+                <p class="q-line">Bottle B had less before it received 500 ml, so we subtract 500 ml to go back.</p>
+              </div>
+            ` : ``}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen13(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find Bottle B at first</h2>
+          <div class="tag">Finish the calculation</div>
+        </div>
+        <div class="action-box">Type how much juice was in Bottle B at first.</div>
+        <div class="explain-box">Bottle B had 800 ml after receiving 500 ml, so subtract 500 ml to go back.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Go back to before the pour</div>
+            <div class="equation">800 − 500 = <span class="blank">?</span></div>
+            <div class="bottles">
+              <div class="bottle-card">
+                <h3>Bottle A</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:82%"></div>
+                  <div class="bottle-label">Before: more than 1000 ml</div>
+                </div>
+              </div>
+              <div class="bottle-card">
+                <h3>Bottle B</h3>
+                <div class="bottle">
+                  <div class="juice-fill" style="height:22%"></div>
+                  <div class="bottle-label">Before: less than 800 ml</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s13Input"><strong>Bottle B at first = </strong></label>
+              <input id="s13Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s13Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s13">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s13Input = document.getElementById("s13Input");
+      if(s13Input) s13Input.addEventListener("input", e => state.s13Input = e.target.value);
+    }
+
+    function renderScreen14(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Check the story</h2>
+          <div class="tag">Does it fit?</div>
+        </div>
+        <div class="action-box">Does this check match the story?</div>
+        <div class="explain-box">Use the transfer and the comparison to check the answer.</div>
+
+        <div class="story-grid">
+          <div class="story-card">
+            <h4>Before</h4>
+            <div class="story-line"><span>Bottle A</span><span>1500 ml</span></div>
+            <div class="story-line"><span>Bottle B</span><span>300 ml</span></div>
+            <div class="story-line"><span>Total</span><span>1800 ml</span></div>
+          </div>
+          <div class="story-card">
+            <h4>After pouring 500 ml from A to B</h4>
+            <div class="story-line"><span>Bottle A</span><span>1000 ml</span></div>
+            <div class="story-line"><span>Bottle B</span><span>800 ml</span></div>
+            <div class="story-line"><span>Total</span><span>1800 ml</span></div>
+          </div>
+        </div>
+
+        <div class="compare-banner">After the transfer, Bottle A has 200 ml more than Bottle B.</div>
+
+        <div class="scene" style="margin-top:16px; min-height:190px;">
+          <div class="scene-title">Watch the check</div>
+          <div class="transfer-chip animate">500 ml</div>
+          <div class="center muted" style="padding-top:88px; font-weight:700;">Bottle A starts with 1500 ml. Bottle B starts with 300 ml. Then 500 ml moves from Bottle A to Bottle B. After that, Bottle A has 1000 ml and Bottle B has 800 ml. Bottle A is 200 ml more than Bottle B.</div>
+        </div>
+
+        <div class="option-grid" style="margin-top:16px;">
+          <button class="option ${state.selected === 'yes' ? 'selected' : ''}" type="button" data-action="select-option" data-value="yes">Yes, it matches the story.</button>
+          <button class="option ${state.selected === 'no' ? 'selected' : ''}" type="button" data-action="select-option" data-value="no">No, it does not match.</button>
+        </div>
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s14">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen15(){
+      const poolLeft = state.s15Pool.filter(card => !state.s15Chosen.includes(card));
+      const isComplete = state.s15Chosen.length === 5;
+
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Consolidate the strategy</h2>
+          <div class="tag">Put the steps in order</div>
+        </div>
+        <div class="action-box">Tap the strategy cards in the correct order.</div>
+        <div class="explain-box">Keep the total the same, remove the extra part, divide the equal bars, then work backwards.</div>
+
+        <div class="strategy-layout">
+          <div class="strategy-zone">
+            <h4>Tap from here</h4>
+            <div class="strategy-list">
+              ${poolLeft.map(card => `
+                <button class="strategy-card" type="button" data-action="pick-strategy" data-value="${escapeHtml(card)}">${escapeHtml(card)}</button>
+              `).join("") || `<p class="muted">All cards have been moved.</p>`}
+            </div>
+          </div>
+
+          <div class="strategy-zone">
+            <h4>Your order</h4>
+            <div class="strategy-list">
+              ${state.s15Chosen.map((card, idx) => `
+                <div class="ordered-card">
+                  <div class="ordered-num">${idx + 1}</div>
+                  <div>${escapeHtml(card)}</div>
+                </div>
+              `).join("")}
+              ${Array.from({length: 5 - state.s15Chosen.length}).map(() => `
+                <div class="ordered-card" style="background:#fff;border-style:dashed;border-color:#d5dfec;color:#8b97a9;">
+                  <div class="ordered-num" style="background:#b3bfcd;">?</div>
+                  <div>Tap the next step.</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+
+        <div class="input-row" style="margin-top:16px;">
+          <button class="btn ghost" type="button" data-action="reset-strategy">Reset order</button>
+          <button class="btn secondary" type="button" data-action="check-s15" ${isComplete ? "" : "disabled"}>Check order</button>
+        </div>
+
+        ${feedbackHtml()}
+        ${state.unlocked ? `<div class="end-banner">Strategy check complete. There were <strong>300 ml</strong> of orange juice in Bottle B at first. Keep the total the same, remove the extra part, divide the equal bars, then work backwards.</div>` : ""}
+        ${navHtml()}
+      `;
+    }
+
+    function render(){
+      updateProgress();
+      switch(state.screen){
+        case 0: renderScreen1(); break;
+        case 1: renderScreen2(); break;
+        case 2: renderScreen3(); break;
+        case 3: renderScreen4(); break;
+        case 4: renderScreen5(); break;
+        case 5: renderScreen6(); break;
+        case 6: renderScreen7(); break;
+        case 7: renderScreen8(); break;
+        case 8: renderScreen9(); break;
+        case 9: renderScreen10(); break;
+        case 10: renderScreen11(); break;
+        case 11: renderScreen12(); break;
+        case 12: renderScreen13(); break;
+        case 13: renderScreen14(); break;
+        case 14: renderScreen15(); break;
+      }
+      attachHandlers();
+    }
+
+    function attachHandlers(){
+      appScreen.querySelectorAll("[data-action='select-chip']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='select-option']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='select-practice']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.s12PracticeSelected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='pick-strategy']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const clean = btn.textContent.trim();
+          if(!state.s15Chosen.includes(clean)){
+            state.s15Chosen.push(clean);
+            clearFeedback();
+            state.unlocked = false;
+            render();
+          }
+        });
+      });
+
+      const backBtn = appScreen.querySelector("[data-action='back']");
+      if(backBtn){
+        backBtn.addEventListener("click", () => {
+          if(state.screen > 0){
+            state.screen -= 1;
+            state.selected = null;
+            clearFeedback();
+            state.unlocked = state.screen < 14;
+            render();
+          }
+        });
+      }
+
+      const nextBtn = appScreen.querySelector("[data-action='next']");
+      if(nextBtn){
+        nextBtn.addEventListener("click", () => {
+          if(state.unlocked && state.screen < screenMeta.length - 1){
+            state.screen += 1;
+            state.selected = null;
+            clearFeedback();
+            state.unlocked = false;
+            render();
+          }
+        });
+      }
+
+      const resetStrategyBtn = appScreen.querySelector("[data-action='reset-strategy']");
+      if(resetStrategyBtn){
+        resetStrategyBtn.addEventListener("click", () => {
+          state.s15Chosen = [];
+          clearFeedback();
+          state.unlocked = false;
+          render();
+        });
+      }
+
+      bindChecks();
+    }
+
+    function bindChecks(){
+      const actions = {
+        "check-s1": () => {
+          markAttempt("s1");
+          if(state.selected === "1l800ml"){
+            state.unlocked = true;
+            setFeedback("good", "This is the total amount in both bottles together.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Look for the amount in both bottles together.");
+          }
+        },
+        "check-s2": () => {
+          markAttempt("s2");
+          if(normalizeNumber(state.s2Input) === "1800"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 1 l 800 ml = 1800 ml.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "1 l is 1000 ml. Then add 800 ml.");
+          }
+        },
+        "check-s3": () => {
+          markAttempt("s3");
+          if(state.selected === "Bfirst"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. We need Bottle B at first.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Keep the target clear: Bottle B at first.");
+          }
+        },
+        "check-s4": () => {
+          markAttempt("s4");
+          if(state.selected === "aToB"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. Bottle A loses 500 ml and Bottle B gets 500 ml.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Read the transfer sentence carefully: from Bottle A into Bottle B.");
+          }
+        },
+        "check-s5": () => {
+          markAttempt("s5");
+          if(state.selected === "same"){
+            state.unlocked = true;
+            setFeedback("good", "The juice moved, but the total stayed 1800 ml.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "The juice only moved from Bottle A to Bottle B. The total stayed the same.");
+          }
+        },
+        "check-s6": () => {
+          markAttempt("s6");
+          if(state.selected === "A"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. Bottle A has more juice after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "The question says Bottle A had 200 ml more than Bottle B.");
+          }
+        },
+        "check-s7": () => {
+          markAttempt("s7");
+          if(state.selected === "correct"){
+            state.unlocked = true;
+            setFeedback("good", "Correct. Bottle A has the same amount as Bottle B, and 200 ml more.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Look for the model where Bottle A is one matching bar and one extra 200 ml part.");
+          }
+        },
+        "check-s8": () => {
+          markAttempt("s8");
+          if(state.selected === "extra"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. This extra part is the 200 ml more.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Tap the unmatched extra part on Bottle A.");
+          }
+        },
+        "check-s9": () => {
+          markAttempt("s9");
+          if(state.selected === "1600"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 1800 ml − 200 ml = 1600 ml. That is the amount in the 2 equal bars.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Take away the extra 200 ml first.");
+          }
+        },
+        "check-s10": () => {
+          markAttempt("s10");
+          if(normalizeNumber(state.s10Input) === "800"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 1600 ÷ 2 = 800 ml. One equal bar is 800 ml.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "1600 ml is the amount in 2 equal bars, so divide by 2.");
+          }
+        },
+        "check-s11": () => {
+          markAttempt("s11");
+          if(state.selected === "Bafter"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 800 ml is Bottle B after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "800 ml is the smaller equal bar, which is Bottle B after.");
+          }
+        },
+        "check-s12": () => {
+          markAttempt("s12");
+          if(state.selected === "subtract"){
+            state.unlocked = true;
+            setFeedback("good", "Subtract 500 ml. Bottle B had less before it received 500 ml.");
+          } else {
+            state.unlocked = false;
+            if(state.s12Stage === 0){
+              state.s12Stage = 1;
+              setFeedback("bad", "Bottle B received 500 ml, so before that it had less.");
+            } else if(state.s12Stage === 1){
+              state.s12Stage = 2;
+              setFeedback("bad", "Try the quick practice below. Then come back to Bottle B.");
+            } else {
+              setFeedback("bad", "Go back to the idea: Bottle B had less before it received 500 ml.");
+            }
+          }
+        },
+        "check-s12-practice": () => {
+          if(state.s12PracticeSelected === "less"){
+            state.s12PracticePassed = true;
+            setFeedback("good", "Correct. Before getting them, the box had less. Use the same idea for Bottle B.");
+          } else {
+            setFeedback("bad", "If the box got counters and ended with 12, it had less before.");
+          }
+          render();
+        },
+        "check-s13": () => {
+          markAttempt("s13");
+          if(normalizeNumber(state.s13Input) === "300"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. There were 300 ml in Bottle B at first.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Bottle B had 800 ml after receiving 500 ml, so subtract 500 ml to go back.");
+          }
+        },
+        "check-s14": () => {
+          markAttempt("s14");
+          if(state.selected === "yes"){
+            state.unlocked = true;
+            setFeedback("good", "Check complete. The total stays 1800 ml, and after the transfer Bottle A has 200 ml more than Bottle B.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Check again: after moving 500 ml from Bottle A to Bottle B, Bottle A has 1000 ml and Bottle B has 800 ml. That is a difference of 200 ml.");
+          }
+        },
+        "check-s15": () => {
+          const ok = JSON.stringify(state.s15Chosen) === JSON.stringify(strategyCorrect);
+          if(ok){
+            state.unlocked = true;
+            setFeedback("good", "Strategy: keep the total the same, remove the extra part, divide the equal bars, then work backwards.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Try again. Start with the total staying the same. Then use the 200 ml more part.");
+          }
+        }
+      };
+
+      appScreen.querySelectorAll("[data-action^='check-']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const fn = actions[btn.dataset.action];
+          if(fn) fn();
+        });
+      });
+    }
+
+    function getCurrentReadText(){
+      const extras = {
+        0: "Tap the total amount of orange juice.",
+        1: "Change 1 litre 800 millilitres to millilitres.",
+        2: "Keep the target clear. We need Bottle B at first.",
+        3: "Read the transfer direction carefully. The juice moves from Bottle A into Bottle B.",
+        4: "The juice moves, but the total stays the same because no juice is added or removed.",
+        5: "After the transfer, decide which bottle has more juice.",
+        6: "Choose the model where Bottle A has the same amount as Bottle B and 200 millilitres more.",
+        7: "Find the unmatched extra 200 millilitres part.",
+        8: "Take away the extra 200 millilitres to leave 2 equal bars.",
+        9: "Divide the 2 equal bars by 2.",
+        10: "Eight hundred millilitres is Bottle B after the transfer.",
+        11: "To go back to Bottle B at first, decide whether to add or subtract 500 millilitres.",
+        12: "Subtract 500 millilitres to find Bottle B at first.",
+        13: "Check whether the story fits the answer.",
+        14: "Put the strategy cards in the correct order."
+      };
+      return `Step ${state.screen + 1}. ${screenMeta[state.screen].title}. ${QUESTION_TEXT} ${extras[state.screen] || ""}`;
+    }
+
+    document.getElementById("readAloudBtn").addEventListener("click", () => {
+      const text = getCurrentReadText();
+      if("speechSynthesis" in window){
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.92;
+        utter.pitch = 1;
+        window.speechSynthesis.speak(utter);
+      } else {
+        alert("Read aloud is not available on this device.");
+      }
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      if("speechSynthesis" in window) window.speechSynthesis.cancel();
+      state.screen = 0;
+      state.selected = null;
+      state.feedbackType = "";
+      state.feedbackText = "";
+      state.unlocked = false;
+      state.attempts = {};
+      state.s2Input = "";
+      state.s10Input = "";
+      state.s12Stage = 0;
+      state.s12PracticeSelected = null;
+      state.s12PracticePassed = false;
+      state.s13Input = "";
+      state.s15Chosen = [];
+      render();
+    });
+
+    const questionToggle = document.getElementById("questionToggle");
+    const questionBody = document.getElementById("questionBody");
+    const questionArrow = document.getElementById("questionArrow");
+    questionToggle.addEventListener("click", () => {
+      const open = questionBody.classList.toggle("open");
+      questionArrow.textContent = open ? "▲" : "▼";
+      questionToggle.querySelector("span").textContent = open ? "Hide question" : "Show question";
+    });
+
+    render();
+  </script>
+</body>
+</html>

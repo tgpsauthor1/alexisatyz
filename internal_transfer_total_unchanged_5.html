@@ -1,0 +1,1840 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>internal_transfer_total_unchanged_5</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --ink:#15263c;
+      --muted:#59697e;
+      --line:#d8e3ef;
+      --accent:#1f6feb;
+      --accent-soft:#eef5ff;
+      --warm:#ffb44d;
+      --warm-soft:#fff5e7;
+      --good:#1f8f47;
+      --good-soft:#eaf8ef;
+      --bad:#c73b3b;
+      --bad-soft:#fff2f2;
+      --shadow:0 10px 24px rgba(16,24,40,.08);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Arial, Helvetica, sans-serif;
+    }
+    body{min-height:100vh}
+    button,input{font:inherit}
+
+    .app{
+      max-width:1160px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .title-wrap h1{
+      margin:0;
+      font-size:clamp(1.65rem, 3vw, 2.3rem);
+      line-height:1.1;
+    }
+    .title-wrap p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:1rem;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 18px;
+      min-height:52px;
+      background:var(--accent);
+      color:#fff;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow:var(--shadow);
+    }
+    .btn.secondary{
+      background:#fff;
+      color:var(--ink);
+      border:2px solid var(--line);
+      box-shadow:none;
+    }
+    .btn.ghost{
+      background:transparent;
+      color:var(--accent);
+      border:2px solid var(--accent);
+      box-shadow:none;
+    }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .btn:focus-visible,
+    .option:focus-visible,
+    .chip:focus-visible,
+    .model-card:focus-visible,
+    .strategy-card:focus-visible,
+    .mini-btn:focus-visible,
+    .question-toggle:focus-visible,
+    input:focus-visible{
+      outline:4px solid #93c5fd;
+      outline-offset:3px;
+    }
+
+    .progress-wrap{margin:10px 0 16px}
+    .progress-label{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+    .progress{
+      width:100%;
+      height:16px;
+      background:#dbe6f3;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar{
+      width:0%;
+      height:100%;
+      background:linear-gradient(90deg, var(--accent), #7fb0fb);
+      transition:width .35s ease;
+    }
+
+    .screen-card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+      min-height:610px;
+    }
+
+    .screen-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .screen-head h2{
+      margin:0;
+      font-size:clamp(1.4rem, 2.6vw, 2rem);
+      line-height:1.15;
+    }
+    .tag{
+      background:var(--accent-soft);
+      color:var(--accent);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    .action-box{
+      background:#eef6ff;
+      border:3px solid #b9d7ff;
+      border-radius:20px;
+      padding:16px 18px;
+      font-weight:700;
+      font-size:1.08rem;
+      margin-bottom:12px;
+    }
+    .explain-box{
+      background:var(--warm-soft);
+      border:3px solid #f1c483;
+      border-radius:20px;
+      padding:14px 18px;
+      margin-bottom:18px;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1.2fr .95fr;
+      gap:18px;
+    }
+    @media (max-width: 920px){
+      .grid-2{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:#fbfcfe;
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+    }
+
+    .question-card{
+      margin-top:16px;
+      background:#fff;
+      border:2px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+    }
+    .question-toggle{
+      width:100%;
+      text-align:left;
+      border:none;
+      background:#fff;
+      padding:16px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+      font-weight:700;
+    }
+    .question-body{
+      display:none;
+      border-top:2px solid var(--line);
+      padding:16px 18px 18px;
+    }
+    .question-body.open{display:block}
+
+    .q-line{
+      margin:0 0 10px;
+      line-height:1.5;
+      font-size:1.05rem;
+    }
+    .q-line:last-child{margin-bottom:0}
+
+    .chip{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      min-height:62px;
+      padding:14px 18px;
+      font-weight:700;
+      cursor:pointer;
+      color:var(--ink);
+    }
+
+    .option-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+      gap:14px;
+    }
+    .option,
+    .mini-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-height:88px;
+      background:#fff;
+      border:3px solid var(--line);
+      border-radius:22px;
+      cursor:pointer;
+      padding:16px;
+      font-weight:700;
+      color:var(--ink);
+    }
+    .sentence-grid{
+      display:grid;
+      gap:12px;
+    }
+    .sentence-card{
+      min-height:92px;
+      justify-content:flex-start;
+      text-align:left;
+      line-height:1.45;
+    }
+
+    .chip.selected,
+    .option.selected,
+    .mini-btn.selected,
+    .model-card.selected,
+    .strategy-card.selected{
+      border-color:var(--accent);
+      background:var(--accent-soft);
+      transform:translateY(-1px);
+    }
+
+    .feedback{
+      display:none;
+      margin-top:16px;
+      padding:14px 16px;
+      border-radius:18px;
+      font-weight:700;
+    }
+    .feedback.good{
+      display:block;
+      background:var(--good-soft);
+      border:2px solid #bde3ca;
+      color:#125c2f;
+    }
+    .feedback.bad{
+      display:block;
+      background:var(--bad-soft);
+      border:2px solid #f3c3c3;
+      color:#8b2222;
+    }
+
+    .nav-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .scene{
+      background:linear-gradient(180deg,#fdfefe,#f4f8fd);
+      border:2px solid var(--line);
+      border-radius:22px;
+      padding:18px;
+      min-height:300px;
+      position:relative;
+      overflow:hidden;
+    }
+    .scene-title{
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:12px;
+    }
+
+    .boxes{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:end;
+    }
+    .box-card{
+      background:#fff;
+      border:2px solid var(--line);
+      border-radius:20px;
+      padding:12px;
+      min-height:210px;
+      position:relative;
+    }
+    .box-card h3{
+      margin:0 0 10px;
+      font-size:1.1rem;
+    }
+
+    .crate{
+      height:126px;
+      border-radius:20px;
+      background:linear-gradient(180deg,#fff2d8,#ffd494);
+      border:3px solid #d79a3d;
+      position:relative;
+      overflow:hidden;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+    }
+    .crate-fill{
+      width:100%;
+      background:linear-gradient(180deg,#ffbf67,#eb9c2c);
+      border-radius:18px 18px 0 0;
+      transition:height .7s ease;
+    }
+    .crate-label{
+      position:absolute;
+      left:0; right:0; bottom:10px;
+      text-align:center;
+      font-weight:700;
+      color:#5c3a00;
+      text-shadow:0 1px 0 rgba(255,255,255,.5);
+    }
+
+    .brace{
+      margin:10px auto 0;
+      width:94%;
+      border-top:4px solid var(--ink);
+      position:relative;
+      height:34px;
+    }
+    .brace::before,
+    .brace::after{
+      content:"";
+      position:absolute;
+      top:-4px;
+      width:4px;
+      height:22px;
+      background:var(--ink);
+    }
+    .brace::before{left:0}
+    .brace::after{right:0}
+    .brace-label{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top:10px;
+      background:#fff;
+      padding:2px 10px;
+      border-radius:999px;
+      font-weight:700;
+    }
+
+    .transfer-chip{
+      position:absolute;
+      top:88px;
+      left:18%;
+      background:#d4efff;
+      border:3px solid #7abfe8;
+      color:#084061;
+      font-weight:700;
+      padding:10px 14px;
+      border-radius:999px;
+      box-shadow:0 6px 16px rgba(0,0,0,.08);
+    }
+    .transfer-chip.animate{animation:moveRight 2.2s ease-in-out infinite alternate}
+    .transfer-chip.reverse{animation:moveLeft 2.2s ease-in-out infinite alternate}
+    @keyframes moveRight{
+      0%{transform:translateX(0) translateY(0)}
+      100%{transform:translateX(320px) translateY(28px)}
+    }
+    @keyframes moveLeft{
+      0%{transform:translateX(320px) translateY(28px)}
+      100%{transform:translateX(0) translateY(0)}
+    }
+
+    .model-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+      gap:14px;
+    }
+    .model-card{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:22px;
+      padding:14px;
+      cursor:pointer;
+      min-height:250px;
+    }
+    .model-card h4{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:1.02rem;
+    }
+    .model-caption{
+      margin-top:10px;
+      color:var(--muted);
+      text-align:center;
+      font-weight:700;
+      min-height:42px;
+    }
+
+    .unit-stack{
+      display:grid;
+      gap:8px;
+      margin-top:8px;
+    }
+    .unit-row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-start;
+      flex-wrap:nowrap;
+    }
+    .unit-label{
+      width:78px;
+      flex:0 0 78px;
+      font-weight:700;
+      font-size:.95rem;
+    }
+    .unit{
+      width:102px;
+      flex:0 0 102px;
+      height:46px;
+      border-radius:14px;
+      border:3px solid #d79a3d;
+      background:#ffe2b2;
+      position:relative;
+      overflow:hidden;
+    }
+    .unit::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,#ffbf67,#eb9c2c);
+      opacity:.94;
+    }
+    .unit.blue{
+      border-color:#7abfe8;
+      background:#d4efff;
+    }
+    .unit.blue::after{
+      background:linear-gradient(180deg,#9dd8f7,#68bce8);
+    }
+
+    .equation{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:1.45rem;
+      font-weight:700;
+      background:#fff;
+      border:2px dashed #bed3ef;
+      border-radius:18px;
+      padding:16px;
+      margin:12px 0;
+    }
+    .blank{
+      min-width:94px;
+      min-height:38px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-bottom:4px solid var(--ink);
+      padding:0 8px 4px;
+    }
+
+    .input-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    .answer-input{
+      min-height:64px;
+      width:min(240px,100%);
+      border-radius:18px;
+      border:3px solid var(--line);
+      padding:12px 14px;
+      font-size:1.2rem;
+      font-weight:700;
+    }
+
+    .mini-panel{
+      margin-top:14px;
+      background:#f8fbff;
+      border:2px solid #cfe1fb;
+      border-radius:20px;
+      padding:14px;
+    }
+    .mini-panel h4{
+      margin:0 0 10px;
+      font-size:1.05rem;
+    }
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .story-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 780px){
+      .story-grid{grid-template-columns:1fr}
+    }
+    .story-card{
+      border:2px solid var(--line);
+      background:#fff;
+      border-radius:20px;
+      padding:14px;
+    }
+    .story-card h4{margin:0 0 10px}
+    .story-line{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      margin-top:8px;
+      border-radius:14px;
+      background:#f8fbff;
+      font-weight:700;
+    }
+
+    .compare-banner{
+      margin-top:14px;
+      background:#eef7ff;
+      border:2px solid #c7ddfb;
+      border-radius:18px;
+      padding:14px;
+      font-weight:700;
+      text-align:center;
+    }
+
+    .strategy-layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+    @media (max-width: 900px){
+      .strategy-layout{grid-template-columns:1fr}
+    }
+    .strategy-zone{
+      background:#fbfcfe;
+      border:2px solid var(--line);
+      border-radius:22px;
+      padding:14px;
+      min-height:260px;
+    }
+    .strategy-zone h4{margin:0 0 12px}
+    .strategy-list{
+      display:grid;
+      gap:10px;
+    }
+    .strategy-card{
+      border:3px solid var(--line);
+      background:#fff;
+      border-radius:18px;
+      padding:14px;
+      cursor:pointer;
+      text-align:left;
+      font-weight:700;
+    }
+    .ordered-card{
+      border:3px solid #a7d4b6;
+      background:#f2fbf5;
+      border-radius:18px;
+      padding:14px;
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:700;
+    }
+    .ordered-num{
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      background:var(--good);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex:0 0 auto;
+      font-weight:700;
+    }
+
+    .end-banner{
+      margin-top:16px;
+      background:linear-gradient(135deg,#eefaf2,#def5e8);
+      border:2px solid #bfe7ca;
+      border-radius:22px;
+      padding:18px;
+      font-weight:700;
+      font-size:1.15rem;
+    }
+
+    .muted{color:var(--muted)}
+    .center{text-align:center}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Card Transfer Interactive</h1>
+        <p>Keep the total the same. Build the after model. Work backwards to Box A at first.</p>
+      </div>
+      <div class="controls">
+        <button class="btn secondary" id="readAloudBtn" type="button">🔊 Read aloud</button>
+        <button class="btn secondary" id="restartBtn" type="button">↺ Restart</button>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">Step 1 of 15</span>
+        <span id="progressName">Read the problem</span>
+      </div>
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+    </div>
+
+    <div class="screen-card" id="appScreen"></div>
+
+    <div class="question-card">
+      <button class="question-toggle" id="questionToggle" type="button">
+        <span>Show question</span>
+        <span id="questionArrow">▼</span>
+      </button>
+      <div class="question-body" id="questionBody">
+        <p class="q-line">In Box A and Box B, there are <strong>2400</strong> cards in all.</p>
+        <p class="q-line">After transferring <strong>500</strong> cards from <strong>Box A to Box B</strong>, there are <strong>three times as many</strong> cards in Box A as in Box B.</p>
+        <p class="q-line">How many cards are there in <strong>Box A at first</strong>?</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const QUESTION_TEXT = [
+      "In Box A and Box B, there are 2400 cards in all.",
+      "After transferring 500 cards from Box A to Box B, there are three times as many cards in Box A as in Box B.",
+      "How many cards are there in Box A at first?"
+    ].join(" ");
+
+    const screenMeta = [
+      {title:"Read the problem", short:"Read the problem"},
+      {title:"Find the after clue", short:"Find the after clue"},
+      {title:"Which way did the cards move?", short:"Transfer direction"},
+      {title:"Does the total change?", short:"Total stays the same"},
+      {title:"Which box has more after?", short:"Who has more?"},
+      {title:"Choose the after model", short:"Choose the model"},
+      {title:"How many equal units?", short:"Count the units"},
+      {title:"Find 1 unit", short:"Find 1 unit"},
+      {title:"What does 600 mean?", short:"Check 600"},
+      {title:"Find Box A’s number after", short:"Find Box A after"},
+      {title:"Before or after?", short:"Check 1800"},
+      {title:"Add or subtract to go back?", short:"Work backwards"},
+      {title:"Find Box A at first", short:"Find the start"},
+      {title:"Check the story", short:"Check the story"},
+      {title:"Consolidate the strategy", short:"Consolidate"}
+    ];
+
+    const strategyCorrect = [
+      "The total stays 2400.",
+      "After the transfer, Box A = 3 units and Box B = 1 unit.",
+      "There are 4 equal units altogether.",
+      "2400 ÷ 4 = 600, so Box A has 1800 after.",
+      "Add 500 to find Box A at first."
+    ];
+
+    const state = {
+      screen: 0,
+      selected: null,
+      feedbackType: "",
+      feedbackText: "",
+      unlocked: false,
+      attempts: {},
+      s8Input: "",
+      s8MiniInput: "",
+      s10Input: "",
+      s12Stage: 0,
+      s12PracticeSelected: null,
+      s12PracticePassed: false,
+      s13Input: "",
+      s15Chosen: [],
+      s15Pool: [
+        "Add 500 to find Box A at first.",
+        "2400 ÷ 4 = 600, so Box A has 1800 after.",
+        "After the transfer, Box A = 3 units and Box B = 1 unit.",
+        "There are 4 equal units altogether.",
+        "The total stays 2400."
+      ]
+    };
+
+    const appScreen = document.getElementById("appScreen");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const progressName = document.getElementById("progressName");
+
+    function normalizeNumber(value){
+      return String(value || "").replace(/[,\s$]/g, "");
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function clearFeedback(){
+      state.feedbackType = "";
+      state.feedbackText = "";
+    }
+
+    function setFeedback(type, text){
+      state.feedbackType = type;
+      state.feedbackText = text;
+      render();
+    }
+
+    function markAttempt(key){
+      state.attempts[key] = (state.attempts[key] || 0) + 1;
+    }
+
+    function updateProgress(){
+      const pct = ((state.screen + 1) / screenMeta.length) * 100;
+      progressBar.style.width = pct + "%";
+      progressText.textContent = `Step ${state.screen + 1} of ${screenMeta.length}`;
+      progressName.textContent = screenMeta[state.screen].short;
+    }
+
+    function feedbackHtml(){
+      if(!state.feedbackText) return "";
+      return `<div class="feedback ${state.feedbackType}">${state.feedbackText}</div>`;
+    }
+
+    function navHtml(showBack = true, nextDisabled = !state.unlocked){
+      return `
+        <div class="nav-row">
+          <button class="btn secondary" type="button" data-action="back" ${showBack ? "" : "style='visibility:hidden'"}>← Back</button>
+          <button class="btn" type="button" data-action="next" ${nextDisabled ? "disabled" : ""}>Next →</button>
+        </div>
+      `;
+    }
+
+    function renderQuestionWithChips(){
+      return `
+        <div class="panel">
+          <p class="q-line">In Box A and Box B, there are
+            <button class="chip ${state.selected === '2400' ? 'selected' : ''}" type="button" data-action="select-chip" data-value="2400">2400</button>
+            cards in all.
+          </p>
+          <p class="q-line">After transferring
+            <button class="chip ${state.selected === '500' ? 'selected' : ''}" type="button" data-action="select-chip" data-value="500">500</button>
+            cards from Box A to Box B, there are three times as many cards in Box A as in Box B.
+          </p>
+          <p class="q-line">How many cards are there in Box A at first?</p>
+        </div>
+      `;
+    }
+
+    function renderScreen1(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Read the problem</h2>
+          <div class="tag">Tap the total</div>
+        </div>
+        <div class="action-box">Tap the amount that tells the total number of cards.</div>
+        <div class="explain-box">Look for the number for Box A and Box B together.</div>
+
+        <div class="grid-2">
+          <div>
+            ${renderQuestionWithChips()}
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s1">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+          <div class="scene">
+            <div class="scene-title">Which containers are in the story?</div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:78%"></div>
+                  <div class="crate-label">Cards in Box A</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:26%"></div>
+                  <div class="crate-label">Cards in Box B</div>
+                </div>
+              </div>
+            </div>
+            <div class="brace"><div class="brace-label">Total together</div></div>
+          </div>
+        </div>
+        ${navHtml(false)}
+      `;
+    }
+
+    function renderScreen2(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find the after clue</h2>
+          <div class="tag">Tap the after clue</div>
+        </div>
+        <div class="action-box">Tap the sentence that tells what happens after the transfer.</div>
+        <div class="explain-box">We will build the after picture first.</div>
+
+        <div class="sentence-grid">
+          <button class="option sentence-card ${state.selected === 'total' ? 'selected' : ''}" type="button" data-action="select-option" data-value="total">
+            In Box A and Box B, there are 2400 cards in all.
+          </button>
+          <button class="option sentence-card ${state.selected === 'after' ? 'selected' : ''}" type="button" data-action="select-option" data-value="after">
+            After transferring 500 cards from Box A to Box B, there are three times as many cards in Box A as in Box B.
+          </button>
+          <button class="option sentence-card ${state.selected === 'ask' ? 'selected' : ''}" type="button" data-action="select-option" data-value="ask">
+            How many cards are there in Box A at first?
+          </button>
+        </div>
+
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s2">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen3(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Which way did the cards move?</h2>
+          <div class="tag">Read the transfer carefully</div>
+        </div>
+        <div class="action-box">Which way did the 500 cards move?</div>
+        <div class="explain-box">Read the words carefully: from Box A to Box B.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Transfer of 500 cards</div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:66%"></div>
+                  <div class="crate-label">Loses 500</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:38%"></div>
+                  <div class="crate-label">Gets 500</div>
+                </div>
+              </div>
+            </div>
+            <div class="transfer-chip animate">500 cards</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'aToB' ? 'selected' : ''}" type="button" data-action="select-option" data-value="aToB">From Box A to Box B</button>
+              <button class="option ${state.selected === 'bToA' ? 'selected' : ''}" type="button" data-action="select-option" data-value="bToA">From Box B to Box A</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s3">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen4(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Does the total change?</h2>
+          <div class="tag">See the transfer</div>
+        </div>
+        <div class="action-box">Did the total stay 2400 or change?</div>
+        <div class="explain-box">The cards move from Box A to Box B, but they stay inside the pair of boxes.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Watch the transfer</div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:66%"></div>
+                  <div class="crate-label">Loses 500</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:38%"></div>
+                  <div class="crate-label">Gets 500</div>
+                </div>
+              </div>
+            </div>
+            <div class="brace"><div class="brace-label">Total = 2400</div></div>
+            <div class="transfer-chip animate">500 cards</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'same' ? 'selected' : ''}" type="button" data-action="select-option" data-value="same">The total stays the same.</button>
+              <button class="option ${state.selected === 'change' ? 'selected' : ''}" type="button" data-action="select-option" data-value="change">The total changes.</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s4">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen5(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Which box has more after?</h2>
+          <div class="tag">Read the comparison</div>
+        </div>
+        <div class="action-box">After the transfer, which box has more cards?</div>
+        <div class="explain-box">The question says there are three times as many cards in Box A as in Box B.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After moving 500 cards to Box B</div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:72%"></div>
+                  <div class="crate-label">Larger after amount</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:36%"></div>
+                  <div class="crate-label">Smaller after amount</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'A' ? 'selected' : ''}" type="button" data-action="select-option" data-value="A">Box A</button>
+              <button class="option ${state.selected === 'B' ? 'selected' : ''}" type="button" data-action="select-option" data-value="B">Box B</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s5">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function modelCard(title, value, kind){
+      let rows = "";
+      if(kind === "correct"){
+        rows = `
+          <div class="unit-stack">
+            <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+            <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+          </div>
+        `;
+      } else if(kind === "reversed"){
+        rows = `
+          <div class="unit-stack">
+            <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div></div>
+            <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+          </div>
+        `;
+      } else {
+        rows = `
+          <div class="unit-stack">
+            <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div><div class="unit"></div><div class="unit blue"></div></div>
+            <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+          </div>
+        `;
+      }
+
+      const caption = kind === "correct"
+        ? "Box A = 3 equal units, Box B = 1 equal unit"
+        : kind === "reversed"
+        ? "This gives Box B more, so it does not match"
+        : "This mixes the 500 into the unit model in the wrong way";
+
+      return `
+        <button class="model-card ${state.selected === value ? 'selected' : ''}" type="button" data-action="select-option" data-value="${value}">
+          <h4>${title}</h4>
+          ${rows}
+          <div class="brace"><div class="brace-label">2400</div></div>
+          <div class="model-caption">${caption}</div>
+        </button>
+      `;
+    }
+
+    function renderScreen6(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Choose the after model</h2>
+          <div class="tag">Match “3 times as many”</div>
+        </div>
+        <div class="action-box">Tap the model that matches the after situation.</div>
+        <div class="explain-box">After the transfer, Box A has 3 equal units and Box B has 1 equal unit.</div>
+
+        <div class="model-grid">
+          ${modelCard("Model A", "correct", "correct")}
+          ${modelCard("Model B", "reversed", "reversed")}
+          ${modelCard("Model C", "wrong500", "wrong500")}
+        </div>
+
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s6">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen7(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>How many equal units altogether?</h2>
+          <div class="tag">Count the equal units</div>
+        </div>
+        <div class="action-box">How many equal units make the total of 2400?</div>
+        <div class="explain-box">Box A has 3 units and Box B has 1 unit after the transfer.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After model</div>
+            <div class="unit-stack">
+              <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+              <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+            </div>
+            <div class="brace"><div class="brace-label">2400</div></div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === '3' ? 'selected' : ''}" type="button" data-action="select-option" data-value="3">3</button>
+              <button class="option ${state.selected === '4' ? 'selected' : ''}" type="button" data-action="select-option" data-value="4">4</button>
+              <button class="option ${state.selected === '500' ? 'selected' : ''}" type="button" data-action="select-option" data-value="500">500</button>
+              <button class="option ${state.selected === '2400' ? 'selected' : ''}" type="button" data-action="select-option" data-value="2400">2400</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s7">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen8(){
+      const showMini = (state.attempts.s8 || 0) >= 2;
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find 1 unit</h2>
+          <div class="tag">Find the value of one unit</div>
+        </div>
+        <div class="action-box">Type the number of cards in 1 unit.</div>
+        <div class="explain-box">4 equal units make 2400, so we divide 2400 by 4.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After model</div>
+            <div class="unit-stack">
+              <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+              <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+            </div>
+            <div class="brace"><div class="brace-label">2400</div></div>
+            <div class="equation">2400 ÷ 4 = <span class="blank">?</span></div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s8Input"><strong>1 unit = </strong></label>
+              <input id="s8Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s8Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s8">Check</button>
+            </div>
+            ${feedbackHtml()}
+            ${showMini ? `
+              <div class="mini-panel">
+                <h4>Tiny practice</h4>
+                <p class="q-line">12 shared equally into 4 parts gives how many in 1 part?</p>
+                <div class="input-row">
+                  <input id="s8MiniInput" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s8MiniInput)}" />
+                  <button class="btn secondary" type="button" data-action="check-s8-mini">Check tiny practice</button>
+                </div>
+                <p class="muted">This helps with “4 equal units make the total”.</p>
+              </div>
+            ` : ``}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s8Input = document.getElementById("s8Input");
+      if(s8Input) s8Input.addEventListener("input", e => state.s8Input = e.target.value);
+      const s8MiniInput = document.getElementById("s8MiniInput");
+      if(s8MiniInput) s8MiniInput.addEventListener("input", e => state.s8MiniInput = e.target.value);
+    }
+
+    function renderScreen9(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>What does 600 mean?</h2>
+          <div class="tag">Do not stop at 1 unit</div>
+        </div>
+        <div class="action-box">600 is what?</div>
+        <div class="explain-box">600 is only 1 unit. Think about which box has 1 unit after the transfer.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After model with 1 unit highlighted</div>
+            <div class="unit-stack">
+              <div class="unit-row"><div class="unit-label">Box A</div><div class="unit"></div><div class="unit"></div><div class="unit"></div></div>
+              <div class="unit-row"><div class="unit-label">Box B</div><div class="unit blue"></div></div>
+            </div>
+            <div class="compare-banner">1 unit = 600 cards</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'Afull' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Afull">Box A’s full number after</button>
+              <button class="option ${state.selected === 'Bafter' ? 'selected' : ''}" type="button" data-action="select-option" data-value="Bafter">Box B’s number after</button>
+              <button class="option ${state.selected === 'transfer' ? 'selected' : ''}" type="button" data-action="select-option" data-value="transfer">The transfer amount</button>
+              <button class="option ${state.selected === 'total' ? 'selected' : ''}" type="button" data-action="select-option" data-value="total">The total number</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s9">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen10(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find Box A’s number after</h2>
+          <div class="tag">Box A has 3 units</div>
+        </div>
+        <div class="action-box">Type how many cards are in Box A after the transfer.</div>
+        <div class="explain-box">One unit is 600, and Box A has 3 units after the transfer.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Box A’s 3 units after</div>
+            <div class="unit-stack">
+              <div class="unit-row"><div class="unit-label">Box A</div><div class="unit blue"></div><div class="unit blue"></div><div class="unit blue"></div></div>
+              <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+            </div>
+            <div class="compare-banner">Box A after = 600 × 3</div>
+            <div class="equation">600 × 3 = <span class="blank">?</span></div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s10Input"><strong>Box A after = </strong></label>
+              <input id="s10Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s10Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s10">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s10Input = document.getElementById("s10Input");
+      if(s10Input) s10Input.addEventListener("input", e => state.s10Input = e.target.value);
+    }
+
+    function renderScreen11(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Before or after?</h2>
+          <div class="tag">Do not stop too early</div>
+        </div>
+        <div class="action-box">1800 belongs to which time?</div>
+        <div class="explain-box">We found 1800 from the after picture.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">After the transfer</div>
+            <div class="unit-stack">
+              <div class="unit-row"><div class="unit-label">Box A</div><div class="unit blue"></div><div class="unit blue"></div><div class="unit blue"></div></div>
+              <div class="unit-row"><div class="unit-label">Box B</div><div class="unit"></div></div>
+            </div>
+            <div class="compare-banner">Box A’s 3 units = 1800 after the transfer</div>
+          </div>
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'before' ? 'selected' : ''}" type="button" data-action="select-option" data-value="before">1800 is Box A at first.</button>
+              <button class="option ${state.selected === 'after' ? 'selected' : ''}" type="button" data-action="select-option" data-value="after">1800 is Box A after the transfer.</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s11">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen12(){
+      const showHint = state.s12Stage >= 1;
+      const showPractice = state.s12Stage >= 2 && !state.s12PracticePassed;
+      const practiceDone = state.s12PracticePassed;
+
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Add or subtract to go back?</h2>
+          <div class="tag">Work backwards</div>
+        </div>
+        <div class="action-box">To go back to Box A at first, do we add or subtract 500?</div>
+        <div class="explain-box">Box A had 1800 after giving away 500. We are going back to before it gave away those 500 cards.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Rewind the transfer</div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:72%"></div>
+                  <div class="crate-label">After: 1800</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:36%"></div>
+                  <div class="crate-label">After: 600</div>
+                </div>
+              </div>
+            </div>
+            <div class="transfer-chip reverse">500 cards</div>
+          </div>
+
+          <div class="panel">
+            <div class="option-grid">
+              <button class="option ${state.selected === 'add' ? 'selected' : ''}" type="button" data-action="select-option" data-value="add">Add 500</button>
+              <button class="option ${state.selected === 'subtract' ? 'selected' : ''}" type="button" data-action="select-option" data-value="subtract">Subtract 500</button>
+            </div>
+            <div class="input-row">
+              <button class="btn ghost" type="button" data-action="check-s12">Check</button>
+            </div>
+            ${feedbackHtml()}
+
+            ${showHint ? `
+              <div class="mini-panel">
+                <h4>Helpful clue</h4>
+                <p class="q-line">Box A gave away 500, so before that it had <strong>more</strong>.</p>
+              </div>
+            ` : ``}
+
+            ${showPractice ? `
+              <div class="mini-panel">
+                <h4>Quick practice</h4>
+                <p class="q-line">After giving away 5 counters, a box has 12. Before giving them away, did it have more or less?</p>
+                <div class="mini-grid">
+                  <button class="mini-btn ${state.s12PracticeSelected === 'more' ? 'selected' : ''}" type="button" data-action="select-practice" data-value="more">More</button>
+                  <button class="mini-btn ${state.s12PracticeSelected === 'less' ? 'selected' : ''}" type="button" data-action="select-practice" data-value="less">Less</button>
+                </div>
+                <div class="input-row">
+                  <button class="btn secondary" type="button" data-action="check-s12-practice">Check quick practice</button>
+                </div>
+              </div>
+            ` : ``}
+
+            ${practiceDone ? `
+              <div class="mini-panel">
+                <h4>Good. Now go back to Box A.</h4>
+                <p class="q-line">Box A had more before it gave away 500, so we add 500 to go back.</p>
+              </div>
+            ` : ``}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen13(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Find Box A at first</h2>
+          <div class="tag">Finish the calculation</div>
+        </div>
+        <div class="action-box">Type how many cards were in Box A at first.</div>
+        <div class="explain-box">Box A had 1800 after giving away 500, so add 500 to go back.</div>
+
+        <div class="grid-2">
+          <div class="scene">
+            <div class="scene-title">Go back to before the transfer</div>
+            <div class="equation">1800 + 500 = <span class="blank">?</span></div>
+            <div class="boxes">
+              <div class="box-card">
+                <h3>Box A</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:84%"></div>
+                  <div class="crate-label">Before: more than 1800</div>
+                </div>
+              </div>
+              <div class="box-card">
+                <h3>Box B</h3>
+                <div class="crate">
+                  <div class="crate-fill" style="height:12%"></div>
+                  <div class="crate-label">Before: less than 600</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="input-row">
+              <label for="s13Input"><strong>Box A at first = </strong></label>
+              <input id="s13Input" class="answer-input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s13Input)}" />
+              <button class="btn ghost" type="button" data-action="check-s13">Check</button>
+            </div>
+            ${feedbackHtml()}
+          </div>
+        </div>
+        ${navHtml()}
+      `;
+      const s13Input = document.getElementById("s13Input");
+      if(s13Input) s13Input.addEventListener("input", e => state.s13Input = e.target.value);
+    }
+
+    function renderScreen14(){
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Check the story</h2>
+          <div class="tag">Does it fit?</div>
+        </div>
+        <div class="action-box">Does this check match the story?</div>
+        <div class="explain-box">Use the transfer and the comparison to check the answer.</div>
+
+        <div class="story-grid">
+          <div class="story-card">
+            <h4>Before</h4>
+            <div class="story-line"><span>Box A</span><span>2300</span></div>
+            <div class="story-line"><span>Box B</span><span>100</span></div>
+            <div class="story-line"><span>Total</span><span>2400</span></div>
+          </div>
+          <div class="story-card">
+            <h4>After moving 500 from A to B</h4>
+            <div class="story-line"><span>Box A</span><span>1800</span></div>
+            <div class="story-line"><span>Box B</span><span>600</span></div>
+            <div class="story-line"><span>Total</span><span>2400</span></div>
+          </div>
+        </div>
+
+        <div class="compare-banner">After the transfer, 1800 is 3 times 600.</div>
+
+        <div class="scene" style="margin-top:16px; min-height:190px;">
+          <div class="scene-title">Watch the check</div>
+          <div class="transfer-chip animate">500 cards</div>
+          <div class="center muted" style="padding-top:88px; font-weight:700;">Box A starts with 2300. Box B starts with 100. Then 500 cards move from Box A to Box B. After that, Box A has 1800 and Box B has 600. 1800 is 3 times 600.</div>
+        </div>
+
+        <div class="option-grid" style="margin-top:16px;">
+          <button class="option ${state.selected === 'yes' ? 'selected' : ''}" type="button" data-action="select-option" data-value="yes">Yes, it matches the story.</button>
+          <button class="option ${state.selected === 'no' ? 'selected' : ''}" type="button" data-action="select-option" data-value="no">No, it does not match.</button>
+        </div>
+        <div class="input-row">
+          <button class="btn ghost" type="button" data-action="check-s14">Check</button>
+        </div>
+        ${feedbackHtml()}
+        ${navHtml()}
+      `;
+    }
+
+    function renderScreen15(){
+      const poolLeft = state.s15Pool.filter(card => !state.s15Chosen.includes(card));
+      const isComplete = state.s15Chosen.length === 5;
+
+      appScreen.innerHTML = `
+        <div class="screen-head">
+          <h2>Consolidate the strategy</h2>
+          <div class="tag">Put the steps in order</div>
+        </div>
+        <div class="action-box">Tap the strategy cards in the correct order.</div>
+        <div class="explain-box">Keep the total the same, build the after model, find 1 unit, find Box A’s after amount, then add the transfer to go back.</div>
+
+        <div class="strategy-layout">
+          <div class="strategy-zone">
+            <h4>Tap from here</h4>
+            <div class="strategy-list">
+              ${poolLeft.map(card => `
+                <button class="strategy-card" type="button" data-action="pick-strategy" data-value="${escapeHtml(card)}">${escapeHtml(card)}</button>
+              `).join("") || `<p class="muted">All cards have been moved.</p>`}
+            </div>
+          </div>
+
+          <div class="strategy-zone">
+            <h4>Your order</h4>
+            <div class="strategy-list">
+              ${state.s15Chosen.map((card, idx) => `
+                <div class="ordered-card">
+                  <div class="ordered-num">${idx + 1}</div>
+                  <div>${escapeHtml(card)}</div>
+                </div>
+              `).join("")}
+              ${Array.from({length: 5 - state.s15Chosen.length}).map(() => `
+                <div class="ordered-card" style="background:#fff;border-style:dashed;border-color:#d5dfec;color:#8b97a9;">
+                  <div class="ordered-num" style="background:#b3bfcd;">?</div>
+                  <div>Tap the next step.</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+
+        <div class="input-row" style="margin-top:16px;">
+          <button class="btn ghost" type="button" data-action="reset-strategy">Reset order</button>
+          <button class="btn secondary" type="button" data-action="check-s15" ${isComplete ? "" : "disabled"}>Check order</button>
+        </div>
+
+        ${feedbackHtml()}
+        ${state.unlocked ? `<div class="end-banner">Strategy check complete. There were <strong>2300 cards</strong> in Box A at first. Keep the total the same, build the after model, find 1 unit, find Box A’s after amount, then add the transfer to go back.</div>` : ""}
+        ${navHtml()}
+      `;
+    }
+
+    function render(){
+      updateProgress();
+      switch(state.screen){
+        case 0: renderScreen1(); break;
+        case 1: renderScreen2(); break;
+        case 2: renderScreen3(); break;
+        case 3: renderScreen4(); break;
+        case 4: renderScreen5(); break;
+        case 5: renderScreen6(); break;
+        case 6: renderScreen7(); break;
+        case 7: renderScreen8(); break;
+        case 8: renderScreen9(); break;
+        case 9: renderScreen10(); break;
+        case 10: renderScreen11(); break;
+        case 11: renderScreen12(); break;
+        case 12: renderScreen13(); break;
+        case 13: renderScreen14(); break;
+        case 14: renderScreen15(); break;
+      }
+      attachHandlers();
+    }
+
+    function attachHandlers(){
+      appScreen.querySelectorAll("[data-action='select-chip']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='select-option']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='select-practice']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.s12PracticeSelected = btn.dataset.value;
+          clearFeedback();
+          render();
+        });
+      });
+
+      appScreen.querySelectorAll("[data-action='pick-strategy']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const clean = btn.textContent.trim();
+          if(!state.s15Chosen.includes(clean)){
+            state.s15Chosen.push(clean);
+            clearFeedback();
+            state.unlocked = false;
+            render();
+          }
+        });
+      });
+
+      const backBtn = appScreen.querySelector("[data-action='back']");
+      if(backBtn){
+        backBtn.addEventListener("click", () => {
+          if(state.screen > 0){
+            state.screen -= 1;
+            state.selected = null;
+            clearFeedback();
+            state.unlocked = state.screen < 14;
+            render();
+          }
+        });
+      }
+
+      const nextBtn = appScreen.querySelector("[data-action='next']");
+      if(nextBtn){
+        nextBtn.addEventListener("click", () => {
+          if(state.unlocked && state.screen < screenMeta.length - 1){
+            state.screen += 1;
+            state.selected = null;
+            clearFeedback();
+            state.unlocked = false;
+            render();
+          }
+        });
+      }
+
+      const resetStrategyBtn = appScreen.querySelector("[data-action='reset-strategy']");
+      if(resetStrategyBtn){
+        resetStrategyBtn.addEventListener("click", () => {
+          state.s15Chosen = [];
+          clearFeedback();
+          state.unlocked = false;
+          render();
+        });
+      }
+
+      bindChecks();
+    }
+
+    function bindChecks(){
+      const actions = {
+        "check-s1": () => {
+          markAttempt("s1");
+          if(state.selected === "2400"){
+            state.unlocked = true;
+            setFeedback("good", "2400 is the total number of cards in Box A and Box B together.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Look for the number for both boxes together.");
+          }
+        },
+        "check-s2": () => {
+          markAttempt("s2");
+          if(state.selected === "after"){
+            state.unlocked = true;
+            setFeedback("good", "Good. We will build the after picture first.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Look for the part that starts after transferring 500 cards.");
+          }
+        },
+        "check-s3": () => {
+          markAttempt("s3");
+          if(state.selected === "aToB"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. Box A loses 500 and Box B gets 500.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Read the transfer sentence carefully: from Box A to Box B.");
+          }
+        },
+        "check-s4": () => {
+          markAttempt("s4");
+          if(state.selected === "same"){
+            state.unlocked = true;
+            setFeedback("good", "The cards moved, but none were added or removed. The total stays 2400.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "The cards only moved from Box A to Box B. The total stays the same.");
+          }
+        },
+        "check-s5": () => {
+          markAttempt("s5");
+          if(state.selected === "A"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. Box A has more cards after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "The question says there are three times as many cards in Box A as in Box B.");
+          }
+        },
+        "check-s6": () => {
+          markAttempt("s6");
+          if(state.selected === "correct"){
+            state.unlocked = true;
+            setFeedback("good", "Correct. After the transfer, Box A has 3 equal units and Box B has 1 equal unit.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Three times as many in Box A as in Box B means Box A has 3 equal units when Box B has 1 unit.");
+          }
+        },
+        "check-s7": () => {
+          markAttempt("s7");
+          if(state.selected === "4"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 3 units plus 1 unit makes 4 equal units.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Count the equal units carefully: 3 for Box A and 1 for Box B.");
+          }
+        },
+        "check-s8": () => {
+          markAttempt("s8");
+          if(normalizeNumber(state.s8Input) === "600"){
+            state.unlocked = true;
+            setFeedback("good", "2400 ÷ 4 = 600. One unit is 600 cards.");
+          } else {
+            state.unlocked = false;
+            if((state.attempts.s8 || 0) >= 2){
+              setFeedback("bad", "Think: 4 equal units make 2400, so each unit is one-quarter of 2400.");
+            } else {
+              setFeedback("bad", "Remember: 4 equal units make 2400.");
+            }
+          }
+        },
+        "check-s8-mini": () => {
+          if(normalizeNumber(state.s8MiniInput) === "3"){
+            setFeedback("good", "Good. 12 split into 4 equal parts gives 3 in each part. Now use the same idea for 2400.");
+          } else {
+            setFeedback("bad", "12 ÷ 4 = 3. Now go back and think about 2400 ÷ 4.");
+          }
+        },
+        "check-s9": () => {
+          markAttempt("s9");
+          if(state.selected === "Bafter"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 600 is 1 unit, and Box B has 1 unit after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "600 is only 1 unit. Box A has 3 units after the transfer.");
+          }
+        },
+        "check-s10": () => {
+          markAttempt("s10");
+          if(normalizeNumber(state.s10Input) === "1800"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. Box A has 3 units, so Box A has 1800 cards after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Box A has 3 units after the transfer, not 1 unit.");
+          }
+        },
+        "check-s11": () => {
+          markAttempt("s11");
+          if(state.selected === "after"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. 1800 is Box A’s number after the transfer.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "We found 1800 from the after picture.");
+          }
+        },
+        "check-s12": () => {
+          markAttempt("s12");
+          if(state.selected === "add"){
+            state.unlocked = true;
+            setFeedback("good", "Add 500. Box A had more before it gave away 500 cards.");
+          } else {
+            state.unlocked = false;
+            if(state.s12Stage === 0){
+              state.s12Stage = 1;
+              setFeedback("bad", "Box A gave away 500, so before that it had more.");
+            } else if(state.s12Stage === 1){
+              state.s12Stage = 2;
+              setFeedback("bad", "Try the quick practice below. Then come back to Box A.");
+            } else {
+              setFeedback("bad", "Go back to the idea: Box A had more before it gave away 500.");
+            }
+          }
+        },
+        "check-s12-practice": () => {
+          if(state.s12PracticeSelected === "more"){
+            state.s12PracticePassed = true;
+            setFeedback("good", "Correct. Before giving them away, the box had more. Use the same idea for Box A.");
+          } else {
+            setFeedback("bad", "If the box gave counters away and ended with 12, it had more before.");
+          }
+          render();
+        },
+        "check-s13": () => {
+          markAttempt("s13");
+          if(normalizeNumber(state.s13Input) === "2300"){
+            state.unlocked = true;
+            setFeedback("good", "Yes. There were 2300 cards in Box A at first.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Box A had 1800 after giving away 500, so add 500 to go back.");
+          }
+        },
+        "check-s14": () => {
+          markAttempt("s14");
+          if(state.selected === "yes"){
+            state.unlocked = true;
+            setFeedback("good", "Check complete. The total stays 2400, and after the transfer Box A has three times as many cards as Box B.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Check again: after moving 500 from Box A to Box B, Box A has 1800 and Box B has 600. 1800 is 3 times 600.");
+          }
+        },
+        "check-s15": () => {
+          const ok = JSON.stringify(state.s15Chosen) === JSON.stringify(strategyCorrect);
+          if(ok){
+            state.unlocked = true;
+            setFeedback("good", "Strategy: keep the total the same, build the after model, find 1 unit, find Box A’s after amount, then add the transfer to go back.");
+          } else {
+            state.unlocked = false;
+            setFeedback("bad", "Try again. Start with the total staying the same. Then build the after model.");
+          }
+        }
+      };
+
+      appScreen.querySelectorAll("[data-action^='check-']").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const fn = actions[btn.dataset.action];
+          if(fn) fn();
+        });
+      });
+    }
+
+    function getCurrentReadText(){
+      const extras = {
+        0: "Tap the amount that tells the total number of cards.",
+        1: "Tap the sentence that tells what happens after the transfer.",
+        2: "Read the transfer direction carefully. The cards move from Box A to Box B.",
+        3: "The cards move, but the total stays the same because no cards are added or removed.",
+        4: "After the transfer, decide which box has more cards.",
+        5: "Choose the model where Box A has 3 units and Box B has 1 unit.",
+        6: "Count the equal units in the after model.",
+        7: "Four equal units make 2400 cards. Type the number in one unit.",
+        8: "Six hundred is only one unit.",
+        9: "Box A has 3 units after the transfer, so find Box A's number after.",
+        10: "One thousand eight hundred belongs to the after picture, not the before picture.",
+        11: "To go back to Box A at first, decide whether to add or subtract 500.",
+        12: "Add 500 to find Box A at first.",
+        13: "Check whether the story fits the answer.",
+        14: "Put the strategy cards in the correct order."
+      };
+      return `Step ${state.screen + 1}. ${screenMeta[state.screen].title}. ${QUESTION_TEXT} ${extras[state.screen] || ""}`;
+    }
+
+    document.getElementById("readAloudBtn").addEventListener("click", () => {
+      const text = getCurrentReadText();
+      if("speechSynthesis" in window){
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.92;
+        utter.pitch = 1;
+        window.speechSynthesis.speak(utter);
+      } else {
+        alert("Read aloud is not available on this device.");
+      }
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      if("speechSynthesis" in window) window.speechSynthesis.cancel();
+      state.screen = 0;
+      state.selected = null;
+      state.feedbackType = "";
+      state.feedbackText = "";
+      state.unlocked = false;
+      state.attempts = {};
+      state.s8Input = "";
+      state.s8MiniInput = "";
+      state.s10Input = "";
+      state.s12Stage = 0;
+      state.s12PracticeSelected = null;
+      state.s12PracticePassed = false;
+      state.s13Input = "";
+      state.s15Chosen = [];
+      render();
+    });
+
+    const questionToggle = document.getElementById("questionToggle");
+    const questionBody = document.getElementById("questionBody");
+    const questionArrow = document.getElementById("questionArrow");
+    questionToggle.addEventListener("click", () => {
+      const open = questionBody.classList.toggle("open");
+      questionArrow.textContent = open ? "▲" : "▼";
+      questionToggle.querySelector("span").textContent = open ? "Hide question" : "Show question";
+    });
+
+    render();
+  </script>
+</body>
+</html>
