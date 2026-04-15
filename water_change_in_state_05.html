@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Change in State 05</title>
+  <style>
+    :root {
+      --bg: #eef6fb;
+      --card: #ffffff;
+      --ink: #17324d;
+      --soft-ink: #4f6480;
+      --accent: #1f78c8;
+      --accent-2: #3aa7e0;
+      --accent-3: #d9effb;
+      --good: #1e8e5b;
+      --bad: #c53b3b;
+      --warn: #ffdf7a;
+      --line: #cfe0ef;
+      --shadow: 0 12px 28px rgba(31, 120, 200, 0.12);
+      --radius: 24px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Avenir Next", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(58, 167, 224, 0.16), transparent 28%),
+        linear-gradient(180deg, #f6fbff 0%, var(--bg) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    .shell {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 14px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .brand {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .brand h1 {
+      font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+      margin: 0 0 4px 0;
+    }
+    .brand p {
+      margin: 0;
+      color: var(--soft-ink);
+      font-size: 0.98rem;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .control-btn {
+      appearance: none;
+      border: 2px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      box-shadow: var(--shadow);
+    }
+    .control-btn.active {
+      border-color: var(--accent);
+      background: #e9f6ff;
+    }
+    .meter {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .meter-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+    .meter-title {
+      font-size: 0.96rem;
+      color: var(--soft-ink);
+      font-weight: 700;
+    }
+    .drops {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .drop {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      font-size: 18px;
+      background: #d9effb;
+      border: 1px solid #b9dcf4;
+      transition: 0.2s ease;
+    }
+    .drop.lost {
+      opacity: 0.28;
+      transform: scale(0.92);
+      filter: grayscale(1);
+    }
+    .progress {
+      font-weight: 700;
+      color: var(--soft-ink);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(16px, 2vw, 24px);
+    }
+    .screen-title {
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      line-height: 1.15;
+    }
+    .instruction {
+      margin-top: 14px;
+      font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+      font-weight: 800;
+      line-height: 1.25;
+      color: #0b4b82;
+    }
+    .support {
+      margin-top: 10px;
+      color: var(--soft-ink);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .question-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 2px solid var(--accent-3);
+      background: #f7fcff;
+    }
+    .question-box strong.highlight {
+      background: #fff4a8;
+      padding: 0 4px;
+      border-radius: 6px;
+    }
+    .question-image {
+      margin-top: 14px;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      display: block;
+      background: #fff;
+    }
+    .options {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .option {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      border: 2px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 1.08rem;
+      font-weight: 700;
+      line-height: 1.35;
+      cursor: pointer;
+      min-height: 64px;
+      transition: 0.16s ease;
+    }
+    .option:hover, .control-btn:hover, .next-btn:hover, .small-btn:hover {
+      transform: translateY(-1px);
+    }
+    .option.selected {
+      border-color: var(--accent);
+      background: #eef8ff;
+    }
+    .option.correct {
+      border-color: var(--good);
+      background: #eefaf4;
+    }
+    .option.wrong {
+      border-color: var(--bad);
+      background: #fff2f2;
+    }
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.4;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.good {
+      background: #eefaf4;
+      color: #125a39;
+      border: 1px solid #b9e3cb;
+    }
+    .feedback.bad {
+      background: #fff4f4;
+      color: #8d2020;
+      border: 1px solid #f0c6c6;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .next-btn, .small-btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 18px;
+      min-height: 50px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .next-btn {
+      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+      color: white;
+      min-width: 132px;
+    }
+    .next-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .small-btn {
+      background: #edf7ff;
+      color: var(--ink);
+      border: 2px solid var(--line);
+    }
+    .diagram-wrap {
+      margin-top: 18px;
+      background: #f7fbff;
+      border: 2px solid var(--accent-3);
+      border-radius: 22px;
+      padding: 14px;
+    }
+    .diagram-caption {
+      margin-top: 10px;
+      color: var(--soft-ink);
+      font-size: 0.98rem;
+    }
+    .diagram-hotspots {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .diagram-hotspot {
+      flex: 1 1 180px;
+    }
+    .sequence-area {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .slots {
+      display: grid;
+      gap: 10px;
+    }
+    .slot {
+      min-height: 58px;
+      border-radius: 16px;
+      border: 2px dashed #b8d9ef;
+      background: #f8fcff;
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      font-weight: 700;
+      color: #4b6a83;
+      cursor: pointer;
+    }
+    .slot.filled {
+      border-style: solid;
+      color: var(--ink);
+      background: #edf7ff;
+    }
+    .chip-bank {
+      display: grid;
+      gap: 10px;
+    }
+    .chip {
+      appearance: none;
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 58px;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .chip.used {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .check-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .check-btn {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: #0b4b82;
+      color: white;
+      padding: 14px 18px;
+      min-height: 50px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .question-toggle-wrap {
+      margin-top: 18px;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+    }
+    .question-panel {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #f8fbfe;
+      border: 1px solid var(--line);
+      display: none;
+    }
+    .question-panel.show { display: block; }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #edf7ff;
+      border: 1px solid var(--line);
+      color: #205b8e;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 42, 68, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 10;
+    }
+    .overlay.show { display: flex; }
+    .overlay-card {
+      max-width: 420px;
+      width: 100%;
+      background: white;
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.24);
+    }
+    .overlay-card h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.8rem;
+    }
+    .overlay-card p {
+      margin: 0;
+      color: var(--soft-ink);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .rain-drop {
+      animation: fall 1.4s linear infinite;
+      opacity: 0.85;
+    }
+    .rain-drop.delay-1 { animation-delay: 0.25s; }
+    .rain-drop.delay-2 { animation-delay: 0.6s; }
+    .vapour-dot {
+      animation: drift 2.4s ease-in-out infinite;
+    }
+    .vapour-dot.delay-1 { animation-delay: 0.4s; }
+    .vapour-dot.delay-2 { animation-delay: 0.8s; }
+    .vapour-dot.delay-3 { animation-delay: 1.2s; }
+    .droplet-dot {
+      animation: twinkle 1.7s ease-in-out infinite;
+    }
+    .cool-arrow {
+      animation: pulseMove 1.6s ease-in-out infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-6px); opacity: 0; }
+      35% { opacity: 0.95; }
+      100% { transform: translateY(16px); opacity: 0; }
+    }
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+      50% { transform: translate(18px, -8px); opacity: 1; }
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+    @keyframes pulseMove {
+      0%, 100% { opacity: 0.35; transform: translateX(0); }
+      50% { opacity: 1; transform: translateX(-6px); }
+    }
+    @media (max-width: 760px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+      .controls {
+        justify-content: flex-start;
+      }
+      .option {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <h1>What is the mist?</h1>
+        <p>Water change of state interactive</p>
+      </div>
+      <div class="controls">
+        <button id="readToggle" class="control-btn" type="button" aria-pressed="false">Read-aloud: Off</button>
+        <button id="speakBtn" class="control-btn" type="button" disabled>Read this screen</button>
+      </div>
+    </div>
+
+    <div class="meter" aria-live="polite">
+      <div class="meter-row">
+        <div>
+          <div class="meter-title">Foggy Oops Meter</div>
+          <div class="drops" id="drops"></div>
+        </div>
+        <div class="progress" id="progressText"></div>
+      </div>
+    </div>
+
+    <main id="app" class="card" aria-live="polite"></main>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay" aria-hidden="true">
+    <div class="overlay-card">
+      <h2>Too many foggy taps!</h2>
+      <p>You used all your chances. Starting again now…</p>
+    </div>
+  </div>
+
+  <script>
+    const QUESTION_TEXT = "On a rainy day, Misha found the inner surfaces of the windscreen of her car becoming misty after some time. What is the mist?";
+    const QUESTION_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAACMCAYAAADV22tvAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAByrSURBVHhe7Z3Pqx3necePagpt0mTRpeooxvIyiyyCIMJyE0Et/QEitbyJqEFBTsimQVpUkI1aIke7FIkYTN2N5IVXXUkuFankKqBldqW2URQhAiUhTdqG0hL1fEbne/1ofOacOefeuffO1ecDc2fmPe+P531n7rzfed6Zefc9mjIRERERGYjfm61FREREBkGxISIiIoOi2BAREZFBUWyIiIjIoCg2REREZFAUGyIiIjIoig0REREZFMWGiIiIDIpiQ0RERAZFsSEiIiKDotgQERGRQVFsiIiIyKAoNkRERGRQFBsiIiIyKIoNERERGRTFhoiIiAyKYkNEREQGRbEhIiIig6LYEBERkUFRbIiIiMigKDZERERkUFYSG2+88cZk3759G8vx48dnv+wc77///q6zCWLXEHAchqhnju/rr78+C3nMRx991IS/8MILzX6f8olLvM2AHdt1TLH3nXfeme19DDakPahP2mBdusoZAzk/NtsGQ4BN2NY+5+q5uhXHbxn5X2G9CtjYtn1scF5Td5ZKwncztH/7ureT1OvOdsFxWvb/0SdOFyuJjZs3b04uXrw4efToUbNcv3599svOQMWPHDkyuX379oZNsBsuhi+++OKGPWPi4MGDk/fee2+295i7d+824eHs2bPbcuyxg2O70+fZVvLBBx9MXnnlldneuOD//9q1a00ddhN07B9++GHz/8a5uZM8//zzjR2snzZu3bq10T/I5rh8+XKzbCdcl4b8315JbGDI4cOHZ3s7z/nz55uLHx17SMeEEAGEBwoxinuRWkwclq67afLjN+KkjHnpqmcjKjVxIobaKpGLZpdQyl0ly71792ahj0k4S8pnXe+U2O5z50T5LNgf3n777cnLL78823vybpE61PIr2Jnw2u7tNGnHCjbQgSAm83vavaZJO+dOkvC0YexkP+kqCU9d2pD+ypUrzVLbrtpRmWdfG8rkt9wB1/MiaZbZXdPEruQXG9Ieoe0BzO/Er8embV/yI/zGjRuTkydPbpRZ7WO7Un+rtiRsUXhX20GNR3qWCOGEBfI5d+5cY3etYz1OlXntWiG/Wk/yabd/XSd+La/aV9u2Uu0gTqXdrikveSX/xKlhUM+Ddl0WlVuZ106E8X9Ce7M9j5qu2jQvP2A/9arXo0DceelqG9U6sr8oP0i6dh1qnjVt2p+lltXVzuTLkvywh/MkcZN34gHhbCdOrWttA+LMO245D2se1e7kV8/v+jsLdrHw/891mXKIS5pA/nX/E0xVaG+IXpedZFrhxgbWbc6cOdMsML0QNQtM75I70xw7duzRVJU328mb+G3Ii7ihK13KAmyp5bI9FUkb2wknn+RVadtdbegqn/yrnaRJ+i7IJ/m18yS/tGPiQdv+Ze2e/GqaxGtDeNqpxqv5tdumbSe/EQcIJwywM3VIHimrUs+lVfOLTZXUKe1Q8+5jd42XPIiX7cRrQ5rkR/mxlXVsgLZ9NT/iZr+2CxA37Vfj1bK66kE+CU+586i21vRJw7oN8VI+28RbpV3b1HKIn7ypJ7ZVWwhju7bLIvsJo8yEA2kWtWtNG/rWq9rDNr9BO14ldYJ2PPJKfpVV2yH5sT0vPyCv2k7EJX3bhlruovxSf/KAmq7am7oEtmv90+5d6VmnnNSX3/Nb3U6aGqeWn/TV5sSrJE3sod2SR82P7bQp+SQ+9Ut4jUNdYyMkny56ezaiuKYVI8fJtJAnFNt28/Dhw2Y9z1353HPPPaGcT58+3azjAUnaCh6RuGCXuUCPHj062+qfbnrwNn5n+/79+8027fjuu+8227ipT5w40WxX7ty580T61Ae6ysclxh0d7cDCsVpWr4D36s0332y2GULBxkWkPbGjuv7mtTs2cP7ElgMHDjTrZWDPhQsXmm3yoz3SbouY/mNslI93Jl4hhmhOnTrVbPM78fqwKD88bbCKfa+++mqzps353wpd5XCOpB1oQ47N1atXm31Y5Hl88OBBs+bc6Ds01ZVf282b9uNc47zLeUxZxCOc+uVcZc1+riupX86PNsn3O9/5TrPfTt+Xdds1cFw5jym3/h8yhPDSSy/N9p4kw2ZcN6gHUF7SUx75hnoecJxI39WuIcdpUTvzv0w5qT/nK96IkP9z7KGdcr5U8HJOO5lme1E7zaOrHRa1e1ebYkdt/5wzXedl6MoPKBsbss0xhXreUQfy5A6epZ5PlMvxSXjq225njgHlpKxch7CtaxgjcQ4dOtSsaT+uL8kLcly6iD30BTnWNb826aOo3zy7qGvqxfmVPLvoLTYosHYSND4n8Twjt4P9+/c363nlcwGJnX2hsarbqC/rpgt0NvzDUQ8O6Dy7c0EMtYNeVD4HnwsMJ2UVSMvIPw828U+96B+Uc4ChjlXqX915uOX6UC/AW0E7v80K53Y7cIEaAs4R2izl1IvYItrpNvt/S/rkxbLo+HBOR5DWNCFiJOHzXLHzbhC2kr7tyv8R4p+OmP9D6obtiM1cuPvQvnjn/57/vend44Yd89ziYd61YlE703lwXiac83VV2nZvlnXP53nkWCQvlnWvG7lhZQHEQ588sSGd9JhB5HKDlzrTz7ShrogdfkMgLuonYKVnNnYTVJQTgM60Df/4yyreBuXIPzmCat6dVRfrpgtRjdSjKvUKJ36lnsyLykfIoM4RM/M8Jovgrg+RwsUpingeHIeUjbJGSCyCE5MLStJgex841vOI6FyVdn6bvYiS3+3yoDJL7i63EkRRPd4s9U5uEYlP+hwnjt86kJ7jnTy7jk/IcUr8LBG2XNzY50I+T4Cue5z70rdd8SDw/8T/FeKC6wz/J6t4DqEtbtOpAf9vsQEWjoO3WNTOiCM6h/Zvq7BZUd5mM+fzPFY9L7vIDWuOKedltXHRNbGvt3a3wzWRunJdi2elDeGIb/rcRW0CvcUGJ3w90S5duvSEC2cnwP3GhamqrtwJLKt4m6pW6wM4y1g3XYWOnXp0uawRCnT6qWeGOGBR+Vxg6Ng5aVY9TlxEediLY9xF7iJWoe2azdDDMhBiiUs70B61vXJHhyemD+38ajuuA8cw7mCgXVbpJPrCnXVtM/4n+5x32FM7tErCV2mHKs6oZ9JxnnGBz00Av1F2wmMrZcWmPCS3CNJzLnLdgeQTsbJZ+rZrysNubHr22Web/8dVPIfARZr/LyCveMJoh3nejK52bbOonRFH9TpCnFXFQ9turi+r3thV1j2fSYfoC9SRNuk6L/tQvSq1XvW8o86URRvSnuRPGCB0OHb0PYTnnOa6sOg6ui7pF1J+7Rc2C8ch58kiaAPOhz7nUW+xQQNygaahWVAyGfft+gcZGmxCdbXd+OvcpaKG484DTg4U2zLWTVfBA8EFouvCyQUE9Z960rGFZeUzlNL2mBA3J2gXEWuLLqLYRfnkx8LJvuyuhHypa9IgDuo/bBd4CTihSUM70B60V2xI27Dfh5ofF9CuiwEXHC48yzw2qXfqhU1pw60Euzn+KYftZR6Ug6/9dPL8X9yb/NlfP9Ns/9U/fnnyb3/yw2b7xv+c29j++t99ronH78RlmzB+YyHeD//1z5vtR3/6TxvbxE+6/Jbt/NZOk7Ioh3wTP+Wy3YbrDceCenOB69ORIEi5IC+7Pq3SrvUc4xzEjq4bhS44N/jfpCz+HzLenXMmdlBWwriu5X+ddVf9iUf7EI//C66R5MNSr5fEWfVa2bZ7s+f5OuczEIf6JF3soGNP3fE+YWuevVhG6lXzA847+jvCqXO99tCeuZ7VPpHwHCvaOOFbCeVjZ8qn7bYKrss5T1hTN4jAirjABq6dXZ6Pyr5H+ElkR6EjY6ikzz/ZqnCycHJwUgTuHFDFNUxERMYLgpqbwyH6kS64SUTs9JERo31mY6+AQuRubatPkLhPUettUYH7UaEhIjJeMpSWBbZTaFB+vFt90LMhsseZNyQxBj586/OzLREZO4oNERERGRSHUURERGRQFBsiIiIyKHtWbOShmTxE0+ed4d1OrQcPluY97qEg/7ziFHjieV4Yb7is894+dB0f8lvlleo8FFu3l71SuxX0sZM3jurrs6TBPpZ12kxEZEzsSbFBR5PXcTbzDvhuhne3h65b+6M1wDcL6ByrOCBs1e8M9IEnq4d4P32rWdVO2o5vAXB+stCey77jISIyZkYtNtqv/rDPhZyPkNBJ1rtGwtJpchda00DuhPNbm3ZZlUX51TtYys927VxqOMs82vVgP/UlzVaVU8kHW/LVQspin3e58+Ew8oT6QbLaHpVadjwB845PqB6DRe0PpCUPSJ7Al/+SBvtDzS9ltEn5qQ/5pr1ZcqyX2cnvvN7MwjbzCNTXxfiCYj6aIyKyJ+FtlDEyFRO8RbMxve704r0x9e3t24+n+A5sEwZnyjS+iUce2b42m1a3Tbss8sl2u9yaH78DZbZ/S35sp9xqXxvikRYokzRDlFNp15WFfJOW/OrvbRurXdnGnhqvbleIn3JqPQhPmZXUt26nzFrf/Jb8qp0VwqptbOdY81vdXmYn63k2A22Y9CIie5HReja4657av/Fxqr6T33AHmW/xczc+vcg/MRU4QwddZP4N3Ob5PDWf6M6cGPPyywRo8RKwjheA/LhTnnZaG0MizKZbv3ffl6HKYXgkcfgYGPvkS1rgU8B1bgTKSLl8Pjcz1jLMkA/O5Jityrz2X0baBRvzaWa8MtOOf8MOjl/XvAK1Pmzn0++0w1RUNNttVrETTwefNR7DcJGIyLqMehiFIYK4q7lg94EOAnd70qXTXEY7XejqcPrCxGTkkXzp0IZg3XKqsGCdjhdBg4BBiCwSaKEOP7CsSlf7rwMCKHNssPQ9d/qwip0MuSByEM0iInuZ0YoNOi86DC7ULNeu9Z+q/Pbt1acC5y448S9e/Hgq9c2KA2aNJI9qD8u6d/9dbKYcvADcgSMwQp7bwFvQJw8m6uEYpdxV6Wr/dWAeGuqU/FhWnZCqi1XsvH///icmyRMR2YuMVmysO1U5rv1VpwLn7r3rLrU9VTl3/6u8mYGngLvh2JAHDLeazZTDEAR34HVmP+rIsErfmQYpOyBcVmFR+68DtiNUMzyEIOh6SHQVVrUTkdtH6IqIjJ3Rig2ePeBOnYs7y6Kpyrkjx7WNGFhnKnDuVomXNHUqdToL3lIgnDK4e89QQ1+wO9MRs64dc6XWYx26yiG/+gZHm7wCW4dLMrzC9Ph9oP1SNlCXvNGyrF6L2r+Sdk8ZXRCP45Tzp04NvRkW2Tlvqnq2VxVeIiJjxLlRREREZFBG/YCoiIiI7H4UGyIiIjIoig0REREZFMWGiIiIDIpiQ0RERAZFsSEiIiKDotgQERGRQVFsiIiIyKAoNkRERGRQFBsiIiIyKIoNERERGRTFhoiIiAyKYkNEREQGRbEhIiIig6LYEBERkUFRbIiIiMigKDZERERkUBQbIiIiMiiKDRERERkUxYaIiIgMyujFxhtvvNEsFfaPHz8+25tMXn/99ck777wz29sayL9droiIiHySfY+mzLZHx0cffdQIievXr89CHguNc+fOTY4dO/ZE+AsvvDB57733Js8///wsRERERLaDUXs2Ll26NDl16tRs77G34ebNm5MzZ87MQj7mwoULTfytou3ZQMzs27evWRBBIWHtcBERkaeFUYuNK1euTF555ZXZ3qTxZFRvRuXQoUONZ2MIEB6nT5+e4CS6du1a420BBMjFixebcNYvv/xyEy4iIvI0MVqx8f77708OHjw421tOhk+22rtAfjdu3JicOHGi2Uf8XL58uQn/8MMPJ2fPnm3CWbOP3SIiIk8TT93bKA8fPpxtDQfCJuXUYRQREZGnkdGKjf3798+2VmPddKuSchhCqcuLL77YhIuIiDwtjFZs4D1gWKIvGT7Z6rdRyI/hnLt37zb7vGKLFyPheYiU4RMfEhURkaeRUQ+j8NZJ3+9nIAaGekDzgw8+mJw8ebIRE6wjggjnNVzCjxw5Mrl9+/aWix0REZHdzp77zkYXfmdDRERkZxi1ZwPhcPTo0aVf8kSQ8GqqQkNERGT7GbVnQ0RERHY/T92rryIiIrK9KDZERERkUBQbIiIiMiiKDRERERmU0YsN3kTJ2yi8dcI3LbIEwvt+j2On4XVebHcOFRER2SuMWmzQMTOlPJOcISbY5+UaFj74xWyswMRo58+f9+udIiIiO8CoxcalS5cmp06daraZbbV+3Oull15qvuAZLly40MTfKvL58SwRMggcPC0Jx6tS96vgqZ6Yrm+FJE5IfBbFk4iIjIFRi40rV640ImMe9+/fb74aGg4dOtR8QXSrQOTw+XG8KNeuXWtEQeAT5YTzOzbeu3ev2T927NiG4METw2+E83lz0rSHThAg8dYA9bl48WKzz3qoz6+LiIhsJaMVG3TMTHQ2D36j82boJOTroVvpDXjw4EGzbntVGMKBzPz66quvNmu+dpry33777UYwALaR5urVq80+sM0QUfIlHaKEISNgzb7PdoiIyG5n9A+ItqFTZtIzvA3zpnN/+PDhbGtz1MnX1hnSqEM8Xdy4cWMj39hdh1FERETGwGjFRrwGlXg7GL7oGl6Zl25dGM5gaQ+j9KEO8cwDb0jNN3anzCzzBJWIiMhuYrRig6GHTOUO8WgQNq8DjodgqyZjW8ebUeGZD4Z6gHx4foOHWisIJjwgPN+B3QipPEiKsNqsDSIiItvBqIdReM4h38/Ig5d0yPOGGu7evbulD1TidUhZDKf0mea+gpDAftKTD89vzPPG8GwH+SMqEB4IFNIgrPDgbJV4EhERGYpRz/pKB8wwQ5+OnmEL3kaxcxYREdleRu3ZQDjwhkfXNyoCguT06dMKDRERkR1g1J4NERER2f3suVdfRUREZHeh2BAREZFBUWyIiIjIoCg2REREZFAUGyIiIjIoe0Js8JGrfEkzX9bMUr+wySuwy16TFRERka1l9GIDAcHXPPmGBsIiX9bkjd585TNcvnx58uabb+74TKnY2RZCIiIie5VRiw1EA18FzWe+33333cmxY8c25kZJeBUXFy5caBYRERHZHkYtNq5evdp8GTScPXv2iU+XZ96UOjEbAqRO3b4O5FtnbT1+/PjG8Ey8FtAe0kmceFuq16XGi20pJ0sFjw5LIO/E6So3+ZEuv1VqeB1uYj9tWb0yi+wTEREJoxYbeDUOHDgw2/uYdLZMYMZQShu8H3hB1gXBwuyyEQVMkHbz5s1mmwnfmGAN2kM6meU1s9VmTUfNRGzEY10njCMOk7FRRoUp6Kl/oPwIr65ygfyee+655jfsRCgBwoGZZwknDmmqR6iLLvtERETCaMUGHT0d3aFDh2YhH4Mng06T5fz580/cpQPPd9y7d2+2tx4IlocPHzYdcvWu3Lp1a2OqeMqPV+XZZ59t1m1SD7wywJr92tHPmzKfsBoPb82JEyea7WXlpiwEC+kAwYDQAdoHIYLnqA/z7BMREQmjf0B0GQiBeB0q8UqsCxPA3blzZ/LgwYPGu5IHVPE2RAAhcjIsgbdhHggWSDyWviAIsAHBgfjJRHN9yoX9+/c3a+zWMyEiIkOxp8RG+zmGRaRjXpfDhw83IgZPBuICbwZDMwyJRHgwFIH3AU8DwxrzSIcfT0yWPt4CysQGPBCIH+hbLkToYO+iZy7qsyUiIiKrMlqxQQdJJ8gzEoFhAZ47yNBCOt5Tp041+4FwnlvYDBED5IUtDFfwWm06/XTkoesNmNQjQz3YjkeCfJeByGEYhDpnCKVPuXnYE5GCRwRoozzbQdnkmeEguH//frPezLMuIiLylDK9+x0tZ86caZbKtWvXmDJ/Y2G/DeHTO//Z3vpQ9rSznu09zvf27duzvUfNb7GD8Pr7VGA8YUfi1Tipyzz+fRr+u1/8oimD5Xe//vWj33z9603433zhCxt5/cuNG4/+drom/J+/8Y0mjPh/NF3//Wc+04T/9q23mjypD+GJn3DsqeGvThfsxj7CU+5vvvnNJr6IiEhlH3+mHdAo4Q6cNzdWed6Au3oehqyvyI6R//rWtyaTT31q8umZR+Q/X3ttMvnsZyfPHDw4+e3Fi5M//tnPPhH+i+9+d/K5X/6yGV7pE3+V8E+dOTP5z29/e/LMF784+fT3vtf8JiIiAqMWG8AzGrj78wGvZfBsAmJj7G9Q/O7nP5/8x1e+Mvn9L31p8syXvzz57bSDXyYMfvLVr07+4Uc/mvzlD36wJQKjHf7oV7+a/Gpqyx+eOzf5g9bQlYiIPMUgNsYO1egzLDJv2GXM/N9PfvLo11/72hNDHlCHVLYzHP73xz9+9N/f//5sT0REZOTDKCIiIrL72fPf2RAREZGdRbEhIiIig6LYEBERkUFRbIiIiMig7Amx0fXFzePHjz/x+XK225OyiYiIyLCMXmwgIJhGnc9+V/h4V2Y0DZcvX24+KV5nVN0JEEZ9P0nelyHyJL9lbYV4Q9SJiMhqcP0c4w0w36tata8ZtdigI2SW1Xkf9Dp58uTGvB8V5grpmqdERERkO6CzZiLNs2fPzkLGA/0uX+9ehVGLDSYSYwr5NvF2zANhgsdjMx4AvCZ1llTu7KNO42GATKqWJXEyi2qdTbXGi20pJ0ublMVy6dKlWej8dNWWmldsz2912KkyLz3lMHkb7Zl0/JZ4Y1TsIiLbAdfs9iShY4GRBMQGfUBfRi02UFcHDhyY7T2GTpFOeNHny/F4bGb2UvJmCveIAuZmQaECs9CeOXOm2T5y5EgzxTvfTUP8ZFZV0tY1HfTFixebeKyrYiQOn1efN/8L8ZKuPYttOx22YANxKa+KijolPbO9tk8g6lnrkvS0A+XTngxRIS6wiTgs5Js2EhGRj+Fau6if2u0wTcitW7dme8sZrdigE6ODZJr1CkqRjm8RqLJ79+7N9taDDpbp3BE31btC42dqdjrczMHCFPTzSD3iSmPNPvmGefO4JF2mls+6knSIB7woObHPnz/fnOgBcZRnXthun0AIKOqb/NrpK1VcUP/2szQiIk87XN+rZ3uM0Pdyw9+X0T8gWuHOmo6/Twe32Tvuo0ePTu7cuTN58OBB412hTPKk8SOA6vAEnoF5IFgg8Vj6kHRhUZ3v378/21oOHpJ225CeoZJldUEoYUfiOYwiIrJ34Ya3L3tKbPCmCa77dHZ0kNyB5xmDymbvuA8fPtwMneAFQFzgzWBohrIiPOrwBEMQ89i/f3+zztBDlmWz0iZdWCSe2kNNi8Dj024b0uPZaNs4D7xK+d1hFBGRT9K+fo+VVbwzoxUbdIhUFBd/4PmE2hnSQTIs0H7egQ6w/YzDqkQMkBe2MEyC2MHjAW3PQ9cbMKlHvAB5EHNZJ0066pcHQxc9g5JnTPIsBraQNtQhEbYzDBQQUwi3DO1g6zwBx3McejNERBbD9XsVr8BuhL53lTdSRj3rax5y7HpGgzctOKjt3+nMOdD8thkoH1Fw/fr1Zp988WBEiFA+nTQQnocs+Z3OGhtiB2lD4iAOeIV30SFKOkQVQoH8OAna6RAKGf5A3ESA5RsZsZMHPvP8SK1PTQ/JO+GIF9qh1oMHUsf8AJSI7A0OvvbT2db4+PCtz8+2tpe+bdbXvlGLDTp6lNW8NzW6oAPnLY0IhKedLkEmIiLDQf/FDesY+6J1+t5RP7NBJ0mF269qLoI3KVhERER2Cvovht3HOPRMv8tN+yqM2rMRcN33GRZZNuwiIiJ7D4dRVsdhFBERERkVe+rVVxEREdl9KDZERERkUBQbIiIiMiiKDRERERkUxYaIiIgMimJDREREBkWxISIiIoOi2BAREZEBmUz+H+hJEOBraa5KAAAAAElFTkSuQmCC";
+
+    function shuffleArray(input) {
+      const arr = [...input];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function shuffleUntilDifferent(input, isBadOrderFn) {
+      let tries = 0;
+      let output = shuffleArray(input);
+      while (isBadOrderFn(output) && tries < 12) {
+        output = shuffleArray(input);
+        tries++;
+      }
+      return output;
+    }
+
+    const screens = [
+      {
+        id: "intro",
+        type: "intro",
+        title: "Read the question first",
+        instruction: "Tap when you have read the full question.",
+        questionFirst: true
+      },
+      {
+        id: "task",
+        type: "single",
+        title: "What is the question asking?",
+        instruction: "Tap what the question wants you to identify.",
+        prompt: "",
+        applyDemerit: true,
+        options: [
+          { text: "why the windscreen became misty", correct: false },
+          { text: "what the mist is", correct: true },
+          { text: "whether it is raining", correct: false },
+          { text: "what the car is made of", correct: false }
+        ],
+        correctFeedback: "Yes. First identify what the mist is.",
+        wrongFeedback: "This question asks what the mist is, not why it formed."
+      },
+      {
+        id: "keyword",
+        type: "single",
+        title: "Find the key word",
+        instruction: "Tap the key word that helps you choose the answer.",
+        applyDemerit: true,
+        options: [
+          { text: "rainy", correct: false },
+          { text: "mist", correct: true },
+          { text: "car", correct: false },
+          { text: "surfaces", correct: false }
+        ],
+        correctFeedback: "Yes. “Mist” is the key science word.",
+        wrongFeedback: "Those words set the scene. Tap the science word you must identify."
+      },
+      {
+        id: "liquid-water",
+        type: "single",
+        title: "Quick state check",
+        instruction: "Tap the option that names liquid water.",
+        applyDemerit: true,
+        options: [
+          { text: "ice", correct: false },
+          { text: "water vapour", correct: false },
+          { text: "water droplets", correct: true },
+          { text: "smoke", correct: false }
+        ],
+        correctFeedback: "Yes. Water droplets are liquid water.",
+        wrongFeedback: "Think about the state of matter. Liquid water comes as tiny drops."
+      },
+      {
+        id: "vapour",
+        type: "single",
+        title: "Do not mix these up",
+        instruction: "Tap the statement that is correct.",
+        applyDemerit: true,
+        options: [
+          { text: "Water vapour is tiny liquid drops of water.", correct: false },
+          { text: "Water vapour is water in the gaseous form.", correct: true },
+          { text: "Mist and water vapour are exactly the same thing.", correct: false },
+          { text: "Visible mist on glass is invisible gas.", correct: false }
+        ],
+        correctFeedback: "Yes. Water vapour is water in the gaseous form.",
+        wrongFeedback: "Water vapour is the gas form. Mist is not the gas itself."
+      },
+      {
+        id: "surface",
+        type: "hotspot",
+        title: "Where is the mist seen?",
+        instruction: "Tap the surface where the mist is seen in the question.",
+        applyDemerit: true,
+        correctHotspot: "inner",
+        correctFeedback: "Yes. The mist is on the inner surface.",
+        wrongFeedback: "Look again. The question says the inner surfaces of the windscreen."
+      },
+      {
+        id: "cool-first",
+        type: "single",
+        title: "What becomes cooler first?",
+        instruction: "Tap what becomes cooler first in this model.",
+        applyDemerit: true,
+        visual: "cooling",
+        options: [
+          { text: "the smoke", correct: false },
+          { text: "the windscreen", correct: true },
+          { text: "the tyres", correct: false },
+          { text: "the seats", correct: false }
+        ],
+        correctFeedback: "Yes. The windscreen loses heat to the cooler air outside.",
+        wrongFeedback: "Watch what loses heat to the cooler air outside the car."
+      },
+      {
+        id: "sequence",
+        type: "sequence",
+        title: "Build the change-of-state chain",
+        instruction: "Build the correct order. Tap the strips in order.",
+        applyDemerit: true,
+        visual: "condense",
+        items: [
+          "Water vapour in the air touches the cooler inner surface.",
+          "The water vapour loses heat to the windscreen.",
+          "Condensation happens.",
+          "Tiny water droplets form."
+        ],
+        correctFeedback: "Yes. Vapour cools, condenses, and forms tiny water droplets.",
+        wrongFeedback: "Check what happens before the droplets form."
+      },
+      {
+        id: "retry",
+        type: "single",
+        title: "Answer the original question",
+        instruction: "Tap the best answer to the original question.",
+        applyDemerit: false,
+        showQuestionImage: true,
+        options: [
+          { text: "ice", correct: false },
+          { text: "smoke", correct: false },
+          { text: "water vapour", correct: false },
+          { text: "water droplets", correct: true }
+        ],
+        correctFeedback: "Correct. The mist is tiny water droplets.",
+        wrongFeedback: "Think about the state of mist: gas or tiny liquid drops?"
+      },
+      {
+        id: "transfer",
+        type: "single",
+        title: "Quick transfer check",
+        instruction: "A bathroom mirror becomes misty after a hot shower. What is the mist on the mirror?",
+        applyDemerit: false,
+        options: [
+          { text: "ice", correct: false },
+          { text: "smoke", correct: false },
+          { text: "water vapour", correct: false },
+          { text: "tiny water droplets", correct: true }
+        ],
+        correctFeedback: "Yes. On a cool surface, visible mist is tiny water droplets.",
+        wrongFeedback: "The mist you can see on the cool mirror is liquid water."
+      },
+      {
+        id: "done",
+        type: "completion",
+        title: "Well done!",
+        instruction: "You identified the mist and followed how it formed.",
+        support: "Mist on the inner windscreen is tiny water droplets formed by condensation.",
+      }
+    ];
+
+    const demeritMax = Math.ceil(screens.filter(s => s.applyDemerit).length / 2);
+
+    const state = {
+      screenIndex: 0,
+      demeritMax,
+      demeritsLeft: demeritMax,
+      readAloud: false,
+      questionPanelOpen: false,
+      correctDone: false,
+      currentOptions: [],
+      selectedOptionIdx: null,
+      sequenceBank: [],
+      sequenceSlots: [],
+      sequenceSolved: false,
+      hotspotSolved: false,
+      isSpeaking: false
+    };
+
+    const app = document.getElementById("app");
+    const drops = document.getElementById("drops");
+    const progressText = document.getElementById("progressText");
+    const readToggle = document.getElementById("readToggle");
+    const speakBtn = document.getElementById("speakBtn");
+    const overlay = document.getElementById("gameOverOverlay");
+
+    function updateHeader() {
+      drops.innerHTML = "";
+      for (let i = 0; i < state.demeritMax; i++) {
+        const span = document.createElement("span");
+        span.className = "drop" + (i < state.demeritsLeft ? "" : " lost");
+        span.textContent = "💧";
+        drops.appendChild(span);
+      }
+      const current = Math.min(state.screenIndex + 1, screens.length);
+      progressText.textContent = "Screen " + current + " of " + screens.length;
+      readToggle.textContent = "Read-aloud: " + (state.readAloud ? "On" : "Off");
+      readToggle.classList.toggle("active", state.readAloud);
+      readToggle.setAttribute("aria-pressed", state.readAloud ? "true" : "false");
+      speakBtn.disabled = !state.readAloud;
+      speakBtn.classList.toggle("active", state.readAloud);
+    }
+
+    readToggle.addEventListener("click", () => {
+      state.readAloud = !state.readAloud;
+      if (!state.readAloud && window.speechSynthesis) {
+        speechSynthesis.cancel();
+      }
+      updateHeader();
+    });
+
+    speakBtn.addEventListener("click", () => {
+      if (state.readAloud) speakCurrentScreen();
+    });
+
+    function loseDemerit() {
+      if (!screens[state.screenIndex].applyDemerit) return;
+      state.demeritsLeft = Math.max(0, state.demeritsLeft - 1);
+      updateHeader();
+      if (state.demeritsLeft === 0) {
+        overlay.classList.add("show");
+        overlay.setAttribute("aria-hidden", "false");
+        if (window.speechSynthesis) speechSynthesis.cancel();
+        setTimeout(resetAll, 1800);
+      }
+    }
+
+    function resetAll() {
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden", "true");
+      state.screenIndex = 0;
+      state.demeritsLeft = state.demeritMax;
+      state.questionPanelOpen = false;
+      state.selectedOptionIdx = null;
+      state.sequenceBank = [];
+      state.sequenceSlots = [];
+      state.sequenceSolved = false;
+      state.hotspotSolved = false;
+      render();
+    }
+
+    function makeQuestionPanel() {
+      const wrap = document.createElement("div");
+      wrap.className = "question-toggle-wrap";
+
+      const toggle = document.createElement("button");
+      toggle.className = "small-btn";
+      toggle.type = "button";
+      toggle.textContent = state.questionPanelOpen ? "Hide full question" : "Show full question";
+      toggle.addEventListener("click", () => {
+        state.questionPanelOpen = !state.questionPanelOpen;
+        render();
+      });
+      wrap.appendChild(toggle);
+
+      const panel = document.createElement("div");
+      panel.className = "question-panel" + (state.questionPanelOpen ? " show" : "");
+      panel.innerHTML = `
+        <div><strong>Original question</strong></div>
+        <div style="margin-top:8px; line-height:1.5;">${QUESTION_TEXT}</div>
+        <img class="question-image" alt="Original worksheet question" src="${QUESTION_IMAGE}">
+      `;
+      wrap.appendChild(panel);
+      return wrap;
+    }
+
+    function addFeedback(card, text, good) {
+      const box = document.createElement("div");
+      box.className = "feedback show " + (good ? "good" : "bad");
+      box.textContent = text;
+      card.appendChild(box);
+      if (state.readAloud) speakText(collectSpeakableText() + " " + text);
+    }
+
+    function setNav(card, canNext, nextLabel = "Next") {
+      const nav = document.createElement("div");
+      nav.className = "nav";
+
+      const left = document.createElement("div");
+      left.className = "badge";
+      left.textContent = screens[state.screenIndex].applyDemerit ? "Careful taps count here." : "No demerits on this screen.";
+      nav.appendChild(left);
+
+      const next = document.createElement("button");
+      next.className = "next-btn";
+      next.type = "button";
+      next.textContent = nextLabel;
+      next.disabled = !canNext;
+      next.addEventListener("click", () => {
+        state.screenIndex++;
+        state.selectedOptionIdx = null;
+        state.sequenceBank = [];
+        state.sequenceSlots = [];
+        state.sequenceSolved = false;
+        state.hotspotSolved = false;
+        render();
+      });
+      nav.appendChild(next);
+      card.appendChild(nav);
+    }
+
+    function renderIntro(screen) {
+      const title = document.createElement("h2");
+      title.className = "screen-title";
+      title.textContent = screen.title;
+      app.appendChild(title);
+
+      const instruction = document.createElement("div");
+      instruction.className = "instruction";
+      instruction.textContent = screen.instruction;
+      app.appendChild(instruction);
+
+      const question = document.createElement("div");
+      question.className = "question-box";
+      question.innerHTML = `
+        <div style="line-height:1.6; font-size:1.08rem;">
+          On a <strong class="highlight">rainy day</strong>, Misha found the
+          <strong class="highlight">inner surfaces</strong> of the windscreen of her car becoming
+          <strong class="highlight">misty</strong> after some time. What is the
+          <strong class="highlight">mist</strong>?
+        </div>
+        <img class="question-image" alt="Original worksheet question" src="${QUESTION_IMAGE}">
+      `;
+      app.appendChild(question);
+
+      const nav = document.createElement("div");
+      nav.className = "nav";
+      const start = document.createElement("button");
+      start.className = "next-btn";
+      start.type = "button";
+      start.textContent = "I have read it";
+      start.addEventListener("click", () => {
+        state.screenIndex++;
+        render();
+      });
+      nav.appendChild(document.createElement("div"));
+      nav.appendChild(start);
+      app.appendChild(nav);
+    }
+
+    function renderOptions(screen, withVisual = null) {
+      const title = document.createElement("h2");
+      title.className = "screen-title";
+      title.textContent = screen.title;
+      app.appendChild(title);
+
+      const instruction = document.createElement("div");
+      instruction.className = "instruction";
+      instruction.textContent = screen.instruction;
+      app.appendChild(instruction);
+
+      if (screen.prompt) {
+        const prompt = document.createElement("div");
+        prompt.className = "support";
+        prompt.textContent = screen.prompt;
+        app.appendChild(prompt);
+      }
+
+      if (screen.showQuestionImage) {
+        const q = document.createElement("div");
+        q.className = "question-box";
+        q.innerHTML = `<div style="line-height:1.55;">${QUESTION_TEXT}</div><img class="question-image" alt="Original worksheet question" src="${QUESTION_IMAGE}">`;
+        app.appendChild(q);
+      }
+
+      if (withVisual) app.appendChild(withVisual);
+
+      const optionsWrap = document.createElement("div");
+      optionsWrap.className = "options";
+      state.currentOptions = shuffleArray(screen.options.map(opt => ({ ...opt })));
+
+      state.currentOptions.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.type = "button";
+        btn.textContent = opt.text;
+        btn.dataset.index = String(idx);
+        btn.addEventListener("click", () => {
+          if (state.correctDone) return;
+          state.selectedOptionIdx = idx;
+          const correct = !!opt.correct;
+          [...optionsWrap.children].forEach((child, childIdx) => {
+            child.classList.remove("selected", "correct", "wrong");
+            if (childIdx === idx) {
+              child.classList.add(correct ? "correct" : "wrong");
+            }
+          });
+          const existing = app.querySelector(".feedback");
+          if (existing) existing.remove();
+          if (correct) {
+            state.correctDone = true;
+            addFeedback(app, screen.correctFeedback, true);
+            const nav = app.querySelector(".nav");
+            if (nav) nav.remove();
+            setNav(app, true);
+          } else {
+            if (screen.applyDemerit) loseDemerit();
+            addFeedback(app, screen.wrongFeedback, false);
+          }
+        });
+        optionsWrap.appendChild(btn);
+      });
+      app.appendChild(optionsWrap);
+
+      setNav(app, false);
+
+      if (screen.id !== "intro") {
+        app.appendChild(makeQuestionPanel());
+      }
+    }
+
+    function makeCarDiagram(mode) {
+      const wrap = document.createElement("div");
+      wrap.className = "diagram-wrap";
+
+      const isCooling = mode === "cooling";
+      const isCondense = mode === "condense";
+      const svg = `
+      <svg viewBox="0 0 760 330" role="img" aria-label="Car windscreen model">
+        <defs>
+          <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#e9f6ff"/>
+            <stop offset="100%" stop-color="#f8fcff"/>
+          </linearGradient>
+          <linearGradient id="glass" x1="0" x2="1">
+            <stop offset="0%" stop-color="#d8f1ff"/>
+            <stop offset="100%" stop-color="#effaff"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="760" height="330" fill="url(#sky)" rx="20"></rect>
+
+        <g aria-hidden="true">
+          <text x="92" y="42" font-size="22" font-weight="800" fill="#205b8e">Outside</text>
+          <text x="560" y="42" font-size="22" font-weight="800" fill="#205b8e">Inside car</text>
+        </g>
+
+        <g>
+          <path d="M135 225 L230 155 L520 155 L620 225 Z" fill="#9fd2ef" opacity="0.23"></path>
+          <path d="M120 230 L230 145 L530 145 L650 230" fill="none" stroke="#18334f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M160 230 L235 160 L510 160 L598 230" fill="none" stroke="#18334f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+
+          <polygon points="224,149 260,149 225,226 188,226" fill="url(#glass)" stroke="#0b4b82" stroke-width="2"></polygon>
+          <line x1="221" y1="149" x2="185" y2="226" stroke="${isCooling || isCondense ? '#1f78c8' : '#5fa8da'}" stroke-width="6" stroke-linecap="round"></line>
+          <line x1="233" y1="149" x2="197" y2="226" stroke="#7bc2ed" stroke-width="6" stroke-linecap="round"></line>
+
+          <circle cx="220" cy="236" r="28" fill="#17324d"></circle>
+          <circle cx="573" cy="236" r="28" fill="#17324d"></circle>
+          <circle cx="220" cy="236" r="14" fill="#eef6fb"></circle>
+          <circle cx="573" cy="236" r="14" fill="#eef6fb"></circle>
+        </g>
+
+        <text x="112" y="112" font-size="18" font-weight="800" fill="#205b8e">Cooler air</text>
+        <text x="535" y="112" font-size="18" font-weight="800" fill="#205b8e">Air inside</text>
+
+        <g aria-hidden="true">
+          <line x1="174" y1="116" x2="150" y2="146" stroke="#1f78c8" stroke-width="4" class="cool-arrow"></line>
+          <line x1="160" y1="126" x2="150" y2="146" stroke="#1f78c8" stroke-width="4" class="cool-arrow"></line>
+        </g>
+
+        <text x="138" y="267" font-size="16" font-weight="800" fill="#205b8e">Outer surface</text>
+        <text x="252" y="267" font-size="16" font-weight="800" fill="#205b8e">Inner surface</text>
+
+        <g>
+          <line x1="184" y1="230" x2="170" y2="250" stroke="#205b8e" stroke-width="2"></line>
+          <line x1="198" y1="230" x2="258" y2="250" stroke="#205b8e" stroke-width="2"></line>
+        </g>
+
+        <g class="rain" aria-hidden="true">
+          <line x1="80" y1="70" x2="72" y2="90" stroke="#3aa7e0" stroke-width="4" class="rain-drop"></line>
+          <line x1="115" y1="86" x2="107" y2="106" stroke="#3aa7e0" stroke-width="4" class="rain-drop delay-1"></line>
+          <line x1="98" y1="118" x2="90" y2="138" stroke="#3aa7e0" stroke-width="4" class="rain-drop delay-2"></line>
+          <line x1="138" y1="100" x2="130" y2="120" stroke="#3aa7e0" stroke-width="4" class="rain-drop"></line>
+        </g>
+
+        <g aria-hidden="true">
+          <circle cx="522" cy="105" r="8" fill="#89d1f2" class="vapour-dot"></circle>
+          <circle cx="568" cy="128" r="8" fill="#89d1f2" class="vapour-dot delay-1"></circle>
+          <circle cx="496" cy="150" r="8" fill="#89d1f2" class="vapour-dot delay-2"></circle>
+          <circle cx="552" cy="165" r="8" fill="#89d1f2" class="vapour-dot delay-3"></circle>
+        </g>
+
+        ${
+          isCondense ? `
+          <g aria-hidden="true">
+            <circle cx="214" cy="162" r="5" fill="#2a95d8" class="droplet-dot"></circle>
+            <circle cx="207" cy="178" r="5" fill="#2a95d8" class="droplet-dot"></circle>
+            <circle cx="200" cy="193" r="5" fill="#2a95d8" class="droplet-dot"></circle>
+            <circle cx="193" cy="208" r="5" fill="#2a95d8" class="droplet-dot"></circle>
+            <circle cx="220" cy="184" r="5" fill="#2a95d8" class="droplet-dot"></circle>
+          </g>
+          <text x="378" y="294" font-size="18" font-weight="800" fill="#205b8e">Tiny water droplets form on the inner surface.</text>
+          ` : ``}
+        ${isCooling ? `<text x="330" y="294" font-size="18" font-weight="800" fill="#205b8e">The windscreen loses heat to the cooler air outside.</text>` : ``}
+      </svg>
+      `;
+      wrap.innerHTML = svg;
+      return wrap;
+    }
+
+    function renderHotspot(screen) {
+      const title = document.createElement("h2");
+      title.className = "screen-title";
+      title.textContent = screen.title;
+      app.appendChild(title);
+
+      const instruction = document.createElement("div");
+      instruction.className = "instruction";
+      instruction.textContent = screen.instruction;
+      app.appendChild(instruction);
+
+      const diagram = makeCarDiagram("surface");
+      const caption = document.createElement("div");
+      caption.className = "diagram-caption";
+      caption.textContent = "Use the clean car model to spot the inner and outer surface of the windscreen.";
+      diagram.appendChild(caption);
+
+      const hotspots = document.createElement("div");
+      hotspots.className = "diagram-hotspots";
+
+      const buttons = [
+        { key: "outer", text: "Outer surface" },
+        { key: "inner", text: "Inner surface" }
+      ];
+      const bank = shuffleArray(buttons);
+
+      bank.forEach(item => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option diagram-hotspot";
+        btn.textContent = item.text;
+        btn.dataset.surface = item.key;
+        btn.addEventListener("click", () => {
+          if (state.hotspotSolved) return;
+          const good = item.key === screen.correctHotspot;
+          btn.classList.add(good ? "correct" : "wrong");
+          const existing = app.querySelector(".feedback");
+          if (existing) existing.remove();
+          if (good) {
+            state.hotspotSolved = true;
+            addFeedback(app, screen.correctFeedback, true);
+            const nav = app.querySelector(".nav");
+            if (nav) nav.remove();
+            setNav(app, true);
+          } else {
+            if (screen.applyDemerit) loseDemerit();
+            addFeedback(app, screen.wrongFeedback, false);
+          }
+        });
+        hotspots.appendChild(btn);
+      });
+
+      diagram.appendChild(hotspots);
+      app.appendChild(diagram);
+      setNav(app, false);
+      app.appendChild(makeQuestionPanel());
+    }
+
+    function renderSequence(screen) {
+      const title = document.createElement("h2");
+      title.className = "screen-title";
+      title.textContent = screen.title;
+      app.appendChild(title);
+
+      const instruction = document.createElement("div");
+      instruction.className = "instruction";
+      instruction.textContent = screen.instruction;
+      app.appendChild(instruction);
+
+      const diagram = makeCarDiagram("condense");
+      app.appendChild(diagram);
+
+      if (!state.sequenceBank.length) {
+        const shuffled = shuffleUntilDifferent(screen.items, arr => arr.every((item, idx) => item === screen.items[idx]));
+        state.sequenceBank = shuffled.map(text => ({ text, used: false }));
+        state.sequenceSlots = new Array(screen.items.length).fill(null);
+      }
+
+      const area = document.createElement("div");
+      area.className = "sequence-area";
+
+      const slots = document.createElement("div");
+      slots.className = "slots";
+      state.sequenceSlots.forEach((slotText, idx) => {
+        const slot = document.createElement("button");
+        slot.type = "button";
+        slot.className = "slot" + (slotText ? " filled" : "");
+        slot.textContent = slotText || ("Step " + (idx + 1));
+        slot.addEventListener("click", () => {
+          if (!slotText || state.sequenceSolved) return;
+          const bankItem = state.sequenceBank.find(item => item.text === slotText);
+          if (bankItem) bankItem.used = false;
+          state.sequenceSlots[idx] = null;
+          render();
+        });
+        slots.appendChild(slot);
+      });
+      area.appendChild(slots);
+
+      const bank = document.createElement("div");
+      bank.className = "chip-bank";
+      state.sequenceBank.forEach((item, idx) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip" + (item.used ? " used" : "");
+        chip.textContent = item.text;
+        chip.disabled = item.used || state.sequenceSolved;
+        chip.addEventListener("click", () => {
+          const openIndex = state.sequenceSlots.findIndex(v => v === null);
+          if (openIndex === -1) return;
+          state.sequenceSlots[openIndex] = item.text;
+          item.used = true;
+          render();
+        });
+        bank.appendChild(chip);
+      });
+      area.appendChild(bank);
+
+      const row = document.createElement("div");
+      row.className = "check-row";
+
+      const check = document.createElement("button");
+      check.className = "check-btn";
+      check.type = "button";
+      check.textContent = "Check order";
+      check.disabled = state.sequenceSlots.some(v => v === null) || state.sequenceSolved;
+      check.addEventListener("click", () => {
+        const right = state.sequenceSlots.every((text, idx) => text === screen.items[idx]);
+        const existing = app.querySelector(".feedback");
+        if (existing) existing.remove();
+        if (right) {
+          state.sequenceSolved = true;
+          addFeedback(app, screen.correctFeedback, true);
+          const nav = app.querySelector(".nav");
+          if (nav) nav.remove();
+          setNav(app, true);
+          check.disabled = true;
+        } else {
+          if (screen.applyDemerit) loseDemerit();
+          addFeedback(app, screen.wrongFeedback, false);
+        }
+      });
+      row.appendChild(check);
+
+      const reset = document.createElement("button");
+      reset.className = "small-btn";
+      reset.type = "button";
+      reset.textContent = "Clear order";
+      reset.disabled = state.sequenceSolved;
+      reset.addEventListener("click", () => {
+        state.sequenceBank.forEach(item => item.used = false);
+        state.sequenceSlots = new Array(screen.items.length).fill(null);
+        render();
+      });
+      row.appendChild(reset);
+
+      area.appendChild(row);
+      app.appendChild(area);
+
+      const feedback = app.querySelector(".feedback");
+      if (feedback) feedback.remove();
+
+      if (state.sequenceSolved) {
+        addFeedback(app, screen.correctFeedback, true);
+      }
+
+      setNav(app, state.sequenceSolved);
+      app.appendChild(makeQuestionPanel());
+    }
+
+    function renderCompletion(screen) {
+      const title = document.createElement("h2");
+      title.className = "screen-title";
+      title.textContent = screen.title;
+      app.appendChild(title);
+
+      const instruction = document.createElement("div");
+      instruction.className = "instruction";
+      instruction.textContent = screen.instruction;
+      app.appendChild(instruction);
+
+      const support = document.createElement("div");
+      support.className = "support";
+      support.textContent = screen.support;
+      app.appendChild(support);
+
+      app.appendChild(makeCarDiagram("condense"));
+
+      const nav = document.createElement("div");
+      nav.className = "nav";
+      const left = document.createElement("button");
+      left.className = "small-btn";
+      left.type = "button";
+      left.textContent = "Try again from start";
+      left.addEventListener("click", resetAll);
+
+      const right = document.createElement("button");
+      right.className = "next-btn";
+      right.type = "button";
+      right.textContent = "Read the question again";
+      right.addEventListener("click", () => {
+        state.screenIndex = 0;
+        render();
+      });
+
+      nav.appendChild(left);
+      nav.appendChild(right);
+      app.appendChild(nav);
+    }
+
+    function collectSpeakableText() {
+      const screen = screens[state.screenIndex];
+      let text = "";
+      if (!screen) return text;
+      text += screen.title + ". ";
+      text += screen.instruction + ". ";
+      if (screen.type === "intro") {
+        text += QUESTION_TEXT + ". ";
+      }
+      if (screen.prompt) text += screen.prompt + ". ";
+      if (screen.type === "single") {
+        const opts = state.currentOptions && state.currentOptions.length ? state.currentOptions : screen.options;
+        text += "Options. " + opts.map((opt, i) => "Option " + (i + 1) + ": " + opt.text + ".").join(" ");
+      }
+      if (screen.type === "sequence") {
+        text += "Build the order from the strips on screen.";
+      }
+      if (screen.type === "hotspot") {
+        text += "Choose between inner surface and outer surface.";
+      }
+      const feedback = app.querySelector(".feedback");
+      if (feedback) text += "Feedback. " + feedback.textContent;
+      return text;
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      utter.lang = "en-SG";
+      window.speechSynthesis.speak(utter);
+    }
+
+    function speakCurrentScreen() {
+      speakText(collectSpeakableText());
+    }
+
+    function render() {
+      if (window.speechSynthesis) {
+        speechSynthesis.cancel();
+      }
+      state.correctDone = false;
+      app.innerHTML = "";
+      updateHeader();
+
+      const screen = screens[state.screenIndex];
+      if (!screen) return;
+
+      if (screen.type === "intro") {
+        renderIntro(screen);
+      } else if (screen.type === "single") {
+        const visual = screen.visual ? makeCarDiagram(screen.visual) : null;
+        renderOptions(screen, visual);
+      } else if (screen.type === "hotspot") {
+        renderHotspot(screen);
+      } else if (screen.type === "sequence") {
+        renderSequence(screen);
+      } else if (screen.type === "completion") {
+        renderCompletion(screen);
+      }
+
+      if (state.readAloud) {
+        setTimeout(speakCurrentScreen, 120);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
