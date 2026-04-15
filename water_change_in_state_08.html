@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Change in State 08</title>
+  <style>
+    :root{
+      --bg1:#f5fbff;
+      --bg2:#e6f4ff;
+      --panel:#ffffff;
+      --ink:#14324a;
+      --muted:#5a7389;
+      --line:#cfe3f2;
+      --brand:#1677c8;
+      --brand-2:#0f5a96;
+      --warm:#ffb84d;
+      --warm-2:#ff8a3d;
+      --good:#198754;
+      --bad:#d64545;
+      --soft-good:#e7f7ee;
+      --soft-bad:#ffeded;
+      --soft-warm:#fff7e8;
+      --shadow:0 16px 40px rgba(19,50,74,0.10);
+      --radius:20px;
+      --radius-sm:14px;
+      --font: "Inter", "Segoe UI", Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffffff 0%, #f5fbff 38%, #ebf7ff 100%);
+      min-height:100vh;
+    }
+    .app-shell{
+      width:min(980px, calc(100vw - 24px));
+      margin:18px auto 28px;
+    }
+    .app-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .top-bar{
+      padding:14px 18px 10px;
+      background:linear-gradient(180deg, #f9fdff 0%, #f1f9ff 100%);
+      border-bottom:1px solid var(--line);
+    }
+    .top-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .brand-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:260px;
+    }
+    .brand-badge{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(180deg, #dff2ff 0%, #caeaff 100%);
+      font-size:24px;
+      border:1px solid #c9e6fb;
+      flex:0 0 auto;
+    }
+    .brand-text h1{
+      margin:0;
+      font-size:1.1rem;
+      line-height:1.15;
+    }
+    .brand-text .sub{
+      color:var(--muted);
+      font-size:0.88rem;
+      margin-top:4px;
+    }
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .switch{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:var(--ink);
+      font-size:0.95rem;
+      font-weight:700;
+    }
+    .switch input{
+      appearance:none;
+      width:46px;
+      height:28px;
+      border-radius:999px;
+      background:#d3dfeb;
+      position:relative;
+      outline:none;
+      cursor:pointer;
+      transition:0.2s ease;
+      margin:0;
+    }
+    .switch input::after{
+      content:"";
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      background:#fff;
+      position:absolute;
+      top:4px;
+      left:4px;
+      transition:0.2s ease;
+      box-shadow:0 2px 6px rgba(0,0,0,0.18);
+    }
+    .switch input:checked{
+      background:var(--brand);
+    }
+    .switch input:checked::after{
+      left:22px;
+    }
+    button{
+      font:inherit;
+    }
+    .ghost-btn,.primary-btn,.secondary-btn{
+      border:none;
+      border-radius:999px;
+      padding:12px 16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .08s ease, opacity .15s ease, background .15s ease;
+      min-height:46px;
+    }
+    .ghost-btn{
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--brand-2);
+    }
+    .primary-btn{
+      background:linear-gradient(180deg, var(--brand) 0%, var(--brand-2) 100%);
+      color:#fff;
+      box-shadow:0 8px 18px rgba(22,119,200,0.22);
+    }
+    .secondary-btn{
+      background:#edf7ff;
+      color:var(--brand-2);
+      border:1px solid #d7eaf9;
+    }
+    button:hover{transform:translateY(-1px)}
+    button:disabled{
+      cursor:not-allowed;
+      opacity:.45;
+      transform:none;
+      box-shadow:none;
+    }
+    .demerit-strip{
+      margin-top:12px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      padding:12px 14px;
+      border-radius:18px;
+      background:linear-gradient(180deg, #fffaf1 0%, #fff5e3 100%);
+      border:1px solid #ffe2b8;
+    }
+    .demerit-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .demerit-title{
+      font-weight:800;
+      color:#8d5b17;
+    }
+    .demerit-note{
+      color:#9a722e;
+      font-size:0.92rem;
+    }
+    .lives{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .life{
+      min-width:42px;
+      min-height:42px;
+      display:grid;
+      place-items:center;
+      border-radius:14px;
+      font-size:1.3rem;
+      background:#fff;
+      border:1px solid #f5d8ab;
+    }
+    .life.used{
+      background:#fff0eb;
+      border-color:#ffd0c3;
+      filter:saturate(.85);
+    }
+    .progress-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 20px 0;
+      color:var(--muted);
+      font-weight:700;
+      font-size:0.95rem;
+    }
+    .progress-track{
+      height:10px;
+      margin:10px 20px 0;
+      background:#edf5fb;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid #ddebf6;
+    }
+    .progress-fill{
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg, #6fc3ff 0%, #1677c8 100%);
+      width:0%;
+      transition:width .25s ease;
+    }
+    .main{
+      padding:18px 20px 14px;
+    }
+    .screen-title{
+      margin:4px 0 8px;
+      font-size:1.55rem;
+      line-height:1.15;
+    }
+    .instruction{
+      margin:0 0 16px;
+      font-size:1.24rem;
+      line-height:1.28;
+      font-weight:900;
+      color:#073b66;
+      background:#edf7ff;
+      border:1px solid #d7ebfa;
+      border-radius:18px;
+      padding:14px 16px;
+    }
+    .panel{
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:#fcfeff;
+      padding:18px;
+    }
+    .question-card{
+      border:1px solid #dbeaf6;
+      border-radius:22px;
+      padding:18px;
+      background:linear-gradient(180deg, #ffffff 0%, #f8fcff 100%);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.8);
+    }
+    .question-text{
+      font-size:1.08rem;
+      line-height:1.45;
+      margin-bottom:14px;
+    }
+    .highlight{
+      background:#fff4bf;
+      padding:1px 4px;
+      border-radius:8px;
+      font-weight:800;
+    }
+    table.clean{
+      width:100%;
+      border-collapse:collapse;
+      margin:10px 0 12px;
+      font-size:1rem;
+      overflow:hidden;
+      border-radius:18px;
+      border:2px solid #d3e8f7;
+    }
+    table.clean th, table.clean td{
+      padding:11px 10px;
+      border:1px solid #d3e8f7;
+      text-align:center;
+    }
+    table.clean th{
+      background:#eaf6ff;
+      font-weight:900;
+    }
+    .options-grid{
+      display:grid;
+      gap:12px;
+      grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    }
+    .choice-btn{
+      width:100%;
+      text-align:left;
+      padding:16px 16px;
+      border-radius:20px;
+      border:2px solid #d8e7f2;
+      background:#fff;
+      color:var(--ink);
+      font-weight:800;
+      font-size:1rem;
+      cursor:pointer;
+      transition:.12s ease;
+      min-height:64px;
+      position:relative;
+    }
+    .choice-btn:hover{border-color:#89bde4; transform:translateY(-1px)}
+    .choice-btn.selected{
+      border-color:var(--brand);
+      background:#eef7ff;
+      box-shadow:0 0 0 4px rgba(22,119,200,0.10);
+    }
+    .choice-btn.correct{
+      border-color:var(--good);
+      background:var(--soft-good);
+    }
+    .choice-btn.wrong{
+      border-color:var(--bad);
+      background:var(--soft-bad);
+    }
+    .choice-btn .small{
+      display:block;
+      margin-top:6px;
+      font-size:0.92rem;
+      font-weight:700;
+      color:var(--muted);
+    }
+    .mini{
+      font-size:0.92rem;
+      color:var(--muted);
+      margin-top:8px;
+    }
+    .feedback{
+      min-height:54px;
+      margin-top:14px;
+      border-radius:18px;
+      padding:12px 14px;
+      font-weight:800;
+      display:none;
+      line-height:1.35;
+    }
+    .feedback.show{display:block}
+    .feedback.good{
+      background:var(--soft-good);
+      border:1px solid #b8e2c7;
+      color:#0f6a41;
+    }
+    .feedback.bad{
+      background:var(--soft-bad);
+      border:1px solid #f3b8b8;
+      color:#a43232;
+    }
+    .nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    .question-toggle-wrap{
+      margin-top:16px;
+    }
+    .question-toggle{
+      width:100%;
+      padding:14px 16px;
+      border-radius:18px;
+      border:1px solid #d8e7f2;
+      background:#f8fcff;
+      color:#18486b;
+      font-weight:900;
+      text-align:left;
+      cursor:pointer;
+    }
+    .question-panel{
+      margin-top:10px;
+      padding:16px;
+      border:1px solid #dbeaf6;
+      border-radius:20px;
+      background:#ffffff;
+      display:none;
+    }
+    .question-panel.open{display:block}
+    .thermo-layout{
+      display:grid;
+      gap:18px;
+      grid-template-columns:1fr;
+    }
+    .scale-wrap{
+      border:1px solid #dbeaf6;
+      border-radius:24px;
+      background:#f9fcff;
+      padding:18px;
+    }
+    .scale-title{
+      font-weight:900;
+      font-size:1.08rem;
+      margin-bottom:12px;
+    }
+    .state-scale{
+      position:relative;
+      border-radius:20px;
+      overflow:hidden;
+      border:2px solid #d5e8f5;
+      background:#fff;
+    }
+    .state-scale .zones{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      min-height:92px;
+    }
+    .zone{
+      padding:14px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-weight:900;
+      font-size:1rem;
+      line-height:1.2;
+      border-right:1px solid #d5e8f5;
+    }
+    .zone:last-child{border-right:none}
+    .zone-a{background:#e8f6ff}
+    .zone-b{background:#fff5e8}
+    .zone-c{background:#ffe9ec}
+    .zone.active{
+      outline:4px solid rgba(22,119,200,0.2);
+      outline-offset:-4px;
+    }
+    .markers{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:0;
+      margin-top:0;
+      background:#fff;
+      border-top:2px solid #d5e8f5;
+    }
+    .marker-cell{
+      padding:10px 12px;
+      min-height:62px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border-right:1px solid #d5e8f5;
+      position:relative;
+      font-weight:800;
+      color:#35546d;
+    }
+    .marker-cell:last-child{border-right:none}
+    .temp-token{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fff;
+      border:2px solid #d8e7f2;
+      font-weight:900;
+    }
+    .temp-token.reveal{
+      border-color:var(--brand);
+      background:#eef7ff;
+    }
+    .place-options{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:12px;
+    }
+    .subtle{
+      color:var(--muted);
+      font-size:0.96rem;
+      line-height:1.35;
+    }
+    .builder-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+    }
+    .blank-card{
+      border:2px dashed #b8d6ea;
+      border-radius:22px;
+      padding:16px;
+      background:#fbfeff;
+    }
+    .blank-card.active{
+      border-color:var(--brand);
+      background:#eef7ff;
+    }
+    .blank-label{
+      font-size:0.96rem;
+      color:var(--muted);
+      font-weight:800;
+      margin-bottom:8px;
+    }
+    .blank-value{
+      min-height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:16px;
+      background:#fff;
+      border:2px solid #d8e7f2;
+      font-size:1.2rem;
+      font-weight:900;
+    }
+    .blank-value.filled{
+      border-color:var(--good);
+      background:var(--soft-good);
+      color:#0e6d43;
+    }
+    .pair-table{
+      width:100%;
+      border-collapse:collapse;
+      border:2px solid #d7e7f3;
+      border-radius:20px;
+      overflow:hidden;
+    }
+    .pair-table th, .pair-table td{
+      border:1px solid #d7e7f3;
+      padding:12px 10px;
+      text-align:center;
+      font-weight:800;
+    }
+    .pair-table th{
+      background:#eef7ff;
+    }
+    .option-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:0.98rem;
+      margin-top:6px;
+    }
+    .option-table td,.option-table th{
+      border:1px solid #d3e4ef;
+      padding:8px 8px;
+      text-align:center;
+    }
+    .option-table th{
+      background:#eff7fd;
+    }
+    .completion{
+      text-align:center;
+      padding:10px 4px 6px;
+    }
+    .completion h3{
+      font-size:1.7rem;
+      margin:8px 0 10px;
+    }
+    .completion p{
+      font-size:1.05rem;
+      line-height:1.45;
+      color:#38576f;
+      max-width:640px;
+      margin:0 auto 14px;
+    }
+    .badge-row{
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+    .mini-badge{
+      padding:12px 16px;
+      background:#f7fbff;
+      border:1px solid #d7e7f3;
+      border-radius:16px;
+      font-weight:900;
+    }
+    .restart-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(10,25,38,0.58);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:10;
+    }
+    .restart-overlay.show{display:flex}
+    .restart-card{
+      width:min(520px, 100%);
+      background:#fff;
+      border-radius:28px;
+      padding:24px 22px;
+      text-align:center;
+      border:1px solid #d5e8f5;
+      box-shadow:0 18px 40px rgba(0,0,0,.18);
+    }
+    .restart-card .big{
+      font-size:3rem;
+    }
+    .restart-card h3{
+      margin:10px 0 8px;
+      font-size:1.6rem;
+    }
+    .restart-card p{
+      margin:0;
+      font-size:1.05rem;
+      color:#46627a;
+      line-height:1.45;
+    }
+    .helper-row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pill-note{
+      background:#f8fbfe;
+      border:1px solid #d8e7f2;
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:800;
+      color:#4f6b80;
+      font-size:0.94rem;
+    }
+
+    @media (min-width: 780px){
+      .thermo-layout.two{
+        grid-template-columns:1fr 1fr;
+        align-items:start;
+      }
+      .builder-grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px){
+      .app-shell{width:min(100vw, calc(100vw - 12px)); margin:6px auto 12px;}
+      .top-bar,.main{padding-left:14px;padding-right:14px}
+      .progress-row,.progress-track{margin-left:14px;margin-right:14px}
+      .screen-title{font-size:1.3rem}
+      .instruction{font-size:1.08rem}
+      .question-text{font-size:1rem}
+      .choice-btn{font-size:0.98rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="app-card">
+      <div class="top-bar">
+        <div class="top-row">
+          <div class="brand-wrap">
+            <div class="brand-badge">🌡️</div>
+            <div class="brand-text">
+              <h1>Melting Point and Boiling Point</h1>
+              <div class="sub">Use the table carefully. Work out the state at 100°C.</div>
+            </div>
+          </div>
+          <div class="controls">
+            <label class="switch" aria-label="Read aloud toggle">
+              <span>Read-aloud</span>
+              <input type="checkbox" id="readToggle" />
+            </label>
+            <button class="ghost-btn" id="speakBtn" type="button">🔊 Read this screen</button>
+          </div>
+        </div>
+        <div class="demerit-strip" id="demeritStrip" aria-live="polite"></div>
+      </div>
+
+      <div class="progress-row">
+        <div id="progressText">Screen 1 of 10</div>
+        <div id="phaseText">Question first</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="main">
+        <div id="screenRoot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="restart-overlay" id="restartOverlay" aria-live="assertive">
+    <div class="restart-card">
+      <div class="big">🧊➡️💧</div>
+      <h3>All the ice cubes melted.</h3>
+      <p>You used all your careful-click chances. The whole interactive will restart now.</p>
+    </div>
+  </div>
+
+  <script>
+    const questionData = {
+      title: "The table shows the melting and boiling points of two substances, X and Y.",
+      prompt: "Which one of the following shows the correct state(s) of X and Y at 100°C?",
+      table: [
+        { name: "X", melting: 44, boiling: 280 },
+        { name: "Y", melting: 110, boiling: 180 }
+      ],
+      options: [
+        { id: 1, x: "solid", y: "liquid" },
+        { id: 2, x: "liquid", y: "liquid" },
+        { id: 3, x: "solid", y: "solid" },
+        { id: 4, x: "liquid", y: "solid" }
+      ]
+    };
+
+    const transferData = {
+      title: "Try one more.",
+      prompt: "Substance P has a melting point of 20°C and a boiling point of 90°C. Substance Q has a melting point of 140°C and a boiling point of 260°C. Which option shows the correct state(s) of P and Q at 100°C?",
+      options: [
+        { id: "A", p: "gas", q: "solid", correct: true },
+        { id: "B", p: "liquid", q: "solid", correct: false },
+        { id: "C", p: "gas", q: "liquid", correct: false },
+        { id: "D", p: "liquid", q: "liquid", correct: false }
+      ]
+    };
+
+    const screenOrder = [
+      "intro",
+      "find-temp",
+      "place-x",
+      "state-x",
+      "place-y",
+      "state-y",
+      "build-pair",
+      "pick-option",
+      "transfer",
+      "complete"
+    ];
+
+    const demeritScreens = new Set([
+      "find-temp",
+      "place-x",
+      "state-x",
+      "place-y",
+      "state-y",
+      "build-pair",
+      "pick-option"
+    ]);
+
+    const state = {
+      screenIndex: 0,
+      readAloud: false,
+      questionOpen: false,
+      demeritsUsed: 0,
+      screenState: {},
+      shuffledOriginalOptions: [],
+      shuffledTransferOptions: [],
+      maxDemerits: Math.ceil(demeritScreens.size / 2),
+      restarting: false
+    };
+
+    function shuffle(array){
+      const a = [...array];
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function getScreenId(){
+      return screenOrder[state.screenIndex];
+    }
+
+    function getScreenState(id = getScreenId()){
+      if(!state.screenState[id]) state.screenState[id] = {};
+      return state.screenState[id];
+    }
+
+    function escapeHTML(str){
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function stopSpeech(){
+      if("speechSynthesis" in window){
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speakText(text){
+      if(!("speechSynthesis" in window)) return;
+      stopSpeech();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      utter.volume = 1;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function gatherScreenText(){
+      const textNode = document.querySelector('[data-readaloud="true"]');
+      if(!textNode) return "";
+      return textNode.innerText.replace(/\s+/g, " ").trim();
+    }
+
+    function autoSpeak(){
+      if(state.readAloud){
+        const text = gatherScreenText();
+        if(text){
+          setTimeout(() => speakText(text), 140);
+        }
+      }
+    }
+
+    function setFeedback(message, type){
+      const box = document.getElementById("feedbackBox");
+      if(!box) return;
+      box.textContent = message;
+      box.className = `feedback show ${type}`;
+    }
+
+    function clearFeedback(){
+      const box = document.getElementById("feedbackBox");
+      if(!box) return;
+      box.textContent = "";
+      box.className = "feedback";
+    }
+
+    function activateNext(){
+      const btn = document.getElementById("nextBtn");
+      if(btn) btn.disabled = false;
+    }
+
+    function deactivateNext(){
+      const btn = document.getElementById("nextBtn");
+      if(btn) btn.disabled = true;
+    }
+
+    function applyDemerit(){
+      if(state.restarting) return;
+      state.demeritsUsed += 1;
+      renderDemerits();
+      if(state.demeritsUsed >= state.maxDemerits){
+        triggerRestart();
+      }
+    }
+
+    function triggerRestart(){
+      state.restarting = true;
+      stopSpeech();
+      const overlay = document.getElementById("restartOverlay");
+      overlay.classList.add("show");
+      setTimeout(() => {
+        overlay.classList.remove("show");
+        resetInteractive();
+      }, 1800);
+    }
+
+    function resetInteractive(){
+      state.screenIndex = 0;
+      state.questionOpen = false;
+      state.demeritsUsed = 0;
+      state.screenState = {};
+      state.restarting = false;
+      state.shuffledOriginalOptions = [];
+      state.shuffledTransferOptions = [];
+      render();
+    }
+
+    function renderDemerits(){
+      const strip = document.getElementById("demeritStrip");
+      const left = state.maxDemerits - state.demeritsUsed;
+      let livesHTML = "";
+      for(let i = 0; i < state.maxDemerits; i++){
+        const used = i < state.demeritsUsed;
+        livesHTML += `<div class="life ${used ? "used" : ""}" aria-hidden="true">${used ? "💧" : "🧊"}</div>`;
+      }
+      strip.innerHTML = `
+        <div class="demerit-left">
+          <div class="demerit-title">Careful clicks</div>
+          <div class="lives">${livesHTML}</div>
+          <div class="demerit-note">${left} ${left === 1 ? "ice cube" : "ice cubes"} left before a full restart</div>
+        </div>
+        <div class="pill-note">This strip stays at the top, but it is not pinned.</div>
+      `;
+    }
+
+    function renderProgress(){
+      document.getElementById("progressText").textContent = `Screen ${state.screenIndex + 1} of ${screenOrder.length}`;
+      const labels = {
+        "intro":"Question first",
+        "find-temp":"Find the key clue",
+        "place-x":"Work on X",
+        "state-x":"Decide X",
+        "place-y":"Work on Y",
+        "state-y":"Decide Y",
+        "build-pair":"Build the pair",
+        "pick-option":"Match the option",
+        "transfer":"Transfer",
+        "complete":"Done"
+      };
+      document.getElementById("phaseText").textContent = labels[getScreenId()] || "";
+      document.getElementById("progressFill").style.width = `${((state.screenIndex + 1) / screenOrder.length) * 100}%`;
+    }
+
+    function keywordQuestionHTML(){
+      return `
+        <div class="question-card">
+          <div class="question-text">
+            The table shows the <span class="highlight">melting point</span> and <span class="highlight">boiling point</span> of two substances, X and Y.
+          </div>
+          ${renderQuestionTableHTML()}
+          <div class="question-text">
+            Which one of the following shows the correct <span class="highlight">state(s)</span> of X and Y at <span class="highlight">100°C</span>?
+          </div>
+          ${renderOriginalOptionTableHTML(true)}
+        </div>
+      `;
+    }
+
+    function renderQuestionTableHTML(){
+      return `
+        <table class="clean" aria-label="Melting and boiling points table">
+          <thead>
+            <tr>
+              <th>Substance</th>
+              <th>Melting point (°C)</th>
+              <th>Boiling point (°C)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${questionData.table.map(row => `
+              <tr>
+                <td>${escapeHTML(row.name)}</td>
+                <td>${row.melting}</td>
+                <td>${row.boiling}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderOriginalOptionTableHTML(asStatic = false){
+      const options = questionData.options;
+      const rows = options.map(opt => `
+        <tr>
+          <td>(${opt.id})</td>
+          <td>${escapeHTML(opt.x)}</td>
+          <td>${escapeHTML(opt.y)}</td>
+        </tr>`).join("");
+      return `
+        <table class="option-table" aria-label="Original answer options">
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>X</th>
+              <th>Y</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderQuestionPanel(){
+      if(getScreenId() === "intro") return "";
+      return `
+        <div class="question-toggle-wrap">
+          <button type="button" class="question-toggle" id="questionToggle">
+            ${state.questionOpen ? "Hide full question ▲" : "Show full question ▼"}
+          </button>
+          <div class="question-panel ${state.questionOpen ? "open" : ""}" id="questionPanel">
+            <div class="question-text" style="margin-bottom:8px;">
+              ${escapeHTML(questionData.title)}
+            </div>
+            ${renderQuestionTableHTML()}
+            <div class="question-text" style="margin-bottom:10px;">
+              ${escapeHTML(questionData.prompt)}
+            </div>
+            ${renderOriginalOptionTableHTML(true)}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindQuestionToggle(){
+      const toggle = document.getElementById("questionToggle");
+      if(!toggle) return;
+      toggle.addEventListener("click", () => {
+        state.questionOpen = !state.questionOpen;
+        render();
+      });
+    }
+
+    function renderScale(substance, labels, activeZoneIndex, reveal100){
+      const zones = labels.map((label, index) => `
+        <div class="zone zone-${["a","b","c"][index]} ${activeZoneIndex === index ? "active" : ""}">
+          ${label}
+        </div>
+      `).join("");
+      const cells = [0,1,2].map(index => `
+        <div class="marker-cell">
+          ${reveal100 && activeZoneIndex === index
+            ? `<span class="temp-token reveal">🌡️ 100°C</span>`
+            : `<span class="temp-token">${substance === "X" ? (index === 0 ? "44°C" : index === 1 ? "44°C–280°C" : "280°C") : (index === 0 ? "110°C" : index === 1 ? "110°C–180°C" : "180°C")}</span>`
+          }
+        </div>
+      `).join("");
+      return `
+        <div class="scale-wrap">
+          <div class="scale-title">Substance ${substance}</div>
+          <div class="state-scale">
+            <div class="zones">${zones}</div>
+            <div class="markers">${cells}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOptionCards(options, formatter, selectedKey, classesFn = null){
+      return `
+        <div class="options-grid">
+          ${options.map((opt, idx) => {
+            const selected = selectedKey === idx;
+            const extraClass = classesFn ? classesFn(opt, idx) : "";
+            return `
+              <button type="button" class="choice-btn ${selected ? "selected" : ""} ${extraClass}" data-choice-index="${idx}">
+                ${formatter(opt, idx)}
+              </button>
+            `;
+          }).join("")}
+        </div>
+      `;
+    }
+
+    function renderScreenContent(){
+      const id = getScreenId();
+      const local = getScreenState();
+      let title = "";
+      let instruction = "";
+      let content = "";
+      let nextDisabled = true;
+
+      if(id === "intro"){
+        title = "Read the question first";
+        instruction = "Read the full question. Then tap the button to begin.";
+        nextDisabled = true;
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="question-card">
+              ${keywordQuestionHTML()}
+            </div>
+            <div class="helper-row">
+              <div class="pill-note">The highlighted words come from the question itself.</div>
+              <button type="button" class="primary-btn" id="introStartBtn">I have read the question</button>
+            </div>
+          </div>
+        `;
+      }
+
+      if(id === "find-temp"){
+        title = "Find the key temperature";
+        instruction = "Tap the temperature that the question wants you to use.";
+        const choices = [44, 100, 110, 180, 280];
+        nextDisabled = !local.completed;
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="subtle">Do not solve yet. First find the exact temperature named in the question.</div>
+            ${renderOptionCards(
+              choices,
+              (temp) => `${temp}°C`,
+              typeof local.selectedIndex === "number" ? local.selectedIndex : null,
+              (temp, idx) => local.completed && idx === local.selectedIndex ? "correct" : ""
+            )}
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "place-x"){
+        title = "Place 100°C for X";
+        instruction = "Tap where 100°C belongs for substance X.";
+        nextDisabled = !local.completed;
+        const labels = ["Below 44°C", "Between 44°C and 280°C", "Above 280°C"];
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="thermo-layout">
+              ${renderScale("X", labels, typeof local.correctZone === "number" ? local.correctZone : null, !!local.completed)}
+              <div>
+                <div class="subtle">Use the melting point and boiling point for X only.</div>
+                <div class="place-options">
+                  ${labels.map((label, idx) => `
+                    <button type="button" class="choice-btn ${local.selectedIndex === idx ? "selected" : ""} ${local.completed && idx === 1 ? "correct" : ""}" data-zone-index="${idx}">
+                      ${label}
+                    </button>
+                  `).join("")}
+                </div>
+              </div>
+            </div>
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "state-x"){
+        title = "Decide the state of X";
+        instruction = "100°C is between 44°C and 280°C. Tap the state of X now.";
+        nextDisabled = !local.completed;
+        const options = ["solid","liquid","gas"];
+        content = `
+          <div class="panel" data-readaloud="true">
+            ${renderScale("X", ["Solid range", "Liquid range", "Gas range"], 1, true)}
+            <div class="mini">For a substance, a temperature between the melting point and boiling point means it is a liquid.</div>
+            ${renderOptionCards(
+              options,
+              (word) => word.charAt(0).toUpperCase() + word.slice(1),
+              typeof local.selectedIndex === "number" ? local.selectedIndex : null,
+              (word, idx) => local.completed && word === "liquid" ? "correct" : ""
+            )}
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "place-y"){
+        title = "Place 100°C for Y";
+        instruction = "Tap where 100°C belongs for substance Y.";
+        nextDisabled = !local.completed;
+        const labels = ["Below 110°C", "Between 110°C and 180°C", "Above 180°C"];
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="thermo-layout">
+              ${renderScale("Y", labels, typeof local.correctZone === "number" ? local.correctZone : null, !!local.completed)}
+              <div>
+                <div class="subtle">Now use the melting point and boiling point for Y only.</div>
+                <div class="place-options">
+                  ${labels.map((label, idx) => `
+                    <button type="button" class="choice-btn ${local.selectedIndex === idx ? "selected" : ""} ${local.completed && idx === 0 ? "correct" : ""}" data-zone-index="${idx}">
+                      ${label}
+                    </button>
+                  `).join("")}
+                </div>
+              </div>
+            </div>
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "state-y"){
+        title = "Decide the state of Y";
+        instruction = "100°C is below 110°C. Tap the state of Y now.";
+        nextDisabled = !local.completed;
+        const options = ["solid","liquid","gas"];
+        content = `
+          <div class="panel" data-readaloud="true">
+            ${renderScale("Y", ["Solid range", "Liquid range", "Gas range"], 0, true)}
+            <div class="mini">For a substance, a temperature below the melting point means it is a solid.</div>
+            ${renderOptionCards(
+              options,
+              (word) => word.charAt(0).toUpperCase() + word.slice(1),
+              typeof local.selectedIndex === "number" ? local.selectedIndex : null,
+              (word, idx) => local.completed && word === "solid" ? "correct" : ""
+            )}
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "build-pair"){
+        title = "Build the state pair";
+        instruction = local.step === 1 ? "Good. Now tap the state for Y." : "Tap the state for X first. Then fill Y.";
+        const xValue = local.filledX || "_____";
+        const yValue = local.filledY || "_____";
+        nextDisabled = !(local.filledX && local.filledY);
+        const activeX = !local.filledX;
+        const options = ["solid","liquid","gas"];
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="builder-grid">
+              <div class="blank-card ${activeX ? "active" : ""}">
+                <div class="blank-label">Fill this first</div>
+                <table class="pair-table">
+                  <thead>
+                    <tr><th>Substance</th><th>State at 100°C</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>X</td><td><div class="blank-value ${local.filledX ? "filled" : ""}">${xValue}</div></td></tr>
+                    <tr><td>Y</td><td><div class="blank-value ${local.filledY ? "filled" : ""}">${yValue}</div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <div class="subtle">Use what you already found: X is between its two points. Y is below its melting point.</div>
+                ${renderOptionCards(
+                  options,
+                  (word) => word.charAt(0).toUpperCase() + word.slice(1),
+                  null,
+                  (word) => {
+                    if(local.filledX === word || local.filledY === word) return "correct";
+                    return "";
+                  }
+                )}
+              </div>
+            </div>
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "pick-option"){
+        title = "Match the original option";
+        instruction = "Tap the original option that matches X = liquid and Y = solid.";
+        if(!state.shuffledOriginalOptions.length){
+          state.shuffledOriginalOptions = shuffle(questionData.options);
+        }
+        nextDisabled = !local.completed;
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="subtle">Now match your pair to the original answer table.</div>
+            <div class="options-grid">
+              ${state.shuffledOriginalOptions.map((opt, idx) => `
+                <button type="button" class="choice-btn ${local.selectedIndex === idx ? "selected" : ""} ${local.completed && opt.id === 4 ? "correct" : ""}" data-original-option-index="${idx}">
+                  <strong>Option ${opt.id}</strong>
+                  <table class="option-table" aria-hidden="true" style="margin-top:10px;">
+                    <thead><tr><th>X</th><th>Y</th></tr></thead>
+                    <tbody><tr><td>${opt.x}</td><td>${opt.y}</td></tr></tbody>
+                  </table>
+                </button>
+              `).join("")}
+            </div>
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "transfer"){
+        title = "One short transfer check";
+        instruction = "Use the same method. Tap the correct option for P and Q at 100°C.";
+        if(!state.shuffledTransferOptions.length){
+          state.shuffledTransferOptions = shuffle(transferData.options);
+        }
+        nextDisabled = !local.completed;
+        content = `
+          <div class="panel" data-readaloud="true">
+            <div class="question-card" style="margin-bottom:14px;">
+              <div class="question-text">${escapeHTML(transferData.prompt)}</div>
+            </div>
+            <div class="options-grid">
+              ${state.shuffledTransferOptions.map((opt, idx) => `
+                <button type="button" class="choice-btn ${local.selectedIndex === idx ? "selected" : ""} ${local.completed && opt.correct ? "correct" : ""}" data-transfer-index="${idx}">
+                  <strong>Option ${opt.id}</strong>
+                  <table class="option-table" aria-hidden="true" style="margin-top:10px;">
+                    <thead><tr><th>P</th><th>Q</th></tr></thead>
+                    <tbody><tr><td>${opt.p}</td><td>${opt.q}</td></tr></tbody>
+                  </table>
+                </button>
+              `).join("")}
+            </div>
+            <div id="feedbackBox" class="feedback"></div>
+          </div>
+        `;
+      }
+
+      if(id === "complete"){
+        title = "You are done";
+        instruction = "You used the table carefully and matched the pair correctly.";
+        nextDisabled = true;
+        const used = state.demeritsUsed;
+        const left = state.maxDemerits - used;
+        content = `
+          <div class="panel completion" data-readaloud="true">
+            <div style="font-size:3rem;">🎉</div>
+            <h3>Great work.</h3>
+            <p>You solved the original question by placing 100°C in the correct range for each substance, deciding each state, and then matching the pair to the original options.</p>
+            <div class="badge-row">
+              <div class="mini-badge">Original answer: Option 4</div>
+              <div class="mini-badge">Careful clicks left: ${left}</div>
+              <div class="mini-badge">Transfer check completed</div>
+            </div>
+            <div style="margin-top:18px;">
+              <button type="button" class="primary-btn" id="restartBtn">Restart interactive</button>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <section>
+          <h2 class="screen-title">${title}</h2>
+          <div class="instruction">${instruction}</div>
+          ${content}
+          ${renderQuestionPanel()}
+          ${id !== "complete" ? `
+            <div class="nav">
+              <button type="button" class="secondary-btn" id="restartFlowBtn">Restart</button>
+              <button type="button" class="primary-btn" id="nextBtn" ${nextDisabled ? "disabled" : ""}>Next</button>
+            </div>
+          ` : ""}
+        </section>
+      `;
+    }
+
+    let globalsBound = false;
+
+    function bindGlobalControls(){
+      const readToggle = document.getElementById("readToggle");
+      readToggle.checked = state.readAloud;
+      if(globalsBound) return;
+
+      readToggle.addEventListener("change", (e) => {
+        state.readAloud = e.target.checked;
+        if(state.readAloud){
+          autoSpeak();
+        } else {
+          stopSpeech();
+        }
+      });
+
+      document.getElementById("speakBtn").addEventListener("click", () => {
+        const text = gatherScreenText();
+        if(text) speakText(text);
+      });
+
+      globalsBound = true;
+    }
+
+    function bindNav(){
+      const next = document.getElementById("nextBtn");
+      if(next){
+        next.addEventListener("click", () => {
+          if(next.disabled) return;
+          if(state.screenIndex < screenOrder.length - 1){
+            state.screenIndex += 1;
+            render();
+          }
+        });
+      }
+      const restartFlowBtn = document.getElementById("restartFlowBtn");
+      if(restartFlowBtn){
+        restartFlowBtn.addEventListener("click", resetInteractive);
+      }
+      const restartBtn = document.getElementById("restartBtn");
+      if(restartBtn){
+        restartBtn.addEventListener("click", resetInteractive);
+      }
+    }
+
+    function bindIntro(){
+      const btn = document.getElementById("introStartBtn");
+      if(!btn) return;
+      btn.addEventListener("click", () => {
+        state.screenState.intro = { completed: true };
+        state.screenIndex += 1;
+        render();
+      });
+    }
+
+    function bindFindTemp(){
+      const local = getScreenState("find-temp");
+      document.querySelectorAll("[data-choice-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.choiceIndex);
+          local.selectedIndex = idx;
+          const values = [44,100,110,180,280];
+          const value = values[idx];
+          render();
+          if(value === 100){
+            getScreenState("find-temp").completed = true;
+            render();
+            setFeedback("Yes. The question asks about 100°C.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Yes. The question asks about 100 degrees Celsius.");
+          } else {
+            setFeedback("Not this one. Tap the temperature named in the question.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Not this one. Tap the temperature named in the question.");
+          }
+        });
+      });
+    }
+
+    function bindPlaceX(){
+      const local = getScreenState("place-x");
+      document.querySelectorAll("[data-zone-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.zoneIndex);
+          local.selectedIndex = idx;
+          if(idx === 1){
+            local.completed = true;
+            local.correctZone = 1;
+            render();
+            setFeedback("Yes. 100°C is between 44°C and 280°C for X.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Yes. 100 degrees Celsius is between 44 degrees Celsius and 280 degrees Celsius for X.");
+          } else {
+            render();
+            setFeedback("Check X again. Compare 100°C with both 44°C and 280°C.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Check X again. Compare 100 degrees Celsius with both 44 degrees Celsius and 280 degrees Celsius.");
+          }
+        });
+      });
+    }
+
+    function bindStateX(){
+      const local = getScreenState("state-x");
+      const options = ["solid","liquid","gas"];
+      document.querySelectorAll("[data-choice-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.choiceIndex);
+          local.selectedIndex = idx;
+          const value = options[idx];
+          if(value === "liquid"){
+            local.completed = true;
+            render();
+            setFeedback("Correct. X is a liquid at 100°C.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Correct. X is a liquid at 100 degrees Celsius.");
+          } else {
+            render();
+            setFeedback("Not yet. A temperature between melting point and boiling point means liquid.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Not yet. A temperature between melting point and boiling point means liquid.");
+          }
+        });
+      });
+    }
+
+    function bindPlaceY(){
+      const local = getScreenState("place-y");
+      document.querySelectorAll("[data-zone-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.zoneIndex);
+          local.selectedIndex = idx;
+          if(idx === 0){
+            local.completed = true;
+            local.correctZone = 0;
+            render();
+            setFeedback("Yes. 100°C is below 110°C for Y.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Yes. 100 degrees Celsius is below 110 degrees Celsius for Y.");
+          } else {
+            render();
+            setFeedback("Check Y again. 100°C is smaller than 110°C.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Check Y again. 100 degrees Celsius is smaller than 110 degrees Celsius.");
+          }
+        });
+      });
+    }
+
+    function bindStateY(){
+      const local = getScreenState("state-y");
+      const options = ["solid","liquid","gas"];
+      document.querySelectorAll("[data-choice-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.choiceIndex);
+          local.selectedIndex = idx;
+          const value = options[idx];
+          if(value === "solid"){
+            local.completed = true;
+            render();
+            setFeedback("Correct. Y is a solid at 100°C.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Correct. Y is a solid at 100 degrees Celsius.");
+          } else {
+            render();
+            setFeedback("Not yet. A temperature below the melting point means solid.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Not yet. A temperature below the melting point means solid.");
+          }
+        });
+      });
+    }
+
+    function bindBuildPair(){
+      const local = getScreenState("build-pair");
+      local.step = local.filledX ? 1 : 0;
+      const options = ["solid","liquid","gas"];
+      document.querySelectorAll("[data-choice-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.choiceIndex);
+          const value = options[idx];
+          const expectingX = !local.filledX;
+          if(expectingX){
+            if(value === "liquid"){
+              local.filledX = "liquid";
+              local.step = 1;
+              render();
+              setFeedback("Good. Now tap the state for Y.", "good");
+              if(state.readAloud) speakText("Good. Now tap the state for Y.");
+            } else {
+              setFeedback("This first blank is for X. X is not " + value + ".", "bad");
+              applyDemerit();
+              if(state.readAloud) speakText("This first blank is for X. X is not " + value + ".");
+            }
+          } else if(!local.filledY){
+            if(value === "solid"){
+              local.filledY = "solid";
+              local.completed = true;
+              render();
+              setFeedback("Yes. The pair is X = liquid and Y = solid.", "good");
+              activateNext();
+              if(state.readAloud) speakText("Yes. The pair is X equals liquid and Y equals solid.");
+            } else {
+              setFeedback("This blank is for Y. Y is not " + value + ".", "bad");
+              applyDemerit();
+              if(state.readAloud) speakText("This blank is for Y. Y is not " + value + ".");
+            }
+          }
+        });
+      });
+    }
+
+    function bindPickOption(){
+      const local = getScreenState("pick-option");
+      document.querySelectorAll("[data-original-option-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.originalOptionIndex);
+          local.selectedIndex = idx;
+          const opt = state.shuffledOriginalOptions[idx];
+          if(opt.id === 4){
+            local.completed = true;
+            render();
+            setFeedback("Correct. Option 4 matches X = liquid and Y = solid.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Correct. Option 4 matches X equals liquid and Y equals solid.");
+          } else {
+            render();
+            setFeedback("Look for the row with X = liquid and Y = solid.", "bad");
+            applyDemerit();
+            if(state.readAloud) speakText("Look for the row with X equals liquid and Y equals solid.");
+          }
+        });
+      });
+    }
+
+    function bindTransfer(){
+      const local = getScreenState("transfer");
+      document.querySelectorAll("[data-transfer-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.transferIndex);
+          local.selectedIndex = idx;
+          const opt = state.shuffledTransferOptions[idx];
+          if(opt.correct){
+            local.completed = true;
+            render();
+            setFeedback("Yes. At 100°C, P is above its boiling point, so it is a gas. Q is below its melting point, so it is a solid.", "good");
+            activateNext();
+            if(state.readAloud) speakText("Yes. At 100 degrees Celsius, P is above its boiling point, so it is a gas. Q is below its melting point, so it is a solid.");
+          } else {
+            render();
+            setFeedback("Try again. Check whether 100°C is below, between, or above each pair of points.", "bad");
+            if(state.readAloud) speakText("Try again. Check whether 100 degrees Celsius is below, between, or above each pair of points.");
+          }
+        });
+      });
+    }
+
+    function attachScreenHandlers(){
+      const id = getScreenId();
+      bindQuestionToggle();
+      bindNav();
+      if(id === "intro") bindIntro();
+      if(id === "find-temp") bindFindTemp();
+      if(id === "place-x") bindPlaceX();
+      if(id === "state-x") bindStateX();
+      if(id === "place-y") bindPlaceY();
+      if(id === "state-y") bindStateY();
+      if(id === "build-pair") bindBuildPair();
+      if(id === "pick-option") bindPickOption();
+      if(id === "transfer") bindTransfer();
+    }
+
+    function render(){
+      renderDemerits();
+      renderProgress();
+      const root = document.getElementById("screenRoot");
+      root.innerHTML = renderScreenContent();
+      bindGlobalControls();
+      attachScreenHandlers();
+      autoSpeak();
+    }
+
+    document.addEventListener("DOMContentLoaded", render);
+  </script>
+</body>
+</html>
