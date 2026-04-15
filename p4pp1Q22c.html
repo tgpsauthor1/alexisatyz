@@ -1,0 +1,1013 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Line Graph Interactive: Increase from May to June</title>
+  <style>
+    :root{
+      --bg:#f7f9fc;
+      --card:#ffffff;
+      --text:#10233b;
+      --muted:#5a6b7f;
+      --line:#c8d2df;
+      --accent:#0b63ce;
+      --accent-2:#e8f1ff;
+      --good:#0b7a43;
+      --good-bg:#e8fff2;
+      --warn:#8a4d00;
+      --warn-bg:#fff3e6;
+      --bad:#a31d1d;
+      --bad-bg:#ffeaea;
+      --shadow:0 8px 24px rgba(16,35,59,.10);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Arial, Helvetica, sans-serif;}
+    body{min-height:100vh;}
+    button,input{font:inherit;}
+    button{cursor:pointer; touch-action:manipulation;}
+    .app{max-width:1120px;margin:0 auto;padding:16px;}
+    .topbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+    .title{font-size:clamp(24px,3vw,34px);font-weight:800;}
+    .top-actions{display:flex;flex-wrap:wrap;gap:10px;}
+    .btn{
+      border:3px solid var(--accent);
+      background:#fff;
+      color:var(--accent);
+      padding:14px 18px;
+      border-radius:18px;
+      font-weight:800;
+      min-height:56px;
+      min-width:56px;
+      box-shadow:var(--shadow);
+    }
+    .btn.primary{background:var(--accent);color:#fff;}
+    .btn.ghost{border-color:#8ea2b8;color:#274461;}
+    .btn.small{min-height:48px;padding:10px 14px;border-radius:14px;}
+    .progress-shell{
+      width:100%;background:#dde7f3;border-radius:999px;overflow:hidden;height:18px;
+      margin-bottom:14px;border:2px solid #c1d0e2;
+    }
+    .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#0b63ce,#3e8cff);transition:width .35s ease;}
+    .question-drawer{
+      background:var(--card);border:3px solid #c9d7e7;border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:18px;display:none;margin-bottom:16px;
+    }
+    .question-drawer.open{display:block;}
+    .question-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start;}
+    @media (max-width:900px){.question-grid{grid-template-columns:1fr;}}
+    .card{
+      background:var(--card);border:3px solid #d4dfeb;border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:18px;
+    }
+    .badge{
+      display:inline-block;padding:10px 14px;border-radius:999px;background:#eef4fb;
+      border:2px solid #c8d6e6;font-weight:800;font-size:18px;margin-bottom:8px;
+    }
+    .screen-title{font-size:clamp(24px,3vw,36px);font-weight:900;margin-bottom:8px;line-height:1.2;}
+    .screen-text{font-size:clamp(17px,2vw,22px);line-height:1.45;color:var(--muted);margin-bottom:14px;font-weight:700;}
+    .prompt{font-size:clamp(22px,2.6vw,30px);font-weight:900;margin:10px 0 16px;line-height:1.3;}
+    .action-callout{
+      font-size:clamp(26px,3vw,36px);
+      font-weight:900;
+      line-height:1.3;
+      margin:12px 0 18px;
+      padding:16px 18px;
+      border-radius:20px;
+      border:4px solid #0b63ce;
+      background:#e8f1ff;
+      color:#0b63ce;
+      box-shadow:0 0 0 4px rgba(11,99,206,.08);
+    }
+    .question-sentence{font-size:clamp(18px,2vw,24px);font-weight:700;line-height:1.5;margin-bottom:8px;}
+    .subtle{font-size:18px;color:var(--muted);font-weight:700;}
+    .touch-note{font-size:16px;color:#58708c;}
+    .graph-wrap{
+      width:100%;overflow:auto;background:#fff;border:3px solid #d5dfeb;
+      border-radius:18px;padding:8px;
+    }
+    .graph-title{font-weight:800;font-size:22px;text-align:center;margin-bottom:8px;}
+    .choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0;}
+    .choice{
+      min-height:88px;padding:16px;border-radius:20px;border:4px solid #9db2cb;background:#fff;
+      color:var(--text);font-size:clamp(20px,2.1vw,28px);font-weight:800;line-height:1.3;
+      text-align:center;display:flex;align-items:center;justify-content:center;
+    }
+    .choice.selected{border-color:var(--accent);background:var(--accent-2);box-shadow:0 0 0 4px rgba(11,99,206,.12);}
+    .choice.chosen-good{border-color:var(--good);background:var(--good-bg);color:var(--good);}
+    .choice.chosen-bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);}
+    .word-bank{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0;}
+    .word-chip{
+      min-height:70px;padding:12px 18px;border-radius:16px;border:4px solid #9db2cb;background:#fff;
+      font-size:clamp(20px,2vw,28px);font-weight:800;
+    }
+    .word-chip.selected{border-color:var(--accent);background:var(--accent-2);color:var(--accent);}
+    .feedback{
+      min-height:76px;padding:14px 16px;border-radius:18px;border:3px solid #ced9e8;background:#fff;
+      font-size:clamp(18px,2vw,24px);font-weight:700;line-height:1.4;margin-top:12px;
+    }
+    .feedback.good{border-color:var(--good);background:var(--good-bg);color:var(--good);}
+    .feedback.warn{border-color:#d7a24f;background:var(--warn-bg);color:var(--warn);}
+    .feedback.bad{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);}
+    .action-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:18px;}
+    .number-box{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:10px 0;}
+    .number-input{
+      width:min(260px,100%);min-height:68px;border-radius:18px;border:4px solid #8ea2b8;
+      padding:10px 14px;font-size:clamp(24px,2.5vw,34px);font-weight:800;color:var(--text);background:#fff;
+    }
+    .number-input:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(11,99,206,.12);}
+    .mini-panel{background:#f9fbff;border:3px dashed #bfd0e5;border-radius:18px;padding:14px;margin:14px 0;}
+    .center{display:flex;justify-content:center;align-items:center;}
+    .celebrate{font-size:clamp(28px,4vw,44px);font-weight:900;color:var(--good);margin:8px 0 12px;text-align:center;}
+    .footer-space{height:12px;}
+    .key-term{background:#fff4a8;border-radius:8px;padding:2px 6px;}
+    .gap-bank,.true-bank{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0;}
+    .svg-btn{cursor:pointer;}
+    .pulse{animation:pulse 1s ease-in-out infinite;}
+    @keyframes pulse{
+      0%{transform:scale(1);}
+      50%{transform:scale(1.03);}
+      100%{transform:scale(1);}
+    }
+    .pill-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+    .pill{
+      padding:12px 14px;border-radius:16px;border:3px solid var(--accent);
+      background:var(--accent-2);font-weight:800;font-size:20px;
+    }
+    .true-card.selected{border-color:var(--accent);background:var(--accent-2);}
+    .true-card.correct{border-color:var(--good);background:var(--good-bg);color:var(--good);}
+    .true-card.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad);}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">Line Graph Interactive</div>
+      <div class="top-actions">
+        <button class="btn small ghost" data-action="toggle-question">Show question</button>
+        <button class="btn small" data-action="read-aloud">Read aloud</button>
+        <button class="btn small ghost" data-action="restart">Start again</button>
+      </div>
+    </div>
+
+    <div class="progress-shell" aria-hidden="true">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="question-drawer" id="questionDrawer"></div>
+    <div class="card" id="appCard"></div>
+    <div class="footer-space"></div>
+  </div>
+
+  <script>
+    const state = {
+      screen: 0,
+      questionOpen: false,
+      currentReadText: '',
+      answers: {},
+      selectedWords: [],
+      s1Wrong: 0,
+      s2Selection: null,
+      s2Wrong: 0,
+
+      s3SelectedGaps: [],
+      s3GapDone: false,
+      s3Input: '',
+      s3Wrong: 0,
+
+      s4Selected: [],
+
+      s5TappedMonth: null,
+      s5Input: '',
+      s5Wrong: 0,
+
+      s6TappedMonth: null,
+      s6Input: '',
+      s6Wrong: 0,
+
+      s7TappedPart: null,
+      s7Selection: null,
+      s7Wrong: 0,
+
+      s8Input: '',
+      s8Wrong: 0,
+
+      s9Choice: null,
+
+      s10Input: '',
+      s10Wrong: 0
+    };
+
+    const mainQuestion = {
+      title: 'Number of visitors to a swimming pool',
+      stem: 'What was the increase in the number of visitors from May to June?',
+      months: ['Jan','Feb','Mar','Apr','May','Jun'],
+      values: [2500,1500,2000,1500,750,3000],
+      maxY: 3500,
+      yLabel: 'Number of visitors',
+      xLabel: 'Month'
+    };
+
+    const independentQuestion = {
+      title: 'Number of visitors to a swimming pool',
+      stem: 'What was the increase in the number of visitors from Apr to Jun?',
+      months: ['Jan','Feb','Mar','Apr','May','Jun'],
+      values: [1000,1500,1250,1750,2000,3000],
+      maxY: 3500,
+      yLabel: 'Number of visitors',
+      xLabel: 'Month'
+    };
+
+    const s9Choices = [
+      'subtract the smaller value from the larger value',
+      'add both values together',
+      'use only one month\'s value'
+    ];
+
+    const appCard = document.getElementById('appCard');
+    const questionDrawer = document.getElementById('questionDrawer');
+    const progressFill = document.getElementById('progressFill');
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function updateProgress(){
+      const totalScreens = 10;
+      const percent = Math.min(100, (state.screen / (totalScreens - 1)) * 100);
+      progressFill.style.width = percent + '%';
+    }
+
+    function speakCurrentText(){
+      const text = state.currentReadText || '';
+      if (!text || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      utter.lang = 'en-SG';
+      window.speechSynthesis.speak(utter);
+    }
+
+    function setReadText(...parts){
+      state.currentReadText = parts.filter(Boolean).join(' ');
+    }
+
+    function renderQuestionDrawer(){
+      questionDrawer.className = 'question-drawer' + (state.questionOpen ? ' open' : '');
+      if (!state.questionOpen){
+        questionDrawer.innerHTML = '';
+        return;
+      }
+      questionDrawer.innerHTML = `
+        <div class="question-grid">
+          <div>
+            <div class="badge">Question</div>
+            <div class="screen-title" style="font-size:28px;">${escapeHtml(mainQuestion.title)}</div>
+            <div class="question-sentence">The line graph shows the number of visitors at a swimming pool from January to June.</div>
+            <div class="question-sentence">${escapeHtml(mainQuestion.stem)}</div>
+            <div class="touch-note">Open this any time you want to look back at the question.</div>
+          </div>
+          <div class="graph-wrap">${renderLineGraph(mainQuestion, { showMinorTicks: true })}</div>
+        </div>
+      `;
+    }
+
+    function yToSvg(value, maxY, top=40, height=320){
+      return top + height - (value / maxY) * height;
+    }
+
+    function xToSvg(index, count, left=90, width=540){
+      const step = width / (count - 1);
+      return left + step * index;
+    }
+
+    function renderLineGraph(data, opts = {}){
+      const {
+        traceMonth = null,
+        showTrace = false,
+        highlightMonth = null,
+        showMinorTicks = false,
+        interactiveMonths = false,
+        activeMonth = null,
+        guideValue = null
+      } = opts;
+
+      const months = data.months;
+      const values = data.values;
+      const maxY = data.maxY;
+      const points = months.map((m, i) => {
+        const x = xToSvg(i, months.length);
+        const y = yToSvg(values[i], maxY);
+        return { m, x, y, value: values[i], i };
+      });
+
+      const polyline = points.map(p => `${p.x},${p.y}`).join(' ');
+
+      const majorTicks = [0,500,1000,1500,2000,2500,3000,3500];
+      const minorTicks = showMinorTicks ? [250,750,1250,1750,2250,2750,3250] : [];
+
+      const gridLines = majorTicks.map(t => {
+        const y = yToSvg(t, maxY);
+        return `
+          <line x1="90" y1="${y}" x2="630" y2="${y}" stroke="#d3dce7" stroke-width="2" ${t % 1000 === 0 ? 'stroke-dasharray="6 6"' : ''}/>
+          <text x="74" y="${y + 7}" text-anchor="end" font-size="22" font-weight="700" fill="#274461">${t}</text>
+        `;
+      }).join('');
+
+      const minorMarks = minorTicks.map(t => {
+        const y = yToSvg(t, maxY);
+        return `
+          <line x1="82" y1="${y}" x2="90" y2="${y}" stroke="#0b63ce" stroke-width="4"/>
+        `;
+      }).join('');
+
+      const guideLine = guideValue !== null ? `
+        <line x1="90" y1="${yToSvg(guideValue, maxY)}" x2="630" y2="${yToSvg(guideValue, maxY)}" stroke="#0b63ce" stroke-width="3" stroke-dasharray="10 8"/>
+        <text x="638" y="${yToSvg(guideValue, maxY)+7}" font-size="22" font-weight="800" fill="#0b63ce">${guideValue}</text>
+      ` : '';
+
+      let trace = '';
+      if (showTrace && traceMonth){
+        const p = points.find(pt => pt.m === traceMonth);
+        if (p){
+          trace = `
+            <line x1="${p.x}" y1="360" x2="${p.x}" y2="${p.y}" stroke="#ff8c00" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8"/>
+            <line x1="${p.x}" y1="${p.y}" x2="90" y2="${p.y}" stroke="#ff8c00" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8"/>
+          `;
+        }
+      }
+
+      const pointCircles = points.map(p => {
+        const hi = highlightMonth === p.m;
+        return `<circle cx="${p.x}" cy="${p.y}" r="${hi ? 9 : 7}" fill="${hi ? '#0b63ce' : '#10233b'}" stroke="#ffffff" stroke-width="3"/>`;
+      }).join('');
+
+      const monthLabels = months.map((m, i) => {
+        const x = xToSvg(i, months.length);
+        const active = activeMonth === m;
+        const bgFill = active ? '#e8f1ff' : '#ffffff';
+        const border = active ? '#0b63ce' : '#9db2cb';
+        const textFill = active ? '#0b63ce' : '#274461';
+        if (interactiveMonths){
+          return `
+            <rect class="svg-btn" data-action="tap-graph-month" data-month="${m}" x="${x-32}" y="372" width="64" height="38" rx="12" ry="12" fill="${bgFill}" stroke="${border}" stroke-width="3"></rect>
+            <text class="svg-btn" data-action="tap-graph-month" data-month="${m}" x="${x}" y="398" text-anchor="middle" font-size="22" font-weight="900" fill="${textFill}">${m}</text>
+          `;
+        }
+        return `<text x="${x}" y="400" text-anchor="middle" font-size="24" font-weight="800" fill="#274461">${m}</text>`;
+      }).join('');
+
+      return `
+        <div class="graph-title">${escapeHtml(data.title)}</div>
+        <svg viewBox="0 0 700 440" width="100%" role="img" aria-label="${escapeHtml(data.title)} line graph">
+          <text x="360" y="28" text-anchor="middle" font-size="26" font-weight="800" fill="#10233b">${escapeHtml(data.title)}</text>
+
+          <line x1="90" y1="40" x2="90" y2="360" stroke="#10233b" stroke-width="4"/>
+          <line x1="90" y1="360" x2="630" y2="360" stroke="#10233b" stroke-width="4"/>
+
+          <text x="30" y="160" transform="rotate(-90 30 160)" text-anchor="middle" font-size="26" font-weight="800" fill="#10233b">${escapeHtml(data.yLabel)}</text>
+          <text x="360" y="432" text-anchor="middle" font-size="26" font-weight="800" fill="#10233b">${escapeHtml(data.xLabel)}</text>
+
+          ${gridLines}
+          ${minorMarks}
+          ${guideLine}
+          <polyline points="${polyline}" fill="none" stroke="#10233b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+          ${trace}
+          ${pointCircles}
+          ${monthLabels}
+        </svg>
+      `;
+    }
+
+    function renderGapScale(selected = []){
+      const segStyle = (id) => selected.includes(id)
+        ? 'fill="#e8f1ff" stroke="#0b63ce" stroke-width="4"'
+        : 'fill="#ffffff" stroke="#9db2cb" stroke-width="3"';
+
+      const count = selected.length;
+      return `
+        <svg viewBox="0 0 360 330" width="100%" role="img" aria-label="Scale from zero to five hundred">
+          <text x="180" y="28" text-anchor="middle" font-size="24" font-weight="900" fill="#10233b">0 to 500 on the y-axis</text>
+
+          <line x1="120" y1="60" x2="120" y2="260" stroke="#10233b" stroke-width="6"/>
+          <line x1="120" y1="260" x2="145" y2="260" stroke="#10233b" stroke-width="5"/>
+          <line x1="120" y1="160" x2="145" y2="160" stroke="#10233b" stroke-width="5"/>
+          <line x1="120" y1="60" x2="145" y2="60" stroke="#10233b" stroke-width="5"/>
+
+          <text x="105" y="268" text-anchor="end" font-size="24" font-weight="800" fill="#10233b">0</text>
+          <text x="105" y="68" text-anchor="end" font-size="24" font-weight="800" fill="#10233b">500</text>
+
+          <rect class="svg-btn" data-action="tap-gap" data-gap="g1" x="165" y="160" width="95" height="100" rx="16" ry="16" ${segStyle('g1')}></rect>
+          <text x="213" y="218" text-anchor="middle" font-size="22" font-weight="800" fill="#274461">gap</text>
+
+          <rect class="svg-btn" data-action="tap-gap" data-gap="g2" x="165" y="60" width="95" height="100" rx="16" ry="16" ${segStyle('g2')}></rect>
+          <text x="213" y="118" text-anchor="middle" font-size="22" font-weight="800" fill="#274461">gap</text>
+
+          <text x="180" y="304" text-anchor="middle" font-size="24" font-weight="900" fill="#0b63ce">Gaps selected: ${count}</text>
+        </svg>
+      `;
+    }
+
+    function renderDifferenceBars(clickedPart = null){
+      const max = 3200;
+      const scale = v => 460 * (v / max);
+      const mayWidth = scale(750);
+      const juneWidth = scale(3000);
+      const diffWidth = juneWidth - mayWidth;
+
+      const sameFill = clickedPart === 'same' ? '#ffeaea' : '#76b6ff';
+      const sameStroke = clickedPart === 'same' ? '#a31d1d' : '#0b63ce';
+      const diffFill = clickedPart === 'extra' ? '#ffd56a' : '#fff7d6';
+      const diffStroke = clickedPart === 'extra' ? '#ff9800' : '#c89a00';
+
+      return `
+        <svg viewBox="0 0 650 250" width="100%" role="img" aria-label="Comparison bars for May and June">
+          <text x="18" y="70" font-size="24" font-weight="800" fill="#10233b">May</text>
+          <rect x="100" y="40" rx="14" ry="14" width="${mayWidth}" height="42" fill="#76b6ff" stroke="#0b63ce" stroke-width="4"></rect>
+          <text x="${100 + mayWidth + 10}" y="68" font-size="24" font-weight="800" fill="#10233b">750</text>
+
+          <text x="18" y="150" font-size="24" font-weight="800" fill="#10233b">June</text>
+          <rect class="svg-btn" data-action="tap-bar-part" data-part="same" x="100" y="120" rx="14" ry="14" width="${mayWidth}" height="42" fill="${sameFill}" stroke="${sameStroke}" stroke-width="4"></rect>
+          <rect class="svg-btn" data-action="tap-bar-part" data-part="extra" x="${100 + mayWidth}" y="120" rx="14" ry="14" width="${diffWidth}" height="42" fill="${diffFill}" stroke="${diffStroke}" stroke-width="4"></rect>
+          <text x="${100 + juneWidth + 10}" y="148" font-size="24" font-weight="800" fill="#10233b">3000</text>
+
+          <text x="${100 + mayWidth/2}" y="110" text-anchor="middle" font-size="20" font-weight="800" fill="#274461">same as May</text>
+          <text x="${100 + mayWidth + diffWidth/2}" y="205" text-anchor="middle" font-size="22" font-weight="900" fill="#8a4d00">extra part</text>
+        </svg>
+      `;
+    }
+
+    function renderScreen(){
+      updateProgress();
+      renderQuestionDrawer();
+
+      let html = '';
+      let readText = '';
+
+      if (state.screen === 0){
+        html = `
+          <div class="badge">Start</div>
+          <div class="screen-title">Find the increase from May to June</div>
+          <div class="screen-text">We will use <strong>one clear method</strong> for this graph question.</div>
+          <div class="graph-wrap">${renderLineGraph(mainQuestion, { showMinorTicks: true })}</div>
+          <div class="action-callout">Tap <span class="key-term">Start</span> when you are ready.</div>
+          <div class="action-row">
+            <button class="btn primary" data-action="next-screen">Start</button>
+          </div>
+        `;
+        readText = 'Find the increase from May to June. We will use one clear method. Tap start when you are ready.';
+      }
+
+      if (state.screen === 1){
+        const words = ['What','was','the','increase','in','the','number','of','visitors','from','May','to','June?'];
+        html = `
+          <div class="badge">Step 1</div>
+          <div class="screen-title">Find the important word</div>
+          <div class="action-callout">Tap the word that tells what to find.</div>
+          <div class="question-sentence">${escapeHtml(mainQuestion.stem)}</div>
+          <div class="word-bank">
+            ${words.map((word, index) => `
+              <button class="word-chip ${state.selectedWords.includes(index) ? 'selected' : ''}" data-action="pick-word" data-index="${index}" data-word="${escapeHtml(word)}">${escapeHtml(word)}</button>
+            `).join('')}
+          </div>
+          <div class="feedback ${feedbackClass('s1')}">${feedbackText('s1')}</div>
+        `;
+        readText = 'Step 1. Tap the word that tells what to find. What was the increase in the number of visitors from May to June?';
+      }
+
+      if (state.screen === 2){
+        html = `
+          <div class="badge">Step 2</div>
+          <div class="screen-title">What does “increase” mean here?</div>
+          <div class="action-callout">Choose the best meaning.</div>
+          <div class="choice-grid">
+            ${['the difference','the total together','the same number'].map(choice => `
+              <button class="choice ${state.s2Selection === choice ? 'selected' : ''}" data-action="choose-s2" data-choice="${escapeHtml(choice)}">${escapeHtml(choice)}</button>
+            `).join('')}
+          </div>
+          ${state.s2Wrong >= 2 ? `
+            <div class="mini-panel">
+              <div class="screen-text"><strong>Mini example:</strong> A number goes from 10 to 14. The increase is the <strong>difference</strong>, not the total together.</div>
+            </div>
+          ` : ''}
+          <div class="feedback ${feedbackClass('s2')}">${feedbackText('s2')}</div>
+        `;
+        readText = 'Step 2. What does increase mean here? Choose the best meaning.';
+      }
+
+      if (state.screen === 3){
+        html = `
+          <div class="badge">Step 3</div>
+          <div class="screen-title">Count the equal gaps first</div>
+          <div class="screen-text">Tap <strong>each equal gap</strong> from <strong>0</strong> to <strong>500</strong>. Then work out what <strong>1 gap</strong> is worth.</div>
+          <div class="question-grid">
+            <div>
+              <div class="action-callout">Tap <strong>each equal gap</strong> from <strong>0</strong> to <strong>500</strong>.</div>
+              <div class="graph-wrap">${renderGapScale(state.s3SelectedGaps)}</div>
+              ${state.s3GapDone ? `
+                <div class="action-callout">You found <strong>${state.s3SelectedGaps.length}</strong> equal gaps. Type what <strong>1 gap</strong> is worth.</div>
+                <div class="number-box">
+                  <input class="number-input" id="s3input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s3Input)}" placeholder="Type a number" />
+                  <button class="btn primary" data-action="check-s3">Check</button>
+                </div>
+                <div class="subtle">Think: 500 ÷ ${state.s3SelectedGaps.length} = ?</div>
+              ` : `
+                <div class="subtle">Tap each gap on the right of the axis.</div>
+              `}
+            </div>
+            <div>
+              <div class="mini-panel">
+                <div class="screen-text"><strong>Remember:</strong> a gap is the space between one mark and the next mark.</div>
+              </div>
+            </div>
+          </div>
+          <div class="feedback ${feedbackClass('s3')}">${feedbackText('s3')}</div>
+        `;
+        readText = 'Step 3. Count the equal gaps first. Tap each equal gap from zero to five hundred. Then work out what one gap is worth.';
+      }
+
+      if (state.screen === 4){
+        html = `
+          <div class="badge">Step 4</div>
+          <div class="screen-title">Find the two months</div>
+          <div class="action-callout">Tap the two months named in the question.</div>
+          <div class="question-sentence">${escapeHtml(mainQuestion.stem)}</div>
+          <div class="word-bank">
+            ${mainQuestion.months.map(month => `
+              <button class="word-chip ${state.s4Selected.includes(month) ? 'selected' : ''}" data-action="pick-month-s4" data-month="${month}">${month}</button>
+            `).join('')}
+          </div>
+          <div class="feedback ${feedbackClass('s4')}">${feedbackText('s4')}</div>
+        `;
+        readText = 'Step 4. Tap the two months named in the question.';
+      }
+
+      if (state.screen === 5){
+        html = `
+          <div class="badge">Step 5</div>
+          <div class="screen-title">Find May on the month axis</div>
+          <div class="action-callout">Tap <strong>May</strong> on the horizontal axis.</div><div class="screen-text">Then follow the animation to the point and across to the y-axis.</div>
+          <div class="graph-wrap">${renderLineGraph(mainQuestion, {
+            showMinorTicks: true,
+            interactiveMonths: true,
+            activeMonth: state.s5TappedMonth,
+            traceMonth: 'May',
+            showTrace: state.s5TappedMonth === 'May',
+            highlightMonth: state.s5TappedMonth === 'May' ? 'May' : null,
+            guideValue: state.s5TappedMonth === 'May' ? 750 : null
+          })}</div>
+          <div class="action-callout">Type the number of visitors in <strong>May</strong>.</div>
+          <div class="number-box">
+            <input class="number-input" id="s5input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s5Input)}" placeholder="Type a number" />
+            <button class="btn primary" data-action="check-s5">Check</button>
+          </div>
+          <div class="subtle">The smaller intervals on the y-axis help you read 750.</div>
+          <div class="feedback ${feedbackClass('s5')}">${feedbackText('s5')}</div>
+        `;
+        readText = 'Step 5. Tap May on the horizontal axis. Follow the line to the point and across to the y axis. How many visitors were there in May?';
+      }
+
+      if (state.screen === 6){
+        html = `
+          <div class="badge">Step 6</div>
+          <div class="screen-title">Find June on the month axis</div>
+          <div class="action-callout">Tap <strong>Jun</strong> on the horizontal axis.</div><div class="screen-text">Then follow the animation to the point and across to the y-axis.</div>
+          <div class="graph-wrap">${renderLineGraph(mainQuestion, {
+            showMinorTicks: true,
+            interactiveMonths: true,
+            activeMonth: state.s6TappedMonth,
+            traceMonth: 'Jun',
+            showTrace: state.s6TappedMonth === 'Jun',
+            highlightMonth: state.s6TappedMonth === 'Jun' ? 'Jun' : null,
+            guideValue: state.s6TappedMonth === 'Jun' ? 3000 : null
+          })}</div>
+          <div class="action-callout">Type the number of visitors in <strong>June</strong>.</div>
+          <div class="number-box">
+            <input class="number-input" id="s6input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s6Input)}" placeholder="Type a number" />
+            <button class="btn primary" data-action="check-s6">Check</button>
+          </div>
+          <div class="feedback ${feedbackClass('s6')}">${feedbackText('s6')}</div>
+        `;
+        readText = 'Step 6. Tap June on the horizontal axis. Follow the line to the point and across to the y axis. How many visitors were there in June?';
+      }
+
+      if (state.screen === 7){
+        html = `
+          <div class="badge">Step 7</div>
+          <div class="screen-title">Why do we subtract?</div>
+          <div class="screen-text">The <strong>increase</strong> is the <strong>extra part</strong> from May to June.</div>
+          <div class="action-callout">Tap the <strong>extra part</strong> on the June bar.</div>
+          <div class="graph-wrap">${renderDifferenceBars(state.s7TappedPart)}</div>
+          ${state.s7TappedPart === 'extra' ? `
+            <div class="mini-panel">
+              <div class="screen-text"><strong>Yes.</strong> The June amount is made of the May part <strong>and</strong> one extra part. To get only the extra part, we <strong>take away</strong> the May part from the June part.</div>
+            </div>
+            <div class="action-callout">Choose the number sentence that finds the <strong>extra part</strong>.</div>
+            <div class="choice-grid">
+              ${['3000 − 750','3000 + 750','750 − 3000'].map(choice => `
+                <button class="choice ${state.s7Selection === choice ? 'selected' : ''}" data-action="choose-s7" data-choice="${escapeHtml(choice)}">${escapeHtml(choice)}</button>
+              `).join('')}
+            </div>
+          ` : ''}
+          <div class="feedback ${feedbackClass('s7')}">${feedbackText('s7')}</div>
+        `;
+        readText = 'Step 7. Why do we subtract? Tap the extra part on the June bar. Then choose the number sentence that finds the extra part.';
+      }
+
+      if (state.screen === 8){
+        html = `
+          <div class="badge">Step 8</div>
+          <div class="screen-title">Work out the increase</div>
+          <div class="screen-text">Now subtract to find the difference.</div>
+          <div class="action-callout">Type the answer for <strong>3000 − 750</strong>.</div>
+          <div class="number-box">
+            <input class="number-input" id="s8input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s8Input)}" placeholder="Type a number" />
+            <button class="btn primary" data-action="check-s8">Check</button>
+          </div>
+          ${state.s8Wrong >= 2 ? `
+            <div class="mini-panel">
+              <div class="screen-text"><strong>Check yourself:</strong> We are finding the gap from 750 to 3000. We are not adding both numbers together.</div>
+            </div>
+          ` : ''}
+          <div class="feedback ${feedbackClass('s8')}">${feedbackText('s8')}</div>
+        `;
+        readText = 'Step 8. Work out the increase. Three thousand minus seven hundred and fifty equals what?';
+      }
+
+      if (state.screen === 9){
+        html = `
+          <div class="badge">Step 9</div>
+          <div class="screen-title">How do we find the increase?</div>
+          <div class="action-callout">Choose the best answer.</div>
+          <div class="choice-grid">
+            ${s9Choices.map(choice => `
+              <button class="choice ${state.s9Choice === choice ? 'selected' : ''}" data-action="choose-s9" data-choice="${escapeHtml(choice)}">
+                ${escapeHtml(choice)}
+              </button>
+            `).join('')}
+          </div>
+          <div class="feedback ${feedbackClass('s9')}">${feedbackText('s9')}</div>
+        `;
+        readText = 'Step 9. How do we find the increase? Choose the best answer.';
+      }
+
+      if (state.screen === 10){
+        html = `
+          <div class="badge">Independent check</div>
+          <div class="screen-title">Try one by yourself</div>
+          <div class="screen-text">Use the same method with less help.</div>
+          <div class="question-sentence">${escapeHtml(independentQuestion.stem)}</div>
+          <div class="graph-wrap">${renderLineGraph(independentQuestion, { showMinorTicks: true })}</div>
+          <div class="action-callout">Type the increase.</div>
+          <div class="number-box">
+            <input class="number-input" id="s10input" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.s10Input)}" placeholder="Type a number" />
+            <button class="btn primary" data-action="check-s10">Check</button>
+          </div>
+          ${state.s10Wrong >= 1 ? `<div class="subtle">Read the smaller intervals, find Apr, find Jun, then subtract.</div>` : ''}
+          <div class="feedback ${feedbackClass('s10')}">${feedbackText('s10')}</div>
+          ${state.answers.s10Correct ? `
+            <div class="celebrate">Well done!</div>
+            <div class="screen-text center">You used the method independently.</div>
+          ` : ''}
+        `;
+        readText = 'Independent check. Try one by yourself. What was the increase in the number of visitors from April to June? Type the increase.';
+      }
+
+      appCard.innerHTML = html;
+      setReadText(readText);
+      focusRelevantInput();
+    }
+
+    function focusRelevantInput(){
+      const map = { 3:'s3input', 5:'s5input', 6:'s6input', 8:'s8input', 10:'s10input' };
+      const id = map[state.screen];
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el) setTimeout(() => el.focus(), 50);
+    }
+
+    function feedbackClass(key){
+      const info = state.answers[key] || {};
+      if (info.type === 'good') return 'good';
+      if (info.type === 'bad') return 'bad';
+      if (info.type === 'warn') return 'warn';
+      return '';
+    }
+
+    function feedbackText(key){
+      const info = state.answers[key] || {};
+      return info.text || ' ';
+    }
+
+    function nextScreen(){
+      state.screen += 1;
+      renderScreen();
+    }
+
+    function resetState(){
+      state.screen = 0;
+      state.questionOpen = false;
+      state.currentReadText = '';
+      state.answers = {};
+      state.selectedWords = [];
+      state.s1Wrong = 0;
+      state.s2Selection = null;
+      state.s2Wrong = 0;
+      state.s3SelectedGaps = [];
+      state.s3GapDone = false;
+      state.s3Input = '';
+      state.s3Wrong = 0;
+      state.s4Selected = [];
+      state.s5TappedMonth = null;
+      state.s5Input = '';
+      state.s5Wrong = 0;
+      state.s6TappedMonth = null;
+      state.s6Input = '';
+      state.s6Wrong = 0;
+      state.s7TappedPart = null;
+      state.s7Selection = null;
+      state.s7Wrong = 0;
+      state.s8Input = '';
+      state.s8Wrong = 0;
+      state.s9Choice = null;
+      state.s10Input = '';
+      state.s10Wrong = 0;
+      renderScreen();
+    }
+
+    function pickWord(index, word){
+      state.selectedWords = [index];
+      if (word.replace(/[?]/g,'') === 'increase'){
+        state.answers.s1 = { type:'good', text:'Yes. We are finding the increase.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 650);
+      } else {
+        state.answers.s1 = { type:'warn', text:'Look at the question again. Which word tells what to find?' };
+        renderScreen();
+      }
+    }
+
+    function chooseS2(choice){
+      state.s2Selection = choice;
+      if (choice === 'the difference'){
+        state.answers.s2 = { type:'good', text:'Correct. We need the difference in values from May to June.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 850);
+      } else {
+        state.s2Wrong += 1;
+        state.answers.s2 = { type:'warn', text: state.s2Wrong >= 2
+          ? 'Increase means how much more. It is the difference, not the total together.'
+          : 'Try again. Increase here means how much more.' };
+        renderScreen();
+      }
+    }
+
+    function tapGap(gap){
+      if (state.s3SelectedGaps.includes(gap)){
+        state.s3SelectedGaps = state.s3SelectedGaps.filter(g => g !== gap);
+      } else {
+        state.s3SelectedGaps.push(gap);
+      }
+      state.s3GapDone = state.s3SelectedGaps.length === 2;
+      if (state.s3GapDone){
+        state.answers.s3 = { type:'good', text:'Good. You found 2 equal gaps from 0 to 500.' };
+      } else {
+        state.answers.s3 = { type:'warn', text:'Keep counting the gaps. A gap is the space between one mark and the next mark.' };
+      }
+      renderScreen();
+    }
+
+    function checkS3(){
+      const input = (document.getElementById('s3input')?.value || '').trim();
+      state.s3Input = input;
+      if (!state.s3GapDone){
+        state.answers.s3 = { type:'warn', text:'Tap the equal gaps first.' };
+        renderScreen();
+        return;
+      }
+      if (input === '250'){
+        state.answers.s3 = { type:'good', text:'Yes. 500 ÷ 2 = 250. Each gap is worth 250.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 900);
+      } else {
+        state.s3Wrong += 1;
+        state.answers.s3 = { type:'warn', text: state.s3Wrong >= 2
+          ? 'You found 2 equal gaps. So 500 ÷ 2 = 250.'
+          : 'Think: 500 shared equally into 2 gaps.' };
+        renderScreen();
+      }
+    }
+
+    function pickMonthS4(month){
+      if (state.s4Selected.includes(month)){
+        state.s4Selected = state.s4Selected.filter(m => m !== month);
+      } else if (state.s4Selected.length < 2){
+        state.s4Selected.push(month);
+      } else {
+        state.s4Selected = [state.s4Selected[1], month];
+      }
+      const sorted = [...state.s4Selected].sort().join('|');
+      if (sorted === ['Jun','May'].sort().join('|')){
+        state.answers.s4 = { type:'good', text:'Yes. We need May and June.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 750);
+      } else if (state.s4Selected.length === 2){
+        state.answers.s4 = { type:'warn', text:'Check the question again. Which two months are named?' };
+        renderScreen();
+      } else {
+        renderScreen();
+      }
+    }
+
+    function tapGraphMonth(month){
+      if (state.screen === 5){
+        state.s5TappedMonth = month;
+        if (month === 'May'){
+          state.answers.s5 = { type:'good', text:'Good. Now trace from May to the point, then across to the y-axis.' };
+        } else {
+          state.answers.s5 = { type:'warn', text:'We need May. Tap May on the month axis.' };
+        }
+        renderScreen();
+        return;
+      }
+      if (state.screen === 6){
+        state.s6TappedMonth = month;
+        if (month === 'Jun'){
+          state.answers.s6 = { type:'good', text:'Good. Now trace from Jun to the point, then across to the y-axis.' };
+        } else {
+          state.answers.s6 = { type:'warn', text:'We need Jun. Tap Jun on the month axis.' };
+        }
+        renderScreen();
+      }
+    }
+
+    function checkS5(){
+      const input = (document.getElementById('s5input')?.value || '').trim();
+      state.s5Input = input;
+      if (state.s5TappedMonth !== 'May'){
+        state.answers.s5 = { type:'warn', text:'Tap May on the horizontal axis first.' };
+        renderScreen();
+        return;
+      }
+      if (input === '750'){
+        state.answers.s5 = { type:'good', text:'Yes. May has 750 visitors.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 850);
+      } else {
+        state.s5Wrong += 1;
+        state.answers.s5 = { type:'warn', text: state.s5Wrong >= 2
+          ? 'Look at the smaller intervals. The point is halfway between 500 and 1000, so it is 750.'
+          : 'Look at the smaller intervals between 500 and 1000.' };
+        renderScreen();
+      }
+    }
+
+    function checkS6(){
+      const input = (document.getElementById('s6input')?.value || '').trim();
+      state.s6Input = input;
+      if (state.s6TappedMonth !== 'Jun'){
+        state.answers.s6 = { type:'warn', text:'Tap Jun on the horizontal axis first.' };
+        renderScreen();
+        return;
+      }
+      if (input === '3000'){
+        state.answers.s6 = { type:'good', text:'Yes. June has 3000 visitors.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 850);
+      } else {
+        state.s6Wrong += 1;
+        state.answers.s6 = { type:'warn', text:'Trace from Jun to the point, then across to the y-axis.' };
+        renderScreen();
+      }
+    }
+
+    function tapBarPart(part){
+      state.s7TappedPart = part;
+      if (part === 'extra'){
+        state.answers.s7 = { type:'good', text:'Yes. The increase is the extra part from May to June.' };
+      } else {
+        state.answers.s7 = { type:'warn', text:'That shows the May part. The increase is the extra part on the June bar.' };
+      }
+      renderScreen();
+    }
+
+    function chooseS7(choice){
+      state.s7Selection = choice;
+      if (state.s7TappedPart !== 'extra'){
+        state.answers.s7 = { type:'warn', text:'Tap the extra part first so you can see what the increase means.' };
+        renderScreen();
+        return;
+      }
+      if (choice === '3000 − 750'){
+        state.answers.s7 = { type:'good', text:'Correct. We subtract because we are finding only the extra part.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 950);
+      } else {
+        state.s7Wrong += 1;
+        state.answers.s7 = { type:'warn', text: state.s7Wrong >= 2
+          ? 'June is made of the May part and one extra part. To get only the extra part, take away 750 from 3000.'
+          : 'Think about the extra part. To get only that part, we take away the May part from the June part.' };
+        renderScreen();
+      }
+    }
+
+    function checkS8(){
+      const input = (document.getElementById('s8input')?.value || '').trim();
+      state.s8Input = input;
+      if (input === '2250'){
+        state.answers.s8 = { type:'good', text:'Yes. The increase from May to June is 2250 visitors.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 950);
+        return;
+      }
+      state.s8Wrong += 1;
+      if (input === '3750'){
+        state.answers.s8 = { type:'bad', text:'That is adding both numbers. We need the difference, not the total.' };
+      } else if (input === '750' || input === '3000'){
+        state.answers.s8 = { type:'bad', text:'That is one month’s value. The question asks for the increase.' };
+      } else {
+        state.answers.s8 = { type:'warn', text:'Check the subtraction carefully. We are finding the gap from 750 to 3000.' };
+      }
+      renderScreen();
+    }
+
+    function chooseS9(choice){
+      state.s9Choice = choice;
+      if (choice === 'subtract the smaller value from the larger value'){
+        state.answers.s9 = { type:'good', text:'Yes. To find the increase, subtract the smaller value from the larger value.' };
+        renderScreen();
+        setTimeout(() => nextScreen(), 1000);
+      } else if (choice === 'add both values together') {
+        state.answers.s9 = { type:'warn', text:'Not add. Increase means the difference.' };
+        renderScreen();
+      } else {
+        state.answers.s9 = { type:'warn', text:'Not just one value. We need the difference between the two values.' };
+        renderScreen();
+      }
+    }
+
+    function checkS10(){
+      const input = (document.getElementById('s10input')?.value || '').trim();
+      state.s10Input = input;
+      if (input === '1250'){
+        state.answers.s10 = { type:'good', text:'Yes. Apr is 1750, Jun is 3000, so the increase is 1250.' };
+        state.answers.s10Correct = true;
+      } else {
+        state.s10Wrong += 1;
+        state.answers.s10Correct = false;
+        state.answers.s10 = { type:'warn', text:'Try again. Read the smaller intervals, find Apr, find Jun, then subtract.' };
+      }
+      renderScreen();
+    }
+
+    document.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const action = target.dataset.action;
+
+      if (action === 'toggle-question'){
+        state.questionOpen = !state.questionOpen;
+        target.textContent = state.questionOpen ? 'Hide question' : 'Show question';
+        renderQuestionDrawer();
+        return;
+      }
+      if (action === 'read-aloud'){ speakCurrentText(); return; }
+      if (action === 'restart'){ resetState(); return; }
+      if (action === 'next-screen'){ nextScreen(); return; }
+      if (action === 'pick-word'){ pickWord(Number(target.dataset.index), target.dataset.word); return; }
+      if (action === 'choose-s2'){ chooseS2(target.dataset.choice); return; }
+      if (action === 'tap-gap'){ tapGap(target.dataset.gap); return; }
+      if (action === 'check-s3'){ checkS3(); return; }
+      if (action === 'pick-month-s4'){ pickMonthS4(target.dataset.month); return; }
+      if (action === 'tap-graph-month'){ tapGraphMonth(target.dataset.month); return; }
+      if (action === 'check-s5'){ checkS5(); return; }
+      if (action === 'check-s6'){ checkS6(); return; }
+      if (action === 'tap-bar-part'){ tapBarPart(target.dataset.part); return; }
+      if (action === 'choose-s7'){ chooseS7(target.dataset.choice); return; }
+      if (action === 'check-s8'){ checkS8(); return; }
+      if (action === 'choose-s9'){ chooseS9(target.dataset.choice); return; }
+      if (action === 'check-s10'){ checkS10(); return; }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      if (state.screen === 3){ e.preventDefault(); checkS3(); }
+      if (state.screen === 5){ e.preventDefault(); checkS5(); }
+      if (state.screen === 6){ e.preventDefault(); checkS6(); }
+      if (state.screen === 8){ e.preventDefault(); checkS8(); }
+      if (state.screen === 10){ e.preventDefault(); checkS10(); }
+    });
+
+    renderScreen();
+  </script>
+</body>
+</html>

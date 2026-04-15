@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oranges Boxes Money Interactive v5</title>
+<style>
+:root{--navy:#173b6c;--blue:#3f6fe0;--line:#bfd2ea;--bg:#f5f8fc;--cream:#f5e4a3;--green:#67c7b8;--greenb:#218b80;--orange:#efc261;--orangeb:#d59b24;--red:#c94b49;--good:#1f9d55;--panel:#fbfdff}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--navy)}
+.app{max-width:1180px;margin:18px auto;padding:0 14px 36px}
+.screen{background:#fff;border:4px solid var(--line);border-radius:28px;padding:24px}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.pill,.read{display:inline-block;border:4px solid var(--line);border-radius:24px;padding:14px 22px;font-size:28px;font-weight:800;background:#fff;color:var(--navy)}
+.read{cursor:pointer}
+h1{font-size:64px;line-height:1.05;margin:18px 0 14px}
+.instr{font-size:34px;line-height:1.35;margin:0 0 18px}
+.highlight{background:var(--cream);padding:4px 12px;border-radius:18px;font-weight:800}
+.smallhint{font-size:26px;font-weight:700;color:#4f6b93;margin:4px 0 12px}
+.feedback{min-height:54px;font-size:32px;line-height:1.35;font-weight:800;margin-top:8px}
+.bad{color:var(--red)}
+.good{color:var(--good)}
+.buttons{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.primary,.nextbtn,.ghost{border:none;border-radius:20px;padding:16px 30px;font-size:30px;font-weight:800;color:#fff;cursor:pointer}
+.primary{background:#1ea15b}
+.nextbtn{background:#4a78df}
+.nextbtn[disabled]{opacity:.45;cursor:not-allowed}
+.ghost{background:#fff;color:var(--navy);border:4px solid var(--line)}
+.question-wrap{margin-top:22px}
+.question-card{background:#fff9df;border:4px solid #edc73e;border-radius:24px;padding:18px}
+.question-line{font-size:32px;line-height:1.45;margin:8px 0;padding:10px 12px;border-radius:14px;width:100%;text-align:left;background:#fff9df;border:3px solid transparent;display:block}
+.tapline{cursor:pointer}
+.tapline:hover{background:#f3f7ff}
+.question-btn{appearance:none;-webkit-appearance:none;font:inherit;color:inherit}
+.selected-line{border-color:#0f49c7;background:#cfe0ff;box-shadow:0 0 0 8px rgba(15,73,199,.18) inset;color:#082a58}
+.blink{animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(63,111,224,0);background:transparent}50%{box-shadow:0 0 0 8px rgba(63,111,224,.14);background:#eef4ff}}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:16px 0}
+.option{min-height:104px;border:4px solid var(--line);border-radius:24px;background:#fff;color:var(--navy);font-size:32px;font-weight:800;padding:16px;cursor:pointer;transition:background .12s,border-color .12s,transform .06s,box-shadow .12s}
+.option:hover{background:#f3f7ff}
+.option:active{transform:scale(0.985)}
+.option.selected{border-color:#0f49c7;background:#bcd4ff;box-shadow:0 0 0 10px rgba(15,73,199,.22) inset;color:#082a58}
+.inputrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.math-input{font-size:38px;padding:14px 20px;width:220px;border:5px solid var(--blue);border-radius:20px;outline:none}
+.panel{border:4px solid var(--line);border-radius:28px;padding:22px;background:var(--panel);margin:20px 0}
+.panel-title{font-size:34px;font-weight:800;margin-bottom:12px}
+.stage{min-height:290px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:18px;padding:10px 0}
+.orange{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #ffd28a 0%, #ff9c2f 55%, #e26d00 100%);border:4px solid #d76500}
+.box{min-width:132px;min-height:132px;border:5px solid var(--orangeb);background:#fff6df;border-radius:18px;padding:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;align-content:start;position:relative}
+.box-label{position:absolute;left:50%;bottom:-48px;transform:translateX(-50%);background:#fff;border:4px solid var(--line);border-radius:14px;padding:4px 10px;font-size:24px;font-weight:800;white-space:nowrap}
+.flow{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.arrow{font-size:46px;font-weight:900;color:#4f6b93}
+.plus{font-size:42px;font-weight:900;color:#4f6b93}
+.badge{display:inline-block;background:#edf3ff;border:4px solid var(--line);border-radius:18px;padding:10px 16px;font-size:28px;font-weight:800}
+.question-mini{margin-top:18px;border-top:4px solid #dde7f4;padding-top:16px}
+.question-toggle{background:#fff;border:4px solid var(--line);border-radius:18px;padding:12px 18px;font-size:24px;font-weight:800;color:var(--navy);cursor:pointer}
+.hidden{display:none}
+.practice-streak{font-size:28px;font-weight:800;color:#4f6b93;margin-bottom:8px}
+.summary-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:12px}
+.summary-card{border:4px solid var(--line);border-radius:24px;background:#fff;padding:18px;font-size:28px;font-weight:800;min-height:112px;display:flex;align-items:center;justify-content:center;text-align:center}
+.support-note{font-size:26px;font-weight:800;color:#4f6b93;line-height:1.4;text-align:center;margin-top:8px}
+.mini-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;width:100%}
+.sample-tag{display:inline-block;border:4px solid #edc73e;background:#fff9df;color:var(--navy);border-radius:16px;padding:8px 14px;font-size:24px;font-weight:800}
+.group-count{display:inline-block;border:4px solid #a9c6ef;background:#eef4ff;color:var(--navy);border-radius:18px;padding:10px 16px;font-size:26px;font-weight:800}
+.reveal1{animation:fadeRise .55s ease both .08s}
+.reveal2{animation:fadeRise .55s ease both .28s}
+.reveal3{animation:fadeRise .55s ease both .48s}
+.reveal4{animation:fadeRise .55s ease both .68s}
+.reveal5{animation:fadeRise .55s ease both .88s}
+.pulse-soft{animation:pulseSoft 1.25s ease-in-out infinite}
+@keyframes fadeRise{0%{opacity:0;transform:translateY(12px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes pulseSoft{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes packPulse{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}.pulse{animation:packPulse .7s ease-in-out 1}
+
+.distribution-demo{position:relative;width:760px;max-width:100%;height:240px;margin:0 auto}
+.source-card{position:absolute;left:18px;top:68px;width:170px;height:110px;border:4px solid #edc73e;background:#fff9df;border-radius:24px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:30px;font-weight:800;color:var(--navy)}
+.demo-box-wrap{position:absolute;top:30px;width:132px;height:180px}
+.demo-box{position:relative;width:132px;height:132px;border:5px solid var(--orangeb);background:#fff6df;border-radius:18px;padding:10px;display:grid;grid-template-columns:repeat(2,1fr);gap:6px;align-content:start}
+.slot-dot{width:44px;height:44px;border-radius:50%;background:#fde6bf;border:4px dashed #edc57b;opacity:.45}
+.fly-orange{position:absolute;left:104px;top:104px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #ffd28a 0%, #ff9c2f 55%, #e26d00 100%);border:3px solid #d76500;animation:flyToSlot 3.2s ease-in-out forwards;animation-delay:calc(var(--delay) * .17s);opacity:0}
+.distribution-caption{font-size:24px;font-weight:800;color:#4f6b93;text-align:center;margin-top:12px;line-height:1.35}
+@keyframes flyToSlot{
+  0%{transform:translate(0,0) scale(.7);opacity:0}
+  10%{opacity:1}
+  70%{transform:translate(var(--dx), var(--dy)) scale(1);opacity:1}
+  100%{transform:translate(var(--dx), var(--dy)) scale(1);opacity:1}
+}
+
+@media (max-width:900px){
+  h1{font-size:52px}
+  .instr{font-size:30px}
+  .question-line,.option,.math-input,.feedback{font-size:28px}
+  .screen{padding:18px}
+  .orange{width:48px;height:48px}
+  .box{min-width:112px;min-height:112px}
+}
+</style>
+</head>
+<body>
+<div class="app"><div id="app"></div></div>
+
+<script>
+const state={step:1,maxStep:12,feedback:'',feedbackClass:'',canNext:false,selectedLine:null,selectedOption:null,inputValue:'',readText:'',tries:{},showQuestion:true,remediation:null,remediationState:null,recapAnswers:[null,null,null,null],stepOptions:{}};
+const qLines=["Roger had 340 oranges.","He packed the oranges into boxes of 5 oranges.","He sold every box of oranges for $6 each.","How much money did he collect altogether?"];
+
+function speakNow(){
+  if(!window.speechSynthesis) return;
+  const u=new SpeechSynthesisUtterance(state.readText);
+  u.rate=.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+function incTry(k){state.tries[k]=(state.tries[k]||0)+1; return state.tries[k];}
+function shuffle(a){const x=[...a]; for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]];} return x;}
+function getStepOptions(key, arr){ if(!state.stepOptions[key]) state.stepOptions[key]=shuffle(arr); return state.stepOptions[key]; }
+function clearStep(){state.feedback=''; state.feedbackClass=''; state.canNext=false; state.selectedLine=null; state.selectedOption=null; state.inputValue='';}
+function nextStep(){if(!state.canNext) return; if(state.step<state.maxStep){state.step++; clearStep(); render();}}
+function setWrong(msg){state.feedback=msg; state.feedbackClass='bad'; state.canNext=false;}
+function setRight(msg){state.feedback=msg; state.feedbackClass='good'; state.canNext=true;}
+function shell(title,instr,content){return `<div class="screen"><div class="toprow"><div class="pill">${state.remediation?'Extra practice':`Step ${state.step} of ${state.maxStep}`}</div><button class="read" onclick="speakNow()">🔊 Read aloud</button></div><h1>${title}</h1><div class="instr">${instr}</div>${content}</div>`;}
+
+function renderQuestion(blinkLine=null,tappable=true){
+  return `<div class="question-wrap"><div class="question-card">${qLines.map((line,i)=>{const n=i+1; return `<button type="button" class="question-line question-btn ${tappable?'tapline':''} ${state.selectedLine===n?'selected-line':''} ${blinkLine===n?'blink':''}" ${tappable?`onclick="tapQuestionLine(${n})"`:'disabled'}>${line}</button>`;}).join('')}</div></div>`;
+}
+function renderQuestionMini(blinkLine=null){
+  return `<div class="question-mini"><button class="question-toggle" onclick="toggleQuestion()">${state.showQuestion?'Hide question':'Show question'}</button><div class="${state.showQuestion?'':'hidden'}">${renderQuestion(blinkLine,true)}</div></div>`;
+}
+function toggleQuestion(){state.showQuestion=!state.showQuestion; render();}
+function tapQuestionLine(n){state.selectedLine=n; render();}
+function selectOption(v){state.selectedOption=v; render();}
+function setInput(v){state.inputValue=v.replace(/[^0-9]/g,'');}
+
+function orange(n=1){return Array.from({length:n},()=>'<div class="orange"></div>').join('');}
+function boxOfGroup(count=5,label='1 box',pulse=false){return `<div class="box ${pulse?'pulse':''}">${orange(count)}<div class="box-label">${label}</div></div>`;}
+
+function exampleGroupingScene(total=10, per=5){
+  const boxes=Math.floor(total/per), leftover=total%per;
+  return `<div class="panel"><div class="panel-title">See it</div><div class="stage"><div class="flow"><div class="badge">${total} oranges</div><div class="arrow">→</div>${Array.from({length:boxes},(_,i)=>boxOfGroup(per,`box ${i+1}`,true)).join('')}${leftover?`<div class="badge">${leftover} left</div>`:''}</div></div></div>`;
+}
+
+function moneyScene(boxes=3,price=6){
+  return `<div class="panel"><div class="panel-title">See it</div><div class="stage"><div class="flow">${Array.from({length:boxes},(_,i)=>`<div class="box reveal${Math.min(i+1,5)}">${orange(5)}<div class="box-label">$${price}</div></div>`).join('')}<div class="arrow reveal4">→</div><div class="badge reveal5">${boxes} boxes</div><div class="badge reveal5">$${price} each</div></div></div></div>`;
+}
+
+
+function distributionAnimatedScene(total, per, title='Watch the oranges move'){
+  const groups = Math.floor(total/per);
+  const startX = 104, startY = 104;
+  const boxTop = 30;
+  const lefts = [270, 430, 590, 750, 910];
+  const slotOffsets = [
+    [18,16],[70,16],[18,68],[70,68],[18,120],[70,120]
+  ];
+  const boxes = Array.from({length:groups},(_,i)=>`
+    <div class="demo-box-wrap" style="left:${lefts[i]}px;">
+      <div class="demo-box">
+        ${Array.from({length:per},(_,j)=>`<div class="slot-dot"></div>`).join('')}
+      </div>
+      <div class="box-label">box ${i+1}</div>
+    </div>`).join('');
+  const tokens = Array.from({length:groups*per},(_,i)=>{
+    const g=Math.floor(i/per);
+    const s=i%per;
+    const [sx,sy]=slotOffsets[s];
+    const targetX = lefts[g] + sx;
+    const targetY = boxTop + sy;
+    const dx = targetX - startX;
+    const dy = targetY - startY;
+    return `<div class="fly-orange" style="--dx:${dx}px;--dy:${dy}px;--delay:${i};"></div>`;
+  }).join('');
+  const width = Math.min(760, 220 + groups*160);
+  return `<div class="panel">
+    <div class="panel-title">${title}</div>
+    <div class="stage">
+      <div class="distribution-demo" style="width:${width}px;">
+        <div class="source-card">${total} oranges</div>
+        <div class="arrow" style="position:absolute;left:210px;top:92px;">→</div>
+        ${boxes}
+        ${tokens}
+      </div>
+    </div>
+    <div class="distribution-caption">Watch the oranges get <span class="highlight">distributed into boxes of ${per}</span>. Then <span class="highlight">count how many boxes are filled</span>.</div>
+  </div>`;
+}
+
+function groupingWhyScene(total=340, per=5){
+  const sampleTotal = 15;
+  return `<div>
+    ${distributionAnimatedScene(sampleTotal, per, 'Watch the oranges get distributed')}
+    <div class="panel">
+      <div class="panel-title">Now connect it to Roger's question</div>
+      <div class="stage">
+        <div class="flow">
+          <div class="badge reveal2">${total} oranges</div>
+          <div class="arrow reveal3">→</div>
+          <div class="badge reveal4">boxes of ${per}</div>
+          <div class="arrow reveal5">→</div>
+          <div class="badge reveal5">how many boxes?</div>
+        </div>
+      </div>
+      <div class="support-note">We are not finding the size of 1 box. We already know that. We are finding <span class="highlight">how many boxes of ${per}</span> can be filled, so we <span class="highlight">divide</span>.</div>
+    </div>
+  </div>`;
+}
+
+function multiplyWhyScene(boxes=68, price=6){
+  const sampleBoxes = 4;
+  return `<div class="panel">
+    <div class="panel-title">See the chain</div>
+    <div class="stage">
+      <div class="mini-row">
+        ${Array.from({length:sampleBoxes},(_,i)=>`<div class="reveal${Math.min(i+1,5)}">${boxOfGroup(5,`$${price}`)}</div>${i<sampleBoxes-1?`<div class="plus reveal${Math.min(i+2,5)}">+</div>`:''}`).join('')}
+        <div class="arrow reveal5">→</div>
+        <div class="group-count reveal5 pulse-soft">same amount again and again</div>
+      </div>
+      <div class="mini-row" style="margin-top:20px;">
+        <div class="badge reveal2">${boxes} boxes</div>
+        <div class="badge reveal3">$${price} each</div>
+        <div class="arrow reveal4">→</div>
+        <div class="badge reveal5">total money</div>
+      </div>
+    </div>
+    <div class="support-note">Each box has the <span class="highlight">same price</span>, so we have <span class="highlight">${boxes} equal groups of $${price}</span>.</div>
+  </div>`;
+}
+
+function makeOperationRemState(kind, streak=0){
+  if(kind==='divide'){
+    const per=[2,3,4,5,6][Math.floor(Math.random()*5)];
+    const groups=3+Math.floor(Math.random()*3);
+    const total=per*groups;
+    return {kind, streak, promptType:Math.random()<0.5?'phrase':'picture', per, groups, total, options:shuffle(['divide','multiply','add']), selected:null, feedback:'', good:false};
+  }
+  const boxes=2+Math.floor(Math.random()*4);
+  const price=2+Math.floor(Math.random()*6);
+  return {kind, streak, promptType:Math.random()<0.5?'phrase':'picture', boxes, price, options:shuffle(['multiply','divide','add']), selected:null, feedback:'', good:false};
+}
+
+function enterOperationRemediation(kind){
+  state.remediation='operation';
+  state.remediationState=makeOperationRemState(kind,0);
+  render();
+}
+
+function nextOperationRemQuestion(){
+  const {kind, streak} = state.remediationState;
+  state.remediationState=makeOperationRemState(kind, streak);
+  render();
+}
+
+function chooseRem(v){
+  state.remediationState.selected=v;
+  render();
+}
+
+function checkRemediation(){
+  const rs=state.remediationState;
+  if(state.remediation==='boxes'){
+    const correct=`${rs.per} oranges in 1 box`;
+    if(rs.selected===correct){
+      rs.streak+=1;
+      rs.feedback=`Yes. "Boxes of ${rs.per}" means ${rs.per} oranges in 1 box.`;
+      rs.good=true;
+      if(rs.streak>=3){
+        state.remediation=null;
+        state.remediationState=null;
+        state.feedback='Well done. Now go back to the main question.';
+        state.feedbackClass='good';
+        render();
+        return;
+      }
+    } else {
+      rs.streak=0;
+      rs.good=false;
+      rs.feedback=`Try again. Look at 1 box. One box holds ${rs.per} oranges.`;
+    }
+    render();
+    return;
+  }
+
+  if(state.remediation==='price'){
+    const correct=`$${rs.price} for 1 box`;
+    if(rs.selected===correct){
+      rs.streak+=1;
+      rs.feedback=`Yes. "$${rs.price} each" means each box costs $${rs.price}.`;
+      rs.good=true;
+      if(rs.streak>=3){
+        state.remediation=null;
+        state.remediationState=null;
+        state.feedback='Well done. Now go back to the main question.';
+        state.feedbackClass='good';
+        render();
+        return;
+      }
+    } else {
+      rs.streak=0;
+      rs.good=false;
+      rs.feedback='Try again. The money is for each box, not for each orange.';
+    }
+    render();
+    return;
+  }
+
+  if(state.remediation==='operation'){
+    const correct = rs.kind==='divide' ? 'divide' : 'multiply';
+    if(rs.selected===correct){
+      rs.streak+=1;
+      rs.good=true;
+      rs.feedback = rs.kind==='divide'
+        ? `Yes. We are finding how many equal groups fit, so divide.`
+        : `Yes. We have the same amount for every group, so multiply to find the total.`;
+      if(rs.streak>=3){
+        state.remediation=null;
+        state.remediationState=null;
+        state.feedback='Well done. Now go back to the main question.';
+        state.feedbackClass='good';
+        render();
+        return;
+      }
+    } else {
+      rs.streak=0;
+      rs.good=false;
+      rs.feedback = rs.kind==='divide'
+        ? 'Try again. Look for how many groups of the same size there are.'
+        : 'Try again. Look for equal groups with the same amount each.';
+    }
+    render();
+  }
+}
+
+function renderOperationRemediation(){
+  const rs=state.remediationState;
+  const opts = rs.options.map(o=>`<button class="option ${rs.selected===o?'selected':''}" onclick='chooseRem(${JSON.stringify(o)})'>${o}</button>`).join('');
+  if(rs.kind==='divide'){
+    state.readText = rs.promptType==='phrase'
+      ? `Extra practice. ${rs.total} oranges are packed into boxes of ${rs.per}. Choose the operation.`
+      : `Extra practice. Look at the picture and choose the operation.`;
+    return shell(
+      'Extra practice: match to the operation',
+      `Get <span class="highlight">3 correct in a row</span> to return. Choose the operation that matches the phrase or picture.`,
+      `<div class="practice-streak">Current streak: ${rs.streak}</div>
+       ${rs.promptType==='picture'
+         ? `${distributionAnimatedScene(rs.total,rs.per,'Watch the oranges get distributed')}<div class="smallhint">Look at the picture. Which operation helps you find <span class="highlight">how many boxes</span>?</div>`
+         : `<div class="panel"><div class="panel-title">Read it carefully</div><div class="support-note">${rs.total} oranges are packed into boxes of ${rs.per} oranges each. Which operation helps you find the <span class="highlight">number of boxes</span>?</div></div>`}
+       <div class="options">${opts}</div>
+       <div class="feedback ${rs.good?'good':'bad'}">${rs.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkRemediation()">Check</button>${rs.good&&rs.streak<3?`<button class="nextbtn" onclick="nextOperationRemQuestion()">Next practice</button>`:''}</div>`
+    );
+  }
+  state.readText = rs.promptType==='phrase'
+    ? `Extra practice. ${rs.boxes} boxes cost ${rs.price} dollars each. Choose the operation.`
+    : `Extra practice. Look at the picture and choose the operation.`;
+  return shell(
+    'Extra practice: match to the operation',
+    `Get <span class="highlight">3 correct in a row</span> to return. Choose the operation that matches the phrase or picture.`,
+    `<div class="practice-streak">Current streak: ${rs.streak}</div>
+     ${rs.promptType==='picture'
+       ? `${multiplyWhyScene(rs.boxes,rs.price)}<div class="smallhint">Look at the picture. Which operation helps you find the <span class="highlight">total money</span>?</div>`
+       : `<div class="panel"><div class="panel-title">Read it carefully</div><div class="support-note">${rs.boxes} boxes cost <span class="highlight">$${rs.price} each</span>. Which operation helps you find the <span class="highlight">total money</span>?</div></div>`}
+     <div class="options">${opts}</div>
+     <div class="feedback ${rs.good?'good':'bad'}">${rs.feedback}</div>
+     <div class="buttons"><button class="primary" onclick="checkRemediation()">Check</button>${rs.good&&rs.streak<3?`<button class="nextbtn" onclick="nextOperationRemQuestion()">Next practice</button>`:''}</div>`
+  );
+}
+
+function renderRemediation(){
+  if(state.remediation==='operation') return renderOperationRemediation();
+  const rs=state.remediationState;
+  if(state.remediation==='boxes'){
+    state.readText=`Extra practice. ${rs.total} oranges are packed into boxes of ${rs.per}.`;
+    return shell('Extra practice: boxes of oranges',`Read this carefully. <span class="highlight">Boxes of ${rs.per}</span> tells you how many oranges go in <span class="highlight">1 box</span>.`,`<div class="practice-streak">Get 3 correct in a row to return. Current streak: ${rs.streak}</div>${exampleGroupingScene(rs.total,rs.per)}<div class="smallhint">${rs.total} oranges are packed into boxes of ${rs.per}. What does <span class="highlight">boxes of ${rs.per}</span> mean?</div><div class="options">${rs.options.map(o=>`<button class="option ${rs.selected===o?'selected':''}" onclick='chooseRem(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${rs.good?'good':'bad'}">${rs.feedback}</div><div class="buttons"><button class="primary" onclick="checkRemediation()">Check</button>${rs.good&&rs.streak<3?`<button class="nextbtn" onclick="nextRemQuestion()">Next practice</button>`:''}</div>`);
+  }
+  state.readText=`Extra practice. Every box is sold for $${rs.price} each.`;
+  return shell('Extra practice: $ each',`Read this carefully. <span class="highlight">$${rs.price} each</span> tells you the price for <span class="highlight">1 box</span>.`,`<div class="practice-streak">Get 3 correct in a row to return. Current streak: ${rs.streak}</div>${moneyScene(rs.boxes,rs.price)}<div class="smallhint">If every box is sold for $${rs.price} each, what does that mean?</div><div class="options">${rs.options.map(o=>`<button class="option ${rs.selected===o?'selected':''}" onclick='chooseRem(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${rs.good?'good':'bad'}">${rs.feedback}</div><div class="buttons"><button class="primary" onclick="checkRemediation()">Check</button>${rs.good&&rs.streak<3?`<button class="nextbtn" onclick="nextRemQuestion()">Next practice</button>`:''}</div>`);
+}
+
+function nextRemQuestion(){
+  const streak=state.remediationState.streak;
+  if(state.remediation==='boxes'){
+    const per=[2,3,4,5,6][Math.floor(Math.random()*5)], groups=2+Math.floor(Math.random()*4), total=per*groups, options=shuffle([`${per} oranges in 1 box`,`${groups} oranges in 1 box`,`${per} boxes altogether`]);
+    state.remediationState={streak,per,groups,total,options,selected:null,feedback:'',good:false};
+  } else if(state.remediation==='price') {
+    const boxes=2+Math.floor(Math.random()*4), price=3+Math.floor(Math.random()*6), options=shuffle([`$${price} for 1 box`,`$${price} for 1 orange`,`${boxes} dollars altogether`]);
+    state.remediationState={streak,boxes,price,options,selected:null,feedback:'',good:false};
+  }
+  render();
+}
+
+function enterRemediation(kind){
+  state.remediation=kind;
+  if(kind==='boxes'){
+    const per=[2,3,4,5,6][Math.floor(Math.random()*5)], groups=2+Math.floor(Math.random()*4), total=per*groups, options=shuffle([`${per} oranges in 1 box`,`${groups} oranges in 1 box`,`${per} boxes altogether`]);
+    state.remediationState={streak:0,per,groups,total,options,selected:null,feedback:'',good:false};
+  }
+  if(kind==='price'){
+    const boxes=2+Math.floor(Math.random()*4), price=3+Math.floor(Math.random()*6), options=shuffle([`$${price} for 1 box`,`$${price} for 1 orange`,`${boxes} dollars altogether`]);
+    state.remediationState={streak:0,boxes,price,options,selected:null,feedback:'',good:false};
+  }
+  render();
+}
+
+function checkStep1(){
+  if(state.selectedLine===4) setRight('Yes. We need to find the total money collected.');
+  else {
+    const t=incTry('s1');
+    setWrong(t===1?'Try again. Look at the line that asks for the answer.':'Try again. Look at the last line.');
+  }
+  render();
+}
+
+function checkStep2(){
+  if(state.selectedLine!==2){
+    const t=incTry('s2line');
+    setWrong(t===1?'Tap the sentence that talks about boxes of 5 oranges first.':'Try again. Look at the second sentence in the question.');
+    render();
+    return;
+  }
+  if(state.selectedOption==='5 oranges in 1 box'){
+    setRight('Yes. That sentence tells us boxes of 5 oranges means 5 oranges in 1 box.');
+  } else {
+    enterRemediation('boxes');
+    return;
+  }
+  render();
+}
+
+function checkStep3(){
+  if(state.selectedOption==='divide 340 by 5'){
+    setRight('Yes. We divide 340 by 5 to find how many boxes Roger can make.');
+    render();
+    return;
+  }
+  enterOperationRemediation('divide');
+}
+
+function checkStep4(){
+  if(state.inputValue==='68') setRight('Yes. 340 ÷ 5 = 68. Roger made 68 boxes.');
+  else setWrong('Check your division carefully.');
+  render();
+}
+
+function checkStep5(){
+  if(state.selectedOption==='$6 for 1 box'){
+    setRight('Yes. "$6 each" means each box is sold for $6.');
+  } else {
+    enterRemediation('price');
+    return;
+  }
+  render();
+}
+
+function checkStep6(){
+  if(state.selectedOption==='68 boxes × $6'){
+    setRight('Yes. 68 boxes at $6 each means 68 × 6.');
+    render();
+    return;
+  }
+  enterOperationRemediation('multiply');
+}
+
+function checkStep7(){
+  if(state.inputValue==='408') setRight('Yes. 68 × 6 = 408.');
+  else setWrong('Check your multiplication carefully.');
+  render();
+}
+
+function checkStep8(){
+  if(state.selectedOption==='dollars') setRight('Yes. The answer is money, so the unit is dollars.');
+  else {
+    const t=incTry('s8');
+    setWrong(t===1?'Try again. The question asks how much money Roger collected.':'Try again. The answer must be in dollars.');
+  }
+  render();
+}
+
+function checkStep9(){
+  if(state.inputValue==='408' || state.inputValue==='0408') setRight('Correct. Roger collected $408 altogether.');
+  else setWrong('Try again. Use your total money answer.');
+  render();
+}
+
+function chooseRecap(i,v){state.recapAnswers[i]=v; render();}
+const recapSets=[shuffle(['340 oranges','68 dollars','5 boxes']),shuffle(['5 oranges in 1 box','$5 for 1 box','5 boxes altogether']),shuffle(['$6 for 1 box','$6 for 1 orange','6 boxes altogether']),shuffle(['divide 340 by 5, then multiply by 6','multiply 340 by 6 first','add 5 and 6'])];
+function checkRecap(){
+  const ok=state.recapAnswers[0]==='340 oranges'&&state.recapAnswers[1]==='5 oranges in 1 box'&&state.recapAnswers[2]==='$6 for 1 box'&&state.recapAnswers[3]==='divide 340 by 5, then multiply by 6';
+  state.feedback=ok?'Well done. You remembered the main strategy.':'Try again. Read each recap question carefully.';
+  state.feedbackClass=ok?'good':'bad';
+  render();
+}
+
+function render(){
+  if(state.remediation){
+    document.getElementById('app').innerHTML=renderRemediation();
+    return;
+  }
+
+  let html='';
+
+  if(state.step===1){
+    state.readText=`${qLines.join(' ')} Tap the line that tells you what answer to find.`;
+    html=shell('What are we finding?','Tap the line that tells you what answer to find.',`${renderQuestion((state.tries.s1||0)>=2?4:null)}<div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep1()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===2){
+    state.readText='First tap the sentence about boxes of 5 oranges. Then choose what it means.';
+    const opts=getStepOptions('s2',['5 oranges in 1 box','5 boxes altogether','$5 for 1 box']);
+    const ready=state.selectedLine===2;
+    html=shell('What does boxes of 5 mean?','First, tap the sentence with <span class="highlight">boxes of 5 oranges</span>. Then choose what it means.',`${renderQuestionMini((state.tries.s2line||0)>=1?2:null)}<div class="smallhint">${ready ? 'Good. Now choose what that sentence means.' : 'Step 1: tap the sentence in the question first.'}</div>${exampleGroupingScene(10,5)}<div class="options" style="${ready ? '' : 'opacity:.55;'}">${opts.map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick='selectOption(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep2()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===3){
+    state.readText='Look at the grouping picture. We are finding how many groups of 5 are in 340 oranges.';
+    const opts=getStepOptions('s3',['divide 340 by 5','multiply 340 by 5','add 340 and 5']);
+    html=shell('What do we do first?','Roger has <span class="highlight">340 oranges</span>. They are packed into <span class="highlight">boxes of 5</span>. Choose the first step.',`${renderQuestionMini()}${groupingWhyScene(340,5)}<div class="options">${opts.map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick='selectOption(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep3()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===4){
+    state.readText='Type the answer for 340 divided by 5.';
+    html=shell('How many boxes did Roger make?','Type the answer. <span class="highlight">340 ÷ 5 =</span>',`${renderQuestionMini()}<div class="panel"><div class="panel-title">What this means</div><div class="stage"><div class="flow"><div class="badge">340 oranges</div><div class="arrow">→</div><div class="badge">5 oranges in 1 box</div><div class="arrow">→</div><div class="badge">? boxes</div></div></div></div><div class="inputrow"><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkStep4()}"></div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep4()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===5){
+    state.readText='Sold every box for 6 dollars each means each box costs 6 dollars.';
+    const opts=getStepOptions('s5',['$6 for 1 box','$6 for 1 orange','6 boxes altogether']);
+    html=shell('What does $6 each mean?','Choose what <span class="highlight">$6 each</span> means in this question.',`${renderQuestionMini((state.tries.s5||0)>=2?3:null)}${moneyScene(3,6)}<div class="options">${opts.map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick='selectOption(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep5()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===6){
+    state.readText='Look at the picture. Each box has the same price, so we have equal groups of 6 dollars.';
+    const opts=getStepOptions('s6',['68 boxes × $6','340 oranges × $6','68 boxes + $6']);
+    html=shell('What do we do next?','Roger made <span class="highlight">68 boxes</span>. He sold <span class="highlight">every box for $6 each</span>. Choose the next step.',`${renderQuestionMini()}${multiplyWhyScene(68,6)}<div class="options">${opts.map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick='selectOption(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep6()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===7){
+    state.readText='Type the answer for 68 times 6.';
+    html=shell('How much money altogether?','Type the answer. <span class="highlight">68 × 6 =</span>',`${renderQuestionMini()}<div class="panel"><div class="panel-title">What this means</div><div class="stage"><div class="flow"><div class="badge">68 boxes</div><div class="arrow">×</div><div class="badge">$6 for 1 box</div><div class="arrow">=</div><div class="badge">total money</div></div></div></div><div class="inputrow"><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkStep7()}"></div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep7()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===8){
+    state.readText='The question asks for money, so the answer unit is dollars.';
+    const opts=getStepOptions('s8',['dollars','boxes','oranges']);
+    html=shell('What unit does the answer need?','Choose the correct unit for the final answer.',`${renderQuestionMini((state.tries.s8||0)>=2?4:null)}<div class="options">${opts.map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick='selectOption(${JSON.stringify(o)})'>${o}</button>`).join('')}</div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep8()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===9){
+    state.readText='Type the final answer.';
+    html=shell('Write the final answer','Type the final amount of money Roger collected.',`${renderQuestionMini()}<div class="inputrow"><div class="badge">$</div><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkStep9()}"></div><div class="feedback ${state.feedbackClass}">${state.feedback}</div><div class="buttons"><button class="primary" onclick="checkStep9()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===10){
+    state.readText='Quick recap.';
+    html=shell('Quick recap','Answer the recap questions to remember the strategy.',`<div class="smallhint">Tap an option. Your choice will turn blue.</div>${[{q:'What did Roger have at the start?',opts:recapSets[0]},{q:'What does boxes of 5 oranges mean?',opts:recapSets[1]},{q:'What does $6 each mean?',opts:recapSets[2]},{q:'What is the strategy?',opts:recapSets[3]}].map((item,i)=>`<div class="panel"><div class="panel-title">${i+1}. ${item.q}</div><div class="options">${item.opts.map(o=>`<button class="option ${state.recapAnswers[i]===o?'selected':''}" onclick='chooseRecap(${i}, ${JSON.stringify(o)})'>${o}</button>`).join('')}</div></div>`).join('')}<div class="feedback ${state.feedbackClass}">${state.feedback || 'Answer all 4 recap questions.'}</div><div class="buttons"><button class="primary" onclick="checkRecap()">Check</button><button class="nextbtn" ${(state.feedbackClass==='good')?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+
+  else if(state.step===11){
+    state.readText='You can now go to the next question.';
+    html=shell('You finished this question','You can now go to the next question.',`<div class="summary-list"><div class="summary-card">340 oranges</div><div class="summary-card">340 ÷ 5 = 68 boxes</div><div class="summary-card">68 × 6 = 408 dollars</div></div>`);
+  }
+
+  else {
+    state.readText='Completed.';
+    html=shell('Completed','Well done.',`<div class="summary-card" style="margin-top:18px;">Roger collected <span class="highlight">$408</span> altogether.</div>`);
+  }
+
+  document.getElementById('app').innerHTML=html;
+  const inp=document.getElementById('numinput');
+  if(inp) setTimeout(()=>inp.focus(),0);
+}
+
+render();
+</script>
+</body>
+</html>

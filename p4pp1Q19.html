@@ -1,0 +1,652 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comparison Model Interactive v32</title>
+<style>
+:root{
+  --navy:#173b6c;
+  --blue:#3f6fe0;
+  --line:#bfd2ea;
+  --bg:#f5f8fc;
+  --cream:#f5e4a3;
+  --green:#67c7b8;
+  --greenb:#218b80;
+  --orange:#efc261;
+  --orangeb:#d59b24;
+  --red:#c94b49;
+  --good:#1f9d55;
+  --panel:#fbfdff;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--navy)}
+.app{max-width:1180px;margin:18px auto;padding:0 14px 36px}
+.screen{background:#fff;border:4px solid var(--line);border-radius:28px;padding:24px}
+.toprow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.pill,.read{display:inline-block;border:4px solid var(--line);border-radius:24px;padding:14px 22px;font-size:28px;font-weight:800;background:#fff;color:var(--navy)}
+.read{cursor:pointer}
+h1{font-size:66px;line-height:1.05;margin:18px 0 14px}
+.instr{font-size:34px;line-height:1.35;margin:0 0 18px}
+.highlight{background:var(--cream);padding:4px 12px;border-radius:18px;font-weight:800}
+.smallhint{font-size:26px;font-weight:700;color:#4f6b93;margin:4px 0 12px}
+.question-wrap{margin-top:22px;border-top:4px solid #dbe6f4;padding-top:20px}
+.question-card{background:#fff9df;border:4px solid #edc73e;border-radius:24px;padding:18px}
+.question-line{font-size:32px;line-height:1.45;margin:8px 0;padding:10px 12px;border-radius:14px}
+.tapline{cursor:pointer;border:3px solid transparent}
+.tapline:hover{background:#f3f7ff}
+.selected-line{border-color:var(--blue);background:#edf3ff}
+.blink{animation:blink 1s ease-in-out infinite}
+@keyframes blink{
+  0%,100%{box-shadow:0 0 0 0 rgba(63,111,224,0);background:transparent}
+  50%{box-shadow:0 0 0 8px rgba(63,111,224,.14);background:#eef4ff}
+}
+
+.model{
+  border:4px solid var(--line);
+  border-radius:28px;
+  padding:22px;
+  background:var(--panel);
+  margin:20px 0;
+}
+.model-title{font-size:34px;font-weight:800;margin-bottom:18px}
+.model-layout{
+  display:grid;
+  grid-template-columns: 150px 1fr 190px;
+  gap:18px;
+  align-items:start;
+}
+.labels{
+  display:grid;
+  grid-template-rows: 70px 110px 110px;
+  align-items:center;
+}
+.label-slot{font-size:32px;font-weight:800;line-height:1.15}
+.bar-zone{
+  min-width:0;
+}
+.sum-row{
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+}
+.bar-row{
+  height:110px;
+  display:flex;
+  align-items:center;
+  position:relative;
+}
+.bar-stack{
+  width:760px;
+  position:relative;
+}
+.bar{
+  height:92px;
+  border-radius:26px;
+  position:relative;
+  transition:.15s;
+}
+.bar.same{background:var(--green);border:6px solid var(--greenb)}
+.bar.diff{background:var(--orange);border:6px solid var(--orangeb)}
+.top-wrap{
+  width:760px;
+  display:flex;
+  align-items:center;
+}
+.top-equal{width:580px}
+.top-diff{width:180px;margin-left:-6px}
+.bottom-wrap{width:580px}
+.tappable{cursor:pointer}
+.tappable.chosen{box-shadow:0 0 0 10px rgba(63,111,224,.15)}
+.whole-outline{
+  position:absolute;left:-10px;top:-1px;width:680px;height:112px;
+  border:10px solid var(--blue);border-radius:34px;pointer-events:none;opacity:0;transition:.15s;
+  background:rgba(63,111,224,0.06)
+}
+.whole-outline.on{opacity:1;box-shadow:0 0 0 14px rgba(63,111,224,.18)}
+.whole-tap{
+  position:absolute;left:0;top:9px;width:760px;height:92px;border-radius:28px;
+  cursor:pointer;background:transparent;z-index:4
+}
+.label-tag{
+  position:absolute;background:#fff8df;border:4px solid #f0d674;border-radius:16px;
+  padding:6px 12px;font-size:26px;font-weight:800;white-space:nowrap
+}
+.tag-center{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:#fff;border:4px solid #c6d4ea;border-radius:16px;padding:6px 12px;
+  font-size:26px;font-weight:800;white-space:nowrap
+}
+.drop-target{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  min-width:140px;min-height:68px;padding:8px 12px;border:4px dashed #bfd1e7;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  background:rgba(255,255,255,.5);font-size:30px;font-weight:800;color:#657fa6
+}
+.drop-target.active{border-color:var(--blue);box-shadow:0 0 0 10px rgba(63,111,224,.12)}
+.drop-target.filled{background:#fff;border-style:solid;color:var(--navy)}
+.sum-col{
+  display:flex;align-items:center;justify-content:center;height:290px
+}
+.sum-bracket{
+  width:160px;height:245px;position:relative
+}
+.sum-bracket .v{
+  position:absolute;left:24px;top:18px;bottom:18px;border-left:6px solid #a8bfdc
+}
+.sum-bracket .t,.sum-bracket .b{
+  position:absolute;left:24px;width:58px;border-top:6px solid #a8bfdc
+}
+.sum-bracket .t{top:18px}
+.sum-bracket .b{bottom:18px}
+.sum-target{
+  position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:118px;min-height:150px;padding:12px;border:4px dashed #bfd1e7;border-radius:22px;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  background:#f9fbff;color:#657fa6;font-size:26px;font-weight:800
+}
+.sum-target.active{border-color:var(--blue);box-shadow:0 0 0 10px rgba(63,111,224,.12)}
+.sum-target.filled{background:#fff;border-style:solid;color:var(--navy)}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:16px 0}
+.option{
+  min-height:104px;border:4px solid var(--line);border-radius:24px;background:#fff;color:var(--navy);
+  font-size:32px;font-weight:800;padding:16px;cursor:pointer;transition:background .12s,border-color .12s,transform .06s,box-shadow .12s
+}
+.option:hover{background:#f3f7ff}
+.option:active{transform:scale(0.985)}
+.recap-option{cursor:pointer}
+.option.selected{
+  border-color:#0f49c7;
+  background:#bcd4ff;
+  box-shadow:0 0 0 10px rgba(15,73,199,.22) inset;
+  color:#082a58;
+}
+.number-bank{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0}
+.numcard{
+  min-width:150px;padding:16px 20px;border-radius:20px;border:4px solid var(--line);
+  font-size:32px;font-weight:800;background:#fff;cursor:pointer
+}
+.numcard.selected{border-color:var(--blue);background:#edf3ff;box-shadow:0 0 0 8px rgba(63,111,224,.12) inset}
+.feedback{min-height:50px;font-size:32px;line-height:1.35;font-weight:800;margin-top:8px}
+.bad{color:var(--red)} .good{color:var(--good)}
+.buttons{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.primary,.nextbtn,.replay{
+  border:none;border-radius:20px;padding:16px 30px;font-size:30px;font-weight:800;color:#fff;cursor:pointer
+}
+.primary{background:#1ea15b}.nextbtn{background:#4a78df}.nextbtn[disabled]{opacity:.45;cursor:not-allowed}
+.replay{background:#fff;color:var(--navy);border:4px solid var(--line)}
+.inputrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.math-input{font-size:38px;padding:14px 20px;width:220px;border:5px solid var(--blue);border-radius:20px;outline:none}
+.caption{font-size:28px;font-weight:700;color:#4d6c95;margin-top:8px}
+
+@keyframes diffSlideAway{
+  0%{transform:translateX(0); opacity:1}
+  100%{transform:translateX(90px); opacity:0}
+}
+@keyframes remainPulse{
+  0%{box-shadow:0 0 0 0 rgba(63,111,224,0)}
+  50%{box-shadow:0 0 0 12px rgba(63,111,224,.18)}
+  100%{box-shadow:0 0 0 0 rgba(63,111,224,0)}
+}
+
+@media (max-width: 980px){
+  h1{font-size:54px}
+  .instr{font-size:30px}
+  .question-line,.option,.numcard,.feedback,.math-input{font-size:28px}
+  .model-layout{grid-template-columns:120px 1fr 150px}
+  .labels{grid-template-rows:60px 96px 96px}
+  .label-slot{font-size:26px}
+  .bar-stack,.top-wrap{width:620px}
+  .top-equal{width:470px}
+  .top-diff{width:150px}
+  .bottom-wrap{width:470px}
+  .whole-outline,.whole-tap{width:620px}
+}
+</style>
+</head>
+<body>
+<div class="app"><div id="app"></div></div>
+<script>
+const state = {
+  step:1, maxStep:17,
+  selectedLine:null, selectedOption:null, selectedPart:null, selectedNumberCard:null,
+  feedback:'', feedbackClass:'', canNext:false, tries:{},
+  inputValue:'', sumPlaced:'', diffPlaced:'', readText:'',
+  recapAnswer:[null,null,null,null], animationPlayed:false
+};
+const q1 = 'The sum of two numbers is 9850.';
+const q2 = 'The difference between the two numbers is 5432.';
+const q3 = 'What is the smaller number?';
+function incTry(k){ state.tries[k]=(state.tries[k]||0)+1; return state.tries[k]; }
+function shuffle(a){ const x=[...a]; for(let i=x.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [x[i],x[j]]=[x[j],x[i]]; } return x; }
+const recapOptions = [
+  shuffle(['sum of 2 numbers and difference','2 smaller numbers','greater number and smaller number']),
+  shuffle(['greater number','smaller number','the sum']),
+  shuffle(['divide by 2','subtract the difference','add the numbers']),
+  shuffle(['subtract again','divide by 2','add 2'])
+];
+function speakNow(){
+  if(!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(state.readText);
+  u.rate = 0.95;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+function clearStep(){ state.feedback=''; state.feedbackClass=''; state.canNext=false; state.selectedLine=null; state.selectedOption=null; state.selectedPart=null; state.selectedNumberCard=null; state.inputValue=''; state.animationPlayed=false; }
+function nextStep(){
+  if(!state.canNext) return;
+  if(state.step<state.maxStep){
+    state.step++;
+    clearStep();
+    render();
+  }
+}
+function nextFromStep10(){
+  if(!(state.animationPlayed && state.selectedOption==='2 equal smaller numbers')) return;
+  state.step = 11;
+  clearStep();
+  render();
+}
+function setWrong(msg){ state.feedback=msg; state.feedbackClass='bad'; state.canNext=false; }
+function setRight(msg){ state.feedback=msg; state.feedbackClass='good'; state.canNext=true; }
+
+function renderQuestion(blinkLine=null){
+  return `
+  <div class="question-wrap">
+    <div class="question-card">
+      <div class="question-line tapline ${state.selectedLine===1?'selected-line':''} ${blinkLine===1?'blink':''}" onclick="tapQuestionLine(1)">${q1}</div>
+      <div class="question-line tapline ${state.selectedLine===2?'selected-line':''} ${blinkLine===2?'blink':''}" onclick="tapQuestionLine(2)">${q2}</div>
+      <div class="question-line tapline ${state.selectedLine===3?'selected-line':''} ${blinkLine===3?'blink':''}" onclick="tapQuestionLine(3)">${q3}</div>
+    </div>
+  </div>`;
+}
+function shell(title,instr,content){
+  return `
+  <div class="screen">
+    <div class="toprow">
+      <div class="pill">Step ${state.step} of ${state.maxStep}</div>
+      <button class="read" onclick="speakNow()">🔊 Read aloud</button>
+    </div>
+    <h1>${title}</h1>
+    <div class="instr">${instr}</div>
+    ${content}
+  </div>`;
+}
+function modelBase(o={}){
+  const opts = Object.assign({
+    sumFilled:'', sumActive:false, diffFilled:'', diffActive:false,
+    sameTopChosen:false, extraChosen:false, bottomChosen:false, wholeOn:false,
+    showGreaterTag:false, showSmallerTag:false, showEqualTag:false, enableWholeTap:false, diffTapSelectsPart:false,
+    leftTopLabel:'Top<br>bar', leftBottomLabel:'Bottom<br>bar'
+  },o);
+  return `
+  <div class="model">
+    <div class="model-title">Comparison model</div>
+    <div class="model-layout">
+      <div class="labels">
+        <div class="label-slot"></div>
+        <div class="label-slot">${opts.leftTopLabel}</div>
+        <div class="label-slot">${opts.leftBottomLabel}</div>
+      </div>
+
+      <div class="bar-zone">
+        <div class="sum-row"></div>
+
+        <div class="bar-row">
+          <div class="bar-stack" style="width:660px">
+            <div class="whole-outline ${opts.wholeOn?'on':''}"></div>
+            ${opts.enableWholeTap ? `<div class="whole-tap" style="width:660px" onclick="tapPart('wholeTop')"></div>` : ''}
+            <div class="top-wrap" style="width:660px">
+              <div class="bar same top-equal tappable ${opts.sameTopChosen?'chosen':''}" style="width:520px" onclick="event.stopPropagation(); tapPart('sameTop')">
+                ${opts.showGreaterTag ? `<div class="label-tag" style="left:110px; top:-54px;">greater number</div>` : ''}
+                ${opts.showEqualTag ? `<div class="tag-center">same value as the smaller number</div>` : ''}
+              </div>
+              <div class="bar diff top-diff tappable ${opts.extraChosen?'chosen':''}" style="width:140px;margin-left:-6px" onclick="event.stopPropagation(); tapPart('extra')">
+                <div class="drop-target ${opts.diffActive?'active':''} ${opts.diffFilled?'filled':''}" onclick="event.stopPropagation(); ${opts.diffTapSelectsPart ? "tapPart('extra')" : "tapTarget('difference')"}">${opts.diffFilled || 'difference<br>part'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bottom-wrap" style="width:520px">
+            <div class="bar same tappable ${opts.bottomChosen?'chosen':''}" style="width:520px" onclick="tapPart('bottom')">
+              ${opts.showSmallerTag ? `<div class="label-tag" style="left:150px; top:-54px;">smaller number</div>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sum-col">
+        <div class="sum-bracket">
+          <div class="v"></div>
+          <div class="t"></div>
+          <div class="b"></div>
+          <div class="sum-target ${opts.sumActive?'active':''} ${opts.sumFilled?'filled':''}" onclick="tapTarget('sum')">${opts.sumFilled || 'sum of<br>both<br>numbers'}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function modelAfterRemoval(label='', showParts=false, rightText='9850'){
+  const rightDisplay = rightText.replace(/-/g, '−');
+  return `
+  <div class="model">
+    <div class="model-title">Comparison model</div>
+    <div class="model-layout">
+      <div class="labels">
+        <div class="label-slot"></div>
+        <div class="label-slot">Top<br>bar</div>
+        <div class="label-slot">Bottom<br>bar</div>
+      </div>
+      <div class="bar-zone">
+        <div class="sum-row"></div>
+        <div class="bar-row">
+          <div class="bottom-wrap" style="width:520px">
+            <div class="bar same" style="width:520px">${showParts?`<div class="tag-center">1 smaller part</div>`:''}</div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bottom-wrap" style="width:520px">
+            <div class="bar same" style="width:520px">${showParts?`<div class="tag-center">1 smaller part</div>`:''}</div>
+          </div>
+        </div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-bracket">
+          <div class="v"></div><div class="t"></div><div class="b"></div>
+          <div class="sum-target filled" style="width:160px; min-height:170px; font-size:22px; line-height:1.25; padding:14px;">${rightDisplay}</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">${showParts ? 'Two equal smaller parts are left.' : (label ? label : 'The difference has been removed.')}</div>
+  </div>`;
+}
+function tapQuestionLine(n){ state.selectedLine=n; render(); }
+function selectOption(v){ state.selectedOption=v; render(); }
+function tapPart(v){
+  if(state.step===9){
+    if(state.selectedPart===null) state.selectedPart=v;
+    else if((state.selectedPart==='sameTop' && v==='bottom') || (state.selectedPart==='bottom' && v==='sameTop')) state.selectedPart='bothEqual';
+    else state.selectedPart=v;
+  } else {
+    state.selectedPart=v;
+  }
+  render();
+}
+function selectNumCard(v){ state.selectedNumberCard=v; render(); }
+function tapTarget(kind){
+  if(kind==='sum' && state.selectedNumberCard) state.sumPlaced=state.selectedNumberCard;
+  if(kind==='difference' && state.selectedNumberCard) state.diffPlaced=state.selectedNumberCard;
+  render();
+}
+function setInput(v){ state.inputValue=v.replace(/[^0-9]/g,''); }
+function selectRecap(i,v){ state.recapAnswer[i]=v; render(); }
+function playRemoval(){ state.animationPlayed=true; render(); }
+
+function checkS1(){ if(state.selectedLine===3) setRight('Yes. That line tells us what we need to find.'); else { const t=incTry('s1'); setWrong(t===1?'Try again. Look at the line that asks a question.':'Try again. Look at the last line.'); } render(); }
+function checkS2(){ if(state.selectedLine===1) setRight('Yes. The first sentence tells us the sum.'); else { const t=incTry('s2'); setWrong(t===1?'Try again. Look at the first sentence in the question.':'Try again. The sum means both numbers together.'); } render(); }
+function checkS3(){ if(state.sumPlaced==='9850') setRight('Yes. 9850 is the sum of both numbers.'); else { const t=incTry('s3'); setWrong(t===1?'Try again. Choose the number from the first sentence.':'Try again. The sum goes with both bars together on the side bracket.'); } render(); }
+function checkS4(){ if(state.selectedLine===2) setRight('Yes. The second sentence tells us the difference.'); else { const t=incTry('s4'); setWrong(t===1?'Try again. Look at the second sentence in the question.':'Try again. The difference is the extra amount between the two numbers.'); } render(); }
+function checkS5(){ if(state.selectedPart==='extra') setRight('Yes. The extra part is the difference.'); else { const t=incTry('s5'); setWrong(t===1?'Try again. The difference is the part that makes the top bar longer.':'Try again. Look at the extra orange part on the right.'); } render(); }
+function checkS6(){ if(state.diffPlaced==='5432') setRight('Yes. 5432 is the difference in this question.'); else { const t=incTry('s6'); setWrong(t===1?'Try again. Choose the number from the second sentence.':'Try again. Put 5432 on the extra difference part.'); } render(); }
+function checkS7(){ if(state.selectedPart==='bottom') setRight('Yes. The shorter bottom bar is the smaller number.'); else { const t=incTry('s7'); setWrong(t===1?'Try again. The smaller number is the shorter bar.':'Try again. Look at the bottom bar.'); } render(); }
+function checkS8(){ if(state.selectedPart==='wholeTop') setRight('Yes. The whole top bar is the greater number.'); else { const t=incTry('s8'); setWrong(t===1?'Try again. The greater number includes the matching part and the extra part.':'Try again. Tap the whole top bar, not just one part.'); } render(); }
+function checkS9(){ if(state.selectedPart==='bothEqual') setRight('Yes. Those two green parts are the same value.'); else { const t=incTry('s9'); setWrong(t===1?'Try again. One equal part is on top and one equal part is below.':'Try again. Tap the matching top part and the bottom bar.'); } render(); }
+function checkS10(){
+  if(!state.animationPlayed){
+    setWrong('Press Play first. Watch the difference get removed from the model.');
+    render();
+    return;
+  }
+  if(!state.selectedOption){
+    setWrong('Now choose what is left after the difference is removed.');
+    render();
+    return;
+  }
+  if(state.selectedOption==='2 equal smaller numbers'){
+    setRight('Yes. Two equal smaller numbers are left. Moving on...');
+    render();
+    setTimeout(() => {
+      state.step = 11;
+      clearStep();
+      render();
+    }, 700);
+    return;
+  }
+  const t=incTry('s10');
+  setWrong(t===1?'Try again. One equal part is on top and one equal part is below.':'Try again. Replay the model and count the equal smaller parts left.');
+  render();
+}
+function checkS11(){ if(state.selectedOption==='subtract 5432 from 9850') setRight('Yes. First remove the difference by subtracting.'); else { const t=incTry('s11'); setWrong(t===1?'Try again. First remove the extra difference part.':'Try again. The model shows the difference being removed.'); } render(); }
+function checkS12(){ if(state.inputValue==='4418') setRight('Yes. 9850 − 5432 = 4418.'); else setWrong('Check your subtraction carefully.'); render(); }
+function checkS13(){ if(state.selectedOption==='2 equal smaller numbers') setRight('Yes. 4418 is 2 equal smaller numbers together.'); else { const t=incTry('s13'); setWrong(t===1?'Try again. Look at the 2 equal parts left in the model.':'Try again. 4418 is still 2 equal smaller numbers, not 1.'); } render(); }
+function checkS14(){ if(state.selectedOption==='divide by 2') setRight('Yes. We divide by 2 to find 1 smaller part.'); else { const t=incTry('s14'); setWrong(t===1?'Try again. We need 1 of the 2 equal smaller parts.':'Try again. Two equal parts means divide by 2.'); } render(); }
+function checkS15(){ if(state.inputValue==='2209') setRight('Yes. 4418 ÷ 2 = 2209.'); else setWrong('Check your division carefully.'); render(); }
+function checkS16(){ if(state.inputValue==='2209') setRight('Correct. The smaller number is 2209.'); else setWrong('Try again. The smaller number is what you get after dividing by 2.'); render(); }
+function checkRecap(){
+  const ok = state.recapAnswer[0]==='sum of 2 numbers and difference' &&
+             state.recapAnswer[1]==='smaller number' &&
+             state.recapAnswer[2]==='subtract the difference' &&
+             state.recapAnswer[3]==='divide by 2';
+  state.feedback = ok ? 'Well done. You remembered the strategy.' : 'Try again. Read each recap question carefully.';
+  state.feedbackClass = ok ? 'good' : 'bad';
+  render();
+}
+
+
+function modelStep10Animated(){
+  const before = !state.animationPlayed;
+  return `
+  <div class="model">
+    <div class="model-title">Comparison model</div>
+    <div class="model-layout">
+      <div class="labels">
+        <div class="label-slot"></div>
+        <div class="label-slot">Top<br>bar</div>
+        <div class="label-slot">Bottom<br>bar</div>
+      </div>
+      <div class="bar-zone">
+        <div class="sum-row"></div>
+        <div class="bar-row">
+          <div class="bar-stack" style="width:660px">
+            <div class="top-wrap" style="width:660px; position:relative;">
+              <div class="bar same" style="width:520px; ${!before ? 'animation: remainPulse 0.7s ease-in-out 1;' : ''}"></div>
+              <div class="bar diff" style="width:140px; margin-left:-6px; ${before ? '' : 'animation: diffSlideAway 0.9s ease-in-out forwards;'}"></div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-row">
+          <div class="bottom-wrap" style="width:520px">
+            <div class="bar same" style="width:520px; ${!before ? 'animation: remainPulse 0.7s ease-in-out 1;' : ''}"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sum-col">
+        <div class="sum-bracket">
+          <div class="v"></div><div class="t"></div><div class="b"></div>
+          <div class="sum-target filled">9850</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">${before ? 'Press Play to remove the difference part.' : 'The difference part has been removed. Look at what is left.'}</div>
+  </div>`;
+}
+
+function render(){
+  let html='';
+  if(state.step===1){
+    state.readText = `${q1} ${q2} ${q3} Tap the line that tells you what you need to find.`;
+    html = shell('What are we finding?','Tap the line that tells you what you need to find.',
+      `${renderQuestion((state.tries.s1||0)>=2?3:null)}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS1()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===2){
+    state.readText = 'Find the sum. Look at the question. Tap the sentence that tells you the sum.';
+    html = shell('Find the sum','Look at the question. Tap the sentence that tells you the <span class="highlight">sum</span>.',
+      `${renderQuestion((state.tries.s2||0)>=1?1:null)}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS2()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===3){
+    if(!state.s3choices) state.s3choices = shuffle(['9850','5432','9580']);
+    state.readText = 'Choose the number that is the sum. Then put it on the side bracket.';
+    html = shell('Put the sum on the model','Choose the number that is the <span class="highlight">sum</span>. Then put it on the side bracket.',
+      `<div class="smallhint">The sum means both numbers together.</div>
+       ${modelBase({sumFilled:state.sumPlaced, sumActive:state.selectedNumberCard==='9850'})}
+       <div class="smallhint">Tap a number card. Then tap the side bracket.</div>
+       <div class="number-bank">${state.s3choices.map(n=>`<button class="numcard ${state.selectedNumberCard===n?'selected':''}" onclick="selectNumCard('${n}')">${n}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS3()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>
+       ${renderQuestion((state.tries.s3||0)>=2?1:null)}`);
+  }
+  if(state.step===4){
+    state.readText = 'Find the difference. Look at the question. Tap the sentence that tells you the difference.';
+    html = shell('Find the difference','Look at the question. Tap the sentence that tells you the <span class="highlight">difference</span>.',
+      `${renderQuestion((state.tries.s4||0)>=1?2:null)}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS4()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===5){
+    state.readText = 'Tap the extra part of the top bar. That extra part is the difference.';
+    html = shell('Tap the difference part','Tap the <span class="highlight">extra part</span> of the top bar. That extra part is the difference.',
+      `${modelBase({sumFilled:'9850', extraChosen:state.selectedPart==='extra', diffTapSelectsPart:true})}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS5()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>
+       ${renderQuestion((state.tries.s5||0)>=2?2:null)}`);
+  }
+  if(state.step===6){
+    if(!state.s6choices) state.s6choices = shuffle(['5432','9850','7641']);
+    state.readText = 'Choose the number that is the difference. Then put it on the extra part.';
+    html = shell('Put the difference on the model','Choose the number that is the <span class="highlight">difference</span>. Then put it on the extra part.',
+      `<div class="smallhint">The difference is the extra amount between the two numbers.</div>
+       ${modelBase({sumFilled:'9850', diffFilled:state.diffPlaced, diffActive:state.selectedNumberCard==='5432'})}
+       <div class="smallhint">Tap a number card. Then tap the difference part.</div>
+       <div class="number-bank">${state.s6choices.map(n=>`<button class="numcard ${state.selectedNumberCard===n?'selected':''}" onclick="selectNumCard('${n}')">${n}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS6()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>
+       ${renderQuestion((state.tries.s6||0)>=2?2:null)}`);
+  }
+  if(state.step===7){
+    state.readText = 'Tap the bar that stands for the smaller number.';
+    html = shell('Find the smaller number bar','Tap the bar that stands for the <span class="highlight">smaller number</span>.',
+      `${modelBase({sumFilled:'9850', diffFilled:'5432', bottomChosen:state.selectedPart==='bottom'})}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS7()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===8){
+    state.readText = 'Tap the whole top bar. The greater number includes the matching part and the extra part.';
+    html = shell('Which bar is the greater number?','Tap the <span class="highlight">whole top bar</span>. The greater number includes the extra part too.',
+      `${modelBase({
+         sumFilled:'9850',
+         diffFilled:'5432',
+         wholeOn:state.selectedPart==='wholeTop',
+         enableWholeTap:true,
+         leftTopLabel:'greater<br>number',
+         leftBottomLabel:'smaller<br>number'
+       })}
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS8()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===9){
+    state.readText = 'Tap the two parts that are the same value.';
+    html = shell('Find the equal parts','Tap the two parts that are the <span class="highlight">same value</span>.',
+      `${modelBase({sumFilled:'9850', diffFilled:'5432', sameTopChosen:state.selectedPart==='sameTop'||state.selectedPart==='bothEqual', bottomChosen:state.selectedPart==='bottom'||state.selectedPart==='bothEqual', showEqualTag:true})}
+       <div class="smallhint">Tap the matching green part on top and the green bar below.</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS9()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===10){
+    state.readText = 'Watch what happens when we remove the difference. Then choose what is left.';
+    html = shell('What is left?','Press <span class="highlight">Play</span>. Watch the model. Then choose what is left.',
+      `${modelStep10Animated()}
+       <div class="buttons"><button class="replay" onclick="playRemoval()">▶ Play</button></div>
+       <div class="options">${['1 smaller number','2 equal smaller numbers','the greater number'].map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick="selectOption('${o}')">${o}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS10()">Check</button></div>`);
+  }
+  if(state.step===11){
+    state.readText = 'What is the first step?';
+    html = shell('What is the first step?','Look at the model. We remove the difference first. Which operation matches that?',
+      `${modelAfterRemoval()}
+       <div class="options">${['add 9850 and 5432','subtract 5432 from 9850','divide 9850 by 2'].map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick="selectOption('${o}')">${o}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS11()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===12){
+    state.readText = 'Type the answer for 9850 minus 5432.';
+    html = shell('Subtract the difference','Type the answer. We remove the difference from the sum.',
+      `${modelAfterRemoval()}
+       <div class="inputrow"><div class="instr" style="font-size:36px;margin:0;">9850 − 5432 =</div><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkS12()}"></div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS12()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===13){
+    state.readText = 'What does 4418 mean?';
+    html = shell('What does 4418 mean?','Look at the model after removing the difference. 4418 stands for...',
+      `${modelAfterRemoval('9850 − 5432 = 4418 is what is left.', false, '9850 - 5432 = 4418')}
+       <div class="options">${['1 smaller number','2 equal smaller numbers','the greater number'].map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick="selectOption('${o}')">${o}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS13()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===14){
+    state.readText = 'What is the final step?';
+    html = shell('What is the final step?','We have 2 equal smaller parts. What do we do to find 1 smaller part?',
+      `${modelAfterRemoval('4418', true)}
+       <div class="options">${['add 2','divide by 2','subtract 2'].map(o=>`<button class="option ${state.selectedOption===o?'selected':''}" onclick="selectOption('${o}')">${o}</button>`).join('')}</div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS14()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===15){
+    state.readText = 'Type the answer for 4418 divided by 2.';
+    html = shell('Divide by 2','Type the answer. Dividing by 2 gives 1 smaller part.',
+      `${modelAfterRemoval('4418', true)}
+       <div class="inputrow"><div class="instr" style="font-size:36px;margin:0;">4418 ÷ 2 =</div><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkS15()}"></div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS15()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===16){
+    state.readText = 'Type the smaller number.';
+    html = shell('Final answer','Type the smaller number.',
+      `<div class="inputrow"><div class="instr" style="font-size:36px;margin:0;">What is the smaller number?</div><input id="numinput" class="math-input" inputmode="numeric" value="${state.inputValue}" oninput="setInput(this.value)" onkeydown="if(event.key==='Enter'){checkS16()}"></div>
+       <div class="feedback ${state.feedbackClass}">${state.feedback}</div>
+       <div class="buttons"><button class="primary" onclick="checkS16()">Check</button><button class="nextbtn" ${state.canNext?'':'disabled'} onclick="nextStep()">Next</button></div>`);
+  }
+  if(state.step===17){
+    state.readText = 'Answer the recap questions to remember the strategy.';
+    html = shell('Quick recap','Answer the recap questions to remember the strategy.',
+      `${[
+        {q:'What is provided in the question?', opts:recapOptions[0]},
+        {q:'What are you supposed to find?', opts:recapOptions[1]},
+        {q:'What is the first step?', opts:recapOptions[2]},
+        {q:'What is the final step?', opts:recapOptions[3]}
+      ].map((item,i)=>`
+        <div class="model" style="margin-bottom:18px;">
+          <div class="model-title">${i+1}. ${item.q}</div>
+          <div class="options">${item.opts.map(o=>`<button type="button" class="option recap-option ${state.recapAnswer[i]===o?'selected':''}" data-recap-index="${i}" data-recap-value="${encodeURIComponent(o)}">${o}</button>`).join('')}</div>
+        </div>`).join('')}
+       <div class="feedback ${state.feedbackClass}">${state.feedback || 'Answer all 4 recap questions.'}</div>
+       <div class="buttons"><button class="primary" onclick="checkRecap()">Check</button></div>`);
+  }
+
+  document.getElementById('app').innerHTML = html;
+  const inp = document.getElementById('numinput');
+  if(inp) setTimeout(()=>inp.focus(),0);
+}
+
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.recap-option');
+  if(!btn) return;
+  const idx = Number(btn.getAttribute('data-recap-index'));
+  const val = decodeURIComponent(btn.getAttribute('data-recap-value'));
+  selectRecap(idx, val);
+});
+
+render();
+</script>
+</body>
+</html>
