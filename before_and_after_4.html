@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Before and After 4</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --panel:#ffffff; --text:#1d2433; --muted:#5d6b82;
+      --primary:#1f5fbf; --primary-soft:#eaf2ff; --accent:#f59e0b; --accent-soft:#fff5dd;
+      --good:#157347; --good-soft:#e8f6ee; --bad:#b42318; --bad-soft:#fdeceb;
+      --line:#d7dfeb; --shadow:0 10px 28px rgba(19,35,68,0.08); --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.45;-webkit-text-size-adjust:100%}
+    .app{max-width:1120px;margin:0 auto;padding:18px 16px 36px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:var(--panel);border:2px solid var(--line);box-shadow:var(--shadow);font-weight:700}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+    button,.choice-card,.sentence-card,.amount-chip,.slot,.tap-part{touch-action:manipulation}
+    button{border:none;border-radius:14px;padding:12px 16px;font-size:1rem;font-weight:700;cursor:pointer;transition:transform .08s ease,opacity .15s ease,box-shadow .15s ease;box-shadow:var(--shadow)}
+    button:hover{transform:translateY(-1px)} button:active{transform:translateY(0)}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-secondary{background:#fff;color:var(--text);border:2px solid var(--line)}
+    .btn-ghost{background:var(--primary-soft);color:var(--primary);border:2px solid #cfe0ff}
+    .btn-disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+    .question-panel{background:var(--panel);border:2px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:16px}
+    .question-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;background:#f9fbff;border-bottom:2px solid var(--line)}
+    .question-head h2{margin:0;font-size:1.2rem}
+    .question-body{padding:18px;display:none}
+    .question-body.open{display:block}
+    .question-body p{margin:0 0 14px;font-size:1.08rem}
+    .main-card{background:var(--panel);border:2px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    .screen-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+    .screen-title{margin:0;font-size:1.55rem}
+    .screen-subtitle{margin:8px 0 0;color:var(--muted);font-size:1rem;max-width:760px}
+    .step-chip{background:var(--primary-soft);color:var(--primary);font-weight:700;padding:10px 14px;border-radius:999px;border:2px solid #cfe0ff;white-space:nowrap}
+    .action-box{background:var(--primary-soft);border:2px solid #cfe0ff;border-radius:18px;padding:16px 18px;margin-bottom:14px}
+    .explain-box{background:var(--accent-soft);border:2px solid #f4d28c;border-radius:18px;padding:14px 16px;margin-bottom:18px}
+    .label{font-size:.88rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;margin-bottom:6px}
+    .action-box .label{color:var(--primary)} .explain-box .label{color:#a15c00}
+    .action-box .text{font-size:1.15rem;font-weight:700}
+    .grid{display:grid;gap:14px} .grid-3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+    .sentence-card,.choice-card{background:#fff;border:3px solid var(--line);border-radius:18px;padding:16px;min-height:82px;cursor:pointer;transition:border-color .15s ease,box-shadow .15s ease,transform .08s ease}
+    .sentence-card:hover,.choice-card:hover,.amount-chip:hover,.slot:hover,.tap-part:hover{transform:translateY(-1px)}
+    .sentence-card.selected,.choice-card.selected,.amount-chip.selected,.slot.selected,.tap-part.selected{border-color:var(--primary);box-shadow:0 0 0 4px rgba(31,95,191,.12);background:var(--primary-soft)}
+    .choice-card .title{font-weight:700;font-size:1.04rem;margin-bottom:6px}
+    .desc{color:var(--muted)}
+    .check-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+    .feedback{margin-top:16px;display:none;border-radius:18px;padding:14px 16px;border:2px solid transparent;font-weight:700}
+    .feedback.show{display:block} .feedback.good{background:var(--good-soft);border-color:#9fd3b1;color:var(--good)} .feedback.bad{background:var(--bad-soft);border-color:#efb0aa;color:var(--bad)}
+    .hint-box,.help-box{margin-top:14px;display:none;border-radius:18px;padding:14px 16px}
+    .hint-box.show,.help-box.show{display:block}
+    .hint-box{background:#f7faff;border:2px dashed #9bbcf2} .help-box{background:#fffaf0;border:2px solid #f2d7a1}
+    .bars-wrap{display:grid;gap:18px;margin-top:6px}
+    .bar-row{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:center}
+    .bar-label{font-weight:700;font-size:1rem}
+    .bar{display:flex;min-height:66px;border-radius:16px;overflow:hidden;border:3px solid #bcc7d8;background:#f2f5fa}
+    .seg{display:flex;align-items:center;justify-content:center;padding:8px;font-weight:700;text-align:center;min-width:0;font-size:.98rem;border-right:2px solid #cbd4e2}
+    .seg:last-child{border-right:none}
+    .unit{background:#e6f2ff;color:#1f5fbf} .spent{background:#ffe8c7;color:#9a5800} .diff{background:#fde3e1;color:#b42318}
+    .tap-part{cursor:pointer}
+    .compare-note,.focus-card{margin-top:12px;background:#f8fbff;border:2px solid #cfe0ff;border-radius:18px;padding:14px 16px}
+    .equation-strip,.arrow-line{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;margin-top:10px;font-weight:700}
+    .eq-box,.badge{padding:10px 14px;border-radius:14px;background:#fff;border:2px solid var(--line);text-align:center}
+    .input-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px}
+    .num-input{width:240px;max-width:100%;padding:14px 16px;font-size:1.12rem;border-radius:16px;border:3px solid var(--line);outline:none;font-weight:700}
+    .num-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(31,95,191,.12)}
+    .mini-note{color:var(--muted);font-size:.96rem;margin-top:8px}
+    .amount-bank{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+    .amount-chip{padding:14px 18px;border-radius:16px;border:3px solid var(--line);background:#fff;font-weight:700;cursor:pointer;box-shadow:var(--shadow)}
+    .place-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:12px}
+    .place-card{border:2px solid var(--line);border-radius:18px;padding:14px;background:#fff}
+    .place-card h4{margin:0 0 10px;font-size:1.05rem}
+    .place-bar{display:flex;min-height:68px;border-radius:16px;overflow:hidden;border:3px solid #bcc7d8;background:#f2f5fa}
+    .blank-left{flex:2;display:flex;align-items:center;justify-content:center;background:#e6f2ff;color:#1f5fbf;border-right:2px solid #cbd4e2;font-weight:700;padding:8px;text-align:center}
+    .blank-right{flex:1;display:flex;align-items:center;justify-content:center;padding:6px;background:#fff4df}
+    .slot{min-height:72px;width:100%;border:3px dashed #9db0c7;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:12px;background:#f9fbff;font-weight:700;text-align:center;cursor:pointer}
+    .slot.filled{border-style:solid;background:#fff}
+    .success-card{background:linear-gradient(180deg,#f8fffb 0%,#eefaf2 100%);border:2px solid #9fd3b1;border-radius:22px;padding:18px;margin-top:18px}
+    .summary-list{margin:10px 0 0 18px;padding:0} .summary-list li{margin:8px 0}
+    .tiny{color:var(--muted);font-size:.92rem}
+    @media (max-width:760px){
+      .app{padding:12px 10px 26px}.main-card{padding:16px}.screen-title{font-size:1.35rem}.action-box .text{font-size:1.05rem}
+      .bar-row{grid-template-columns:1fr}.bar-label{margin-bottom:4px}.question-head{padding:14px}.question-body{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="pill" id="progressPill">Step 1 of 14</div>
+      <div class="toolbar">
+        <button class="btn-secondary" id="toggleQuestionBtn" type="button">Show question</button>
+        <button class="btn-ghost" id="readAloudBtn" type="button">Read aloud</button>
+        <button class="btn-secondary" id="restartBtn" type="button">Restart</button>
+      </div>
+    </div>
+
+    <div class="question-panel">
+      <div class="question-head">
+        <h2>Question</h2>
+        <div class="tiny">The question stays available on every step.</div>
+      </div>
+      <div class="question-body" id="questionBody">
+        <p><strong>Mrs Low had the same number of red apples and green apples at her fruit stall at the beginning of the day.</strong></p>
+        <p>After selling <strong>235 red apples</strong> and <strong>85 green apples</strong>, she had <strong>4 times as many green apples as red apples left</strong>.</p>
+        <p><strong>How many red apples did she have at her fruit stall at the beginning of the day?</strong></p>
+      </div>
+    </div>
+
+    <div class="main-card" id="screenHost" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (function(){
+      const questionLines = [
+        "Mrs Low had the same number of red apples and green apples at her fruit stall at the beginning of the day.",
+        "After selling 235 red apples and 85 green apples, she had 4 times as many green apples as red apples left.",
+        "How many red apples did she have at her fruit stall at the beginning of the day?"
+      ];
+
+      const screens = [
+        { id:"s1", title:"Start with the clue", subtitle:"Read carefully before building the bar model.", action:"Tap the sentence that tells you the starting numbers were the same.", explain:"We are looking for the clue that tells us how the two starting bars should look." },
+        { id:"s2", title:"Find the goal", subtitle:"We should know exactly what the question wants before we solve.", action:"What are we finding?", explain:"Choose the final answer the question asks for." },
+        { id:"s3", title:"Choose the starting model", subtitle:"Use the clue about the starting number of apples.", action:"How should the starting bars look?", explain:"Pick the model that matches 'the same number'." },
+        { id:"s4", title:"Place the sold amounts", subtitle:"Now match each sold amount to the correct apples.", action:"Tap an amount. Then tap the correct sold part.", explain:"Only place the amounts on the sold sections, not on the apples left sections." },
+        { id:"s5", title:"Show the apples left", subtitle:"The bars started the same, but the leftover parts are different.", action:"How should the apples left look?", explain:"Look at the words '4 times as many green apples as red apples left'." },
+        { id:"s6", title:"Notice the extra sold part", subtitle:"Keep the equal units in view.", action:"Tap the extra sold part for red apples.", explain:"Red sold more than green. The extra red sold part lines up with the extra equal units left in green." },
+        { id:"s7", title:"Build the number sentence", subtitle:"Use the model to show why we subtract.", action:"Choose the number sentence for the extra sold part.", explain:"Red sold 235 apples altogether. The 85 part matches green sold. So we subtract to find the extra red sold part." },
+        { id:"s8", title:"Calculate the extra sold part", subtitle:"Now work out the value of that extra part.", action:"Type how many more red apples were sold than green apples.", explain:"Use the number sentence for the extra part: 235 - 85." },
+        { id:"s9", title:"Match 150 to the equal units", subtitle:"This is the key model idea.", action:"The 150 matches which part?", explain:"Because the starting bars end at the same place, the extra red sold part lines up with the extra equal units left in green." },
+        { id:"s10", title:"Find 1 equal unit", subtitle:"Now use the model meaning, not just the numbers.", action:"Type the value of 1 equal unit.", explain:"The 150 matched 3 equal units, so divide by 3 to find 1 equal unit." },
+        { id:"s11", title:"Say what 1 equal unit means", subtitle:"Keep track of what the unit stands for.", action:"What does 1 equal unit stand for?", explain:"Do not stop at the unit value. We need to know what it refers to in this question." },
+        { id:"s12", title:"Choose how to find the beginning red apples", subtitle:"We know the red apples sold and the red apples left.", action:"What should we do to find the beginning number of red apples?", explain:"The beginning number of red apples is the whole red bar, so we put red sold and red left back together." },
+        { id:"s13", title:"Find the beginning red apples", subtitle:"Now complete the final step.", action:"Type the number of red apples at the beginning of the day.", explain:"Think: beginning red apples = red apples sold + red apples left." },
+        { id:"s14", title:"Consolidate the strategy", subtitle:"Say the idea clearly so you can use it again.", action:"Which summary explains the strategy best?", explain:"Pick the summary that matches the model and the steps you used." }
+      ];
+
+      function baseState(){
+        return { current:0, questionOpen:false, selections:{}, inputs:{}, attempts:{}, feedback:{}, screenDone:{}, placements:{ red:null, green:null } };
+      }
+      let state = baseState();
+
+      const host = document.getElementById("screenHost");
+      const questionBody = document.getElementById("questionBody");
+      const toggleQuestionBtn = document.getElementById("toggleQuestionBtn");
+      const readAloudBtn = document.getElementById("readAloudBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const progressPill = document.getElementById("progressPill");
+
+      function stopSpeech(){ if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }
+      function speak(text){
+        if (!("speechSynthesis" in window)) return;
+        stopSpeech();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.95; utter.pitch = 1; utter.lang = "en-SG";
+        window.speechSynthesis.speak(utter);
+      }
+      function updateQuestionToggle(){
+        questionBody.classList.toggle("open", state.questionOpen);
+        toggleQuestionBtn.textContent = state.questionOpen ? "Hide question" : "Show question";
+      }
+      function getAttempts(id){ return state.attempts[id] || 0; }
+      function bumpAttempts(id){ state.attempts[id] = getAttempts(id) + 1; }
+      function markDone(id){ state.screenDone[id] = true; }
+      function canGoNext(){ return !!state.screenDone[screens[state.current].id]; }
+      function selectedId(id){ return state.selections[id] || null; }
+      function setSelected(screenId, choiceId){ state.selections[screenId] = choiceId; clearFeedback(); render(); }
+      function setFeedback(kind, message){ state.feedback[screens[state.current].id] = { kind, message }; render(); }
+      function clearFeedback(){ delete state.feedback[screens[state.current].id]; }
+
+      function shuffleWithState(screenId, options){
+        const key = "_order_" + screenId;
+        if (!state.selections[key]) {
+          const ids = options.map(o => o.id);
+          for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+          }
+          state.selections[key] = ids;
+        }
+        const order = state.selections[key];
+        return order.map(id => options.find(o => o.id === id)).filter(Boolean);
+      }
+
+      function nextScreen(){ if (canGoNext() && state.current < screens.length - 1) { stopSpeech(); state.current += 1; render(); } }
+      function prevScreen(){ if (state.current > 0) { stopSpeech(); state.current -= 1; render(); } }
+      function restart(){ stopSpeech(); state = baseState(); render(); }
+
+      function renderShell(content){
+        const screen = screens[state.current];
+        return `
+          <div class="screen-top">
+            <div>
+              <h1 class="screen-title">${screen.title}</h1>
+              <p class="screen-subtitle">${screen.subtitle}</p>
+            </div>
+            <div class="step-chip">Step ${state.current + 1}</div>
+          </div>
+          <div class="action-box">
+            <div class="label">Do this now</div>
+            <div class="text">${screen.action}</div>
+          </div>
+          <div class="explain-box">
+            <div class="label">Why this matters</div>
+            <div>${screen.explain}</div>
+          </div>
+          ${content}
+        `;
+      }
+
+      function renderFeedbackAndButtons(screenId, extraHint="", extraHelp=""){
+        const feedback = state.feedback[screenId];
+        return `
+          <div class="check-row">
+            <button type="button" class="btn-primary" data-kind="check" data-screen="${screenId}">Check</button>
+            <button type="button" class="btn-secondary" data-kind="back" ${state.current === 0 ? 'disabled' : ''}>Back</button>
+            <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+          </div>
+          <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+          <div class="hint-box ${extraHint ? 'show' : ''}">${extraHint}</div>
+          <div class="help-box ${extraHelp ? 'show' : ''}">${extraHelp}</div>
+        `;
+      }
+
+      function renderChoiceCards(screenId, options){
+        const ordered = shuffleWithState(screenId, options);
+        const selected = selectedId(screenId);
+        return `
+          <div class="grid grid-3">
+            ${ordered.map(opt => `
+              <div class="choice-card ${selected === opt.id ? 'selected' : ''}" data-kind="select-choice" data-screen="${screenId}" data-id="${opt.id}" role="button" tabindex="0" aria-pressed="${selected === opt.id}">
+                <div class="title">${opt.title}</div>
+                ${opt.desc ? `<div class="desc">${opt.desc}</div>` : ``}
+                ${opt.preview || ``}
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function renderScreen(){
+        const id = screens[state.current].id;
+        progressPill.textContent = `Step ${state.current + 1} of ${screens.length}`;
+
+        if (id === "s1") {
+          const selected = selectedId("s1");
+          const attempts = getAttempts("s1");
+          return renderShell(`
+            <div class="grid">
+              ${[
+                { id:"same", text:questionLines[0] },
+                { id:"after", text:questionLines[1] },
+                { id:"find", text:questionLines[2] }
+              ].map(item => `
+                <div class="sentence-card ${selected === item.id ? 'selected' : ''}" data-kind="select-choice" data-screen="s1" data-id="${item.id}" role="button" tabindex="0" aria-pressed="${selected === item.id}">
+                  <strong>Sentence</strong>
+                  <div style="margin-top:6px;">${item.text}</div>
+                </div>`).join("")}
+            </div>
+            ${renderFeedbackAndButtons("s1", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look for the sentence that tells you how the two starting bars compare before any apples were sold." : "", "")}
+          `);
+        }
+
+        if (id === "s2") {
+          const attempts = getAttempts("s2");
+          return renderShell(
+            renderChoiceCards("s2", [
+              { id:"begin-red", title:"red apples at the beginning of the day", desc:"the whole red bar before selling" },
+              { id:"red-left", title:"red apples left", desc:"the amount after selling" },
+              { id:"green-left", title:"green apples left", desc:"the amount after selling" }
+            ]) + renderFeedbackAndButtons("s2", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look at the last sentence. Which whole amount are we trying to find?" : "", "")
+          );
+        }
+
+        if (id === "s3") {
+          const attempts = getAttempts("s3");
+          return renderShell(
+            renderChoiceCards("s3", [
+              {
+                id:"equal",
+                title:"Equal starting bars",
+                desc:"Red and green start with the same total number of apples.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:1;">same total</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:1;">same total</div></div></div></div>`
+              },
+              {
+                id:"red-longer",
+                title:"Red starts longer",
+                desc:"Red starts with more apples.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:1.3;">longer total</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:0.8;">shorter total</div></div></div></div>`
+              },
+              {
+                id:"green-longer",
+                title:"Green starts longer",
+                desc:"Green starts with more apples.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:0.8;">shorter total</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:1.3;">longer total</div></div></div></div>`
+              }
+            ]) + renderFeedbackAndButtons("s3", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> 'The same number' means the two starting bars are equal." : "", "")
+          );
+        }
+
+        if (id === "s4") {
+          const selectedAmount = selectedId("s4");
+          const attempts = getAttempts("s4");
+          return renderShell(`
+            <div class="focus-card">
+              <strong>Selected amount:</strong> ${selectedAmount ? selectedAmount : "None yet"}
+              <div class="mini-note">Tap one amount. Then tap the correct sold part.</div>
+            </div>
+            <div class="amount-bank" style="margin-top:14px;">
+              ${["235","85"].map(amount => `<div class="amount-chip ${selectedAmount === amount ? 'selected' : ''}" data-kind="select-choice" data-screen="s4" data-id="${amount}" role="button" tabindex="0" aria-pressed="${selectedAmount === amount}">${amount}</div>`).join("")}
+            </div>
+            <div class="place-grid">
+              <div class="place-card">
+                <h4>Red apples</h4>
+                <div class="place-bar">
+                  <div class="blank-left">red apples left</div>
+                  <div class="blank-right"><div class="slot ${state.placements.red ? 'filled' : ''}" data-kind="place-slot" data-slot="red" role="button" tabindex="0">${state.placements.red ? state.placements.red : "tap to place red sold"}</div></div>
+                </div>
+              </div>
+              <div class="place-card">
+                <h4>Green apples</h4>
+                <div class="place-bar">
+                  <div class="blank-left">green apples left</div>
+                  <div class="blank-right"><div class="slot ${state.placements.green ? 'filled' : ''}" data-kind="place-slot" data-slot="green" role="button" tabindex="0">${state.placements.green ? state.placements.green : "tap to place green sold"}</div></div>
+                </div>
+              </div>
+            </div>
+            ${renderFeedbackAndButtons("s4", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Read the question again. Which apples had 235 sold? Which apples had 85 sold?" : "", "")}
+          `);
+        }
+
+        if (id === "s5") {
+          const attempts = getAttempts("s5");
+          return renderShell(
+            renderChoiceCards("s5", [
+              {
+                id:"correct",
+                title:"Red-left = 1 equal unit, Green-left = 4 equal units",
+                desc:"This matches '4 times as many green apples as red apples left'.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg spent" style="flex:2.4;">sold</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg spent" style="flex:1.4;">sold</div></div></div></div>`
+              },
+              {
+                id:"reverse",
+                title:"Red-left = 4 equal units, Green-left = 1 equal unit",
+                desc:"This reverses the apples.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg spent" style="flex:1.4;">sold</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:1;">1 equal unit</div><div class="seg spent" style="flex:2.4;">sold</div></div></div></div>`
+              },
+              {
+                id:"sold-rule",
+                title:"Red sold is 4 times green sold",
+                desc:"This uses the wrong relationship.",
+                preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Red</div><div class="bar"><div class="seg unit" style="flex:1;">left</div><div class="seg spent" style="flex:2.8;">sold</div></div></div><div class="bar-row"><div class="bar-label">Green</div><div class="bar"><div class="seg unit" style="flex:1;">left</div><div class="seg spent" style="flex:0.7;">sold</div></div></div></div>`
+              }
+            ]) + renderFeedbackAndButtons("s5", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The clue is about the apples left. Green-left has 4 equal units. Red-left has 1 equal unit." : "", "")
+          );
+        }
+
+        if (id === "s6") {
+          const selected = selectedId("s6");
+          const attempts = getAttempts("s6");
+          return renderShell(`
+            <div class="bars-wrap">
+              <div class="bar-row">
+                <div class="bar-label">Red</div>
+                <div class="bar">
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg diff tap-part ${selected === 'extra-red-sold' ? 'selected' : ''}" style="flex:3;" data-kind="select-choice" data-screen="s6" data-id="extra-red-sold" role="button" tabindex="0" aria-pressed="${selected === 'extra-red-sold'}">tap the extra red sold part</div>
+                  <div class="seg spent" style="flex:1.5;">85 sold</div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Green</div>
+                <div class="bar">
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg spent" style="flex:1.5;">85 sold</div>
+                </div>
+              </div>
+            </div>
+            <div class="compare-note">The bars start equal and end at the same place. The <strong>85 sold</strong> parts line up at the end. So the red part in the middle is the <strong>extra red sold part</strong>, and it lines up with the <strong>3 extra equal units</strong> in green.</div>
+            ${renderFeedbackAndButtons("s6", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look at the red bar. Tap the sold part that comes after the shared 85 sold part." : "", "")}
+          `);
+        }
+
+        if (id === "s7") {
+          const attempts = getAttempts("s7");
+          return renderShell(`
+            <div class="bars-wrap">
+              <div class="bar-row">
+                <div class="bar-label">Red sold</div>
+                <div class="bar">
+                  <div class="seg diff" style="flex:3;">extra red sold part</div>
+                  <div class="seg spent" style="flex:1.5;">85 sold</div>
+                </div>
+              </div>
+            </div>
+            <div class="focus-card">
+              <strong>Read the red sold bar from the model:</strong>
+              <div class="arrow-line">
+                <span class="badge">235</span><span>=</span><span class="badge">extra red sold part</span><span>+</span><span class="badge">85</span>
+              </div>
+              <div class="mini-note">The whole red sold amount is 235. The 85 part matches green sold. So the extra red sold part is what is left after taking away 85.</div>
+              <div class="equation-strip">
+                <div class="eq-box">235</div><div>−</div><div class="eq-box">85</div><div>=</div><div class="eq-box">extra red sold part</div>
+              </div>
+            </div>
+            ${renderChoiceCards("s7", [
+              { id:"235-85", title:"extra red sold part = 235 - 85", desc:"take away the 85 part that matches green sold" },
+              { id:"85-235", title:"extra red sold part = 85 - 235", desc:"this subtracts in the wrong order" },
+              { id:"235+85", title:"extra red sold part = 235 + 85", desc:"this makes the amount bigger, not the extra part" }
+            ])}
+            ${renderFeedbackAndButtons("s7", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Start with 235 red sold, then take away the 85 that matches green sold." : "", "")}
+          `);
+        }
+
+        if (id === "s8") {
+          const attempts = getAttempts("s8");
+          const feedback = state.feedback["s8"];
+          const value = state.inputs["s8"] || "";
+          return renderShell(`
+            <div class="focus-card">
+              <strong>Use the number sentence for the extra red sold part.</strong>
+              <div class="equation-strip"><div class="eq-box">235</div><div>−</div><div class="eq-box">85</div><div>=</div><div class="eq-box">?</div></div>
+              <div class="mini-note">We are finding how many more red apples were sold than green apples.</div>
+            </div>
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type a number" aria-label="Type the extra red sold part">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s8">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> Use the number sentence from the last step: 235 - 85.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 235 - 85 = 150</div>
+          `);
+        }
+
+        if (id === "s9") {
+          const attempts = getAttempts("s9");
+          return renderShell(`
+            <div class="bars-wrap">
+              <div class="bar-row">
+                <div class="bar-label">Red</div>
+                <div class="bar">
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg diff" style="flex:3;">150 extra red sold</div>
+                  <div class="seg spent" style="flex:1.5;">85 sold</div>
+                </div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Green</div>
+                <div class="bar">
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg unit" style="flex:1;">1 equal unit</div>
+                  <div class="seg spent" style="flex:1.5;">85 sold</div>
+                </div>
+              </div>
+            </div>
+            <div class="compare-note">The bars start equal and the <strong>85 sold</strong> parts line up at the end. So the <strong>150 extra red sold</strong> part in the middle lines up with the difference between <strong>4 equal units</strong> and <strong>1 equal unit</strong>. That difference is <strong>3 equal units</strong>.</div>
+            ${renderChoiceCards("s9", [
+              { id:"three-units", title:"3 equal units", desc:"4 equal units - 1 equal unit = 3 equal units" },
+              { id:"four-units", title:"4 equal units", desc:"This is all the green apples left, not the difference." },
+              { id:"one-unit", title:"1 equal unit", desc:"This is only the red apples left." }
+            ])}
+            ${renderFeedbackAndButtons("s9", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Match the 150 red part to the difference between the green-left units and the red-left unit." : "", attempts >= 2 && !canGoNext() ? "<strong>Stronger help:</strong> 4 equal units - 1 equal unit = 3 equal units." : "")}
+          `);
+        }
+
+        if (id === "s10") {
+          const attempts = getAttempts("s10");
+          const feedback = state.feedback["s10"];
+          const value = state.inputs["s10"] || "";
+          return renderShell(`
+            <div class="focus-card">
+              <strong>Use the equal units.</strong>
+              <div class="equation-strip"><div class="eq-box">150</div><div>÷</div><div class="eq-box">3</div><div>=</div><div class="eq-box">1 equal unit</div></div>
+            </div>
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type a number" aria-label="Type the value of one equal unit">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s10">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="mini-note">We are finding the value of 1 equal unit.</div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> The 150 matched 3 equal units, so divide by 3.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 150 ÷ 3 = 50</div>
+          `);
+        }
+
+        if (id === "s11") {
+          const attempts = getAttempts("s11");
+          return renderShell(
+            renderChoiceCards("s11", [
+              { id:"red-left", title:"red apples left", desc:"1 equal unit is the red apples left." },
+              { id:"green-sold", title:"green apples sold", desc:"That is the 85 part, not the equal unit." },
+              { id:"begin-red", title:"red apples at the beginning", desc:"That is the whole red bar, not one equal unit." }
+            ]) + renderFeedbackAndButtons("s11", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Red-left was shown as 1 equal unit." : "", "")
+          );
+        }
+
+        if (id === "s12") {
+          const attempts = getAttempts("s12");
+          return renderShell(
+            renderChoiceCards("s12", [
+              { id:"235+50", title:"235 + 50", desc:"red sold + red left" },
+              { id:"235-50", title:"235 - 50", desc:"this makes the amount smaller" },
+              { id:"150+50", title:"150 + 50", desc:"150 was only the difference, not red sold" }
+            ]) + renderFeedbackAndButtons("s12", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The beginning red apples is the whole red bar. Whole = red sold + red left." : "", "")
+          );
+        }
+
+        if (id === "s13") {
+          const attempts = getAttempts("s13");
+          const feedback = state.feedback["s13"];
+          const value = state.inputs["s13"] || "";
+          return renderShell(`
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type the number" aria-label="Type the number of red apples at the beginning">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s13">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="mini-note">Type the number of red apples at the beginning of the day.</div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> Use beginning red apples = red sold + red left.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 235 + 50 = 285</div>
+          `);
+        }
+
+        if (id === "s14") {
+          const attempts = getAttempts("s14");
+          return renderShell(`
+            ${renderChoiceCards("s14", [
+              { id:"best", title:"Start with equal bars. Show the sold amounts. The extra red sold part matches 3 equal units. Find 1 equal unit, then add red sold and red left.", desc:"This matches the model." },
+              { id:"wrong-1", title:"Subtract 235 - 85, then add 150 to 85.", desc:"This does not use the equal units correctly." },
+              { id:"wrong-2", title:"The 150 is 4 equal units, so divide by 4 and add that answer to 235.", desc:"This matches the wrong number of units." }
+            ])}
+            ${renderFeedbackAndButtons("s14", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The key idea is: equal starting bars, extra sold part, 3 equal units, 1 equal unit, then the whole red bar." : "", "")}
+            ${canGoNext() ? `<div class="success-card"><h3 style="margin:0 0 10px;">Great job.</h3><div>You used the strategy for this kind of before-and-after problem:</div><ul class="summary-list"><li>Start with equal bars because the beginning numbers are the same.</li><li>Show the sold amounts on the correct bars.</li><li>Show what is left as 1 equal unit for red and 4 equal units for green.</li><li>Find the extra red sold part: 235 - 85 = 150.</li><li>Match 150 to the difference between 4 equal units and 1 equal unit, which is 3 equal units.</li><li>Find 1 equal unit: 150 ÷ 3 = 50.</li><li>Then rebuild the beginning red bar: 235 + 50 = 285.</li></ul></div>` : ``}
+          `);
+        }
+
+        return "";
+      }
+
+      function checkScreen(screenId){
+        if (screenId === "s1") {
+          const selected = selectedId("s1");
+          if (!selected) return setFeedback("bad", "Choose a sentence first.");
+          if (selected === "same") { markDone("s1"); return setFeedback("good", "Yes. That sentence tells us the starting numbers were the same, so the two starting bars must be equal."); }
+          bumpAttempts("s1"); return setFeedback("bad", "Not yet. That sentence does not tell us how the starting bars compare before any apples were sold.");
+        }
+        if (screenId === "s2") {
+          const selected = selectedId("s2");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "begin-red") { markDone("s2"); return setFeedback("good", "Yes. We are finding the number of red apples at the beginning of the day."); }
+          bumpAttempts("s2"); return setFeedback("bad", "Not yet. The question is asking for the whole red bar at the beginning, not a leftover amount.");
+        }
+        if (screenId === "s3") {
+          const selected = selectedId("s3");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "equal") { markDone("s3"); return setFeedback("good", "Yes. The starting bars are equal because the starting numbers were the same."); }
+          bumpAttempts("s3"); return setFeedback("bad", "Not yet. 'The same number' means the two starting bars are equal.");
+        }
+        if (screenId === "s4") {
+          const red = state.placements.red, green = state.placements.green;
+          if (!red || !green) return setFeedback("bad", "Place both amounts first.");
+          if (red === "235" && green === "85") { markDone("s4"); return setFeedback("good", "Good. 235 was red apples sold and 85 was green apples sold."); }
+          bumpAttempts("s4"); return setFeedback("bad", "Not yet. Check which apples had 235 sold and which had 85 sold.");
+        }
+        if (screenId === "s5") {
+          const selected = selectedId("s5");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "correct") { markDone("s5"); return setFeedback("good", "Yes. Red-left is 1 equal unit and green-left is 4 equal units."); }
+          bumpAttempts("s5"); return setFeedback("bad", "Not yet. The clue is about the apples left, not about the apples sold.");
+        }
+        if (screenId === "s6") {
+          const selected = selectedId("s6");
+          if (!selected) return setFeedback("bad", "Tap the extra sold part first.");
+          if (selected === "extra-red-sold") { markDone("s6"); return setFeedback("good", "Yes. That red part is the extra red sold part."); }
+          bumpAttempts("s6"); return setFeedback("bad", "Not yet. Tap the red sold part that comes after the shared 85 sold part.");
+        }
+        if (screenId === "s7") {
+          const selected = selectedId("s7");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "235-85") { markDone("s7"); return setFeedback("good", "Yes. The extra red sold part is what is left after taking away the 85 part that matches green sold."); }
+          bumpAttempts("s7"); return setFeedback("bad", "Not yet. Start with 235 red sold, then take away the 85 that matches green sold.");
+        }
+        if (screenId === "s8") {
+          const raw = (state.inputs.s8 || "").trim();
+          if (!raw) return setFeedback("bad", "Type a number first.");
+          if (Number(raw) === 150) { markDone("s8"); return setFeedback("good", "Yes. The extra red sold part is 150."); }
+          bumpAttempts("s8"); return setFeedback("bad", "Not yet. Use 235 - 85.");
+        }
+        if (screenId === "s9") {
+          const selected = selectedId("s9");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "three-units") { markDone("s9"); return setFeedback("good", "Yes. The 150 matches the difference between 4 equal units and 1 equal unit, so it matches 3 equal units."); }
+          bumpAttempts("s9"); return setFeedback("bad", "Not yet. Match the 150 red part to the difference between the green-left units and the red-left unit.");
+        }
+        if (screenId === "s10") {
+          const raw = (state.inputs.s10 || "").trim();
+          if (!raw) return setFeedback("bad", "Type a number first.");
+          if (Number(raw) === 50) { markDone("s10"); return setFeedback("good", "Yes. 1 equal unit = 50."); }
+          bumpAttempts("s10"); return setFeedback("bad", "Not yet. Divide 150 by 3.");
+        }
+        if (screenId === "s11") {
+          const selected = selectedId("s11");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "red-left") { markDone("s11"); return setFeedback("good", "Yes. 1 equal unit is the number of red apples left."); }
+          bumpAttempts("s11"); return setFeedback("bad", "Not yet. Red-left was shown as 1 equal unit.");
+        }
+        if (screenId === "s12") {
+          const selected = selectedId("s12");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "235+50") { markDone("s12"); return setFeedback("good", "Yes. Beginning red apples = red sold + red left, so use 235 + 50."); }
+          bumpAttempts("s12"); return setFeedback("bad", "Not yet. To find the whole red bar, put red sold and red left back together.");
+        }
+        if (screenId === "s13") {
+          const raw = (state.inputs.s13 || "").trim();
+          if (!raw) return setFeedback("bad", "Type a number first.");
+          if (Number(raw) === 285) { markDone("s13"); return setFeedback("good", "Yes. Mrs Low had 285 red apples at the beginning of the day."); }
+          bumpAttempts("s13"); return setFeedback("bad", "Not yet. Use 235 + 50.");
+        }
+        if (screenId === "s14") {
+          const selected = selectedId("s14");
+          if (!selected) return setFeedback("bad", "Choose one answer first.");
+          if (selected === "best") { markDone("s14"); return setFeedback("good", "Yes. That is the strategy to remember for this question."); }
+          bumpAttempts("s14"); return setFeedback("bad", "Not yet. Choose the summary that uses equal starting bars, the extra sold part, 3 equal units, 1 equal unit, and then the whole red bar.");
+        }
+      }
+
+      function render(){
+        updateQuestionToggle();
+        host.innerHTML = renderScreen();
+        const input = document.getElementById("numInput");
+        if (input) {
+          input.addEventListener("input", (e) => {
+            state.inputs[screens[state.current].id] = e.target.value.replace(/[^0-9]/g, "");
+          });
+        }
+      }
+
+      host.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-kind]");
+        if (!t) return;
+        const kind = t.dataset.kind;
+        if (kind === "select-choice") { setSelected(t.dataset.screen, t.dataset.id); return; }
+        if (kind === "place-slot") {
+          const amount = selectedId("s4");
+          if (!amount) { setFeedback("bad", "Tap an amount first."); return; }
+          state.placements[t.dataset.slot] = amount;
+          clearFeedback();
+          render();
+          return;
+        }
+        if (kind === "check") { checkScreen(t.dataset.screen); return; }
+        if (kind === "back") { prevScreen(); return; }
+        if (kind === "next") { if (canGoNext()) nextScreen(); return; }
+      });
+
+      host.addEventListener("keydown", (e) => {
+        const t = e.target.closest("[data-kind]");
+        if (!t) return;
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t.click(); }
+      });
+
+      toggleQuestionBtn.addEventListener("click", () => { state.questionOpen = !state.questionOpen; render(); });
+      readAloudBtn.addEventListener("click", () => {
+        const screen = screens[state.current];
+        speak(["Step " + (state.current + 1), screen.title, screen.action, screen.explain, "Question", questionLines.join(" ")].join(". "));
+      });
+      restartBtn.addEventListener("click", restart);
+      window.addEventListener("beforeunload", stopSpeech);
+      render();
+    })();
+  </script>
+</body>
+</html>

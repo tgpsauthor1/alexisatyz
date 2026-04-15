@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before and After 1</title>
+<style>
+  :root{
+    --bg:#f7f9fc;
+    --card:#ffffff;
+    --text:#17324d;
+    --muted:#5f7388;
+    --line:#d7e0ea;
+    --primary:#2563eb;
+    --primary-soft:#dbeafe;
+    --success:#166534;
+    --success-soft:#dcfce7;
+    --warn:#92400e;
+    --warn-soft:#ffedd5;
+    --danger:#b91c1c;
+    --danger-soft:#fee2e2;
+    --purple:#7c3aed;
+    --purple-soft:#ede9fe;
+    --pink:#db2777;
+    --pink-soft:#fce7f3;
+    --whitebar:#60a5fa;
+    --pinkbar:#f472b6;
+    --change:#f59e0b;
+    --shadow:0 10px 30px rgba(23,50,77,.08);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+  body{min-height:100vh}
+  .page{
+    max-width:980px;
+    margin:0 auto;
+    padding:18px;
+  }
+  .shell{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .header{
+    padding:16px 18px 10px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+  }
+  .topline{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#eef6ff;
+    color:#1d4ed8;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:700;
+    font-size:14px;
+  }
+  .progress-wrap{
+    flex:1 1 280px;
+    min-width:220px;
+  }
+  .progress-text{
+    font-size:14px;
+    color:var(--muted);
+    margin-bottom:6px;
+    font-weight:700;
+  }
+  .progress{
+    height:12px;
+    background:#edf2f7;
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .progress > div{
+    height:100%;
+    background:linear-gradient(90deg,#60a5fa 0%,#2563eb 100%);
+    width:0%;
+    transition:width .35s ease;
+  }
+  .controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+  button{
+    font:inherit;
+    border:none;
+    border-radius:16px;
+    padding:14px 18px;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .btn{
+    background:#eef2f7;
+    color:var(--text);
+    font-weight:700;
+  }
+  .btn-primary{
+    background:var(--primary);
+    color:white;
+  }
+  .btn-outline{
+    background:white;
+    border:2px solid var(--line);
+    color:var(--text);
+    font-weight:700;
+  }
+  .btn-ghost{
+    background:transparent;
+    border:2px solid var(--line);
+    color:var(--text);
+    font-weight:700;
+  }
+  .content{
+    padding:20px;
+  }
+  .title{
+    font-size:28px;
+    line-height:1.2;
+    margin:0 0 8px 0;
+  }
+  .action-box{
+    background:var(--primary-soft);
+    border:2px solid #93c5fd;
+    border-radius:20px;
+    padding:16px;
+    font-size:26px;
+    line-height:1.25;
+    font-weight:800;
+  }
+  .support-box{
+    margin-top:12px;
+    background:var(--warn-soft);
+    border:2px solid #fdba74;
+    border-radius:18px;
+    padding:14px 16px;
+    font-size:18px;
+    line-height:1.35;
+    color:#7c2d12;
+  }
+  .visual-card{
+    margin-top:16px;
+    padding:18px;
+    border:2px solid var(--line);
+    border-radius:24px;
+    background:#fbfdff;
+  }
+  .option-grid{
+    display:grid;
+    gap:14px;
+    margin-top:16px;
+  }
+  .option-grid.cols-2{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .option-grid.cols-3{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+  .option{
+    background:white;
+    border:3px solid var(--line);
+    border-radius:22px;
+    padding:16px;
+    min-height:84px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:22px;
+    line-height:1.25;
+    font-weight:700;
+    user-select:none;
+  }
+  .option.tappable:hover{border-color:#9db4cc}
+  .option.selected{
+    border-color:var(--primary);
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+    background:#f5f9ff;
+  }
+  .option.correct{
+    border-color:var(--success);
+    background:var(--success-soft);
+  }
+  .option.wrong{
+    border-color:var(--danger);
+    background:var(--danger-soft);
+  }
+  .sentence-option{
+    justify-content:flex-start;
+    text-align:left;
+  }
+  .choice-caption{
+    font-size:14px;
+    line-height:1.35;
+    color:var(--muted);
+    margin-top:6px;
+  }
+  .feedback{
+    margin-top:16px;
+    border-radius:18px;
+    padding:14px 16px;
+    font-size:20px;
+    line-height:1.35;
+    font-weight:700;
+  }
+  .feedback.success{background:var(--success-soft); color:var(--success); border:2px solid #86efac;}
+  .feedback.error{background:var(--danger-soft); color:var(--danger); border:2px solid #fca5a5;}
+  .feedback.info{background:var(--warn-soft); color:var(--warn); border:2px solid #fdba74;}
+  .input-wrap{
+    margin-top:16px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .answer-input{
+    width:220px;
+    max-width:100%;
+    font-size:28px;
+    font-weight:800;
+    color:var(--text);
+    padding:16px 18px;
+    border-radius:18px;
+    border:3px solid var(--line);
+    outline:none;
+  }
+  .answer-input:focus{border-color:var(--primary); box-shadow:0 0 0 4px rgba(37,99,235,.12);}
+  .prompt-line{
+    font-size:24px;
+    line-height:1.3;
+    font-weight:700;
+  }
+  .question-panel{
+    margin-top:16px;
+    border:2px solid var(--line);
+    border-radius:20px;
+    overflow:hidden;
+    background:#ffffff;
+  }
+  .question-panel .question-head{
+    background:#f8fbff;
+    padding:12px 16px;
+    font-size:18px;
+    font-weight:800;
+    color:var(--muted);
+    border-bottom:1px solid var(--line);
+  }
+  .question-body{
+    padding:14px 16px;
+  }
+  .question-body p{
+    margin:0 0 10px 0;
+    font-size:22px;
+    line-height:1.4;
+  }
+  .question-body p:last-child{margin-bottom:0}
+  .question-focus{
+    background:linear-gradient(90deg,#fff7ed 0%,#ffedd5 100%);
+    padding:6px 8px;
+    border-radius:10px;
+    display:inline;
+  }
+  .footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:20px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+  }
+  .footer .left, .footer .right{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .model-wrap{
+    display:grid;
+    gap:18px;
+  }
+  .model{
+    width:100%;
+    border-radius:18px;
+    background:white;
+    padding:12px;
+    border:2px solid var(--line);
+    position:relative;
+  }
+  .model-row{
+    display:grid;
+    grid-template-columns:90px 1fr;
+    gap:10px;
+    align-items:center;
+    margin:12px 0;
+  }
+  .label{
+    font-weight:800;
+    font-size:20px;
+    text-align:right;
+  }
+  .bar-lane{
+    display:flex;
+    align-items:center;
+    gap:0;
+    min-height:56px;
+    position:relative;
+    flex-wrap:nowrap;
+  }
+  .seg{
+    height:54px;
+    border:3px solid rgba(23,50,77,.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:0 10px;
+    font-weight:800;
+    font-size:18px;
+    line-height:1.15;
+    color:#17324d;
+  }
+  .equal{
+    width:min(30vw,220px);
+    min-width:140px;
+  }
+  .equal.white{background:#dbeafe;}
+  .equal.pink{background:#fce7f3;}
+  .change{
+    width:min(25vw,190px);
+    min-width:120px;
+    background:#fef3c7;
+    border-left:none;
+  }
+  .seg.left{
+    border-radius:14px 0 0 14px;
+  }
+  .seg.middle{
+    border-radius:0;
+  }
+  .seg.right{
+    border-radius:0 14px 14px 0;
+  }
+  .single{
+    border-radius:14px;
+  }
+  .brace{
+    margin-left:100px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:20px;
+    font-weight:800;
+    color:var(--muted);
+  }
+  .brace-line{
+    height:14px;
+    flex:1;
+    border-top:4px solid #94a3b8;
+    position:relative;
+  }
+  .brace-line:before,.brace-line:after{
+    content:"";
+    position:absolute;
+    top:-4px;
+    width:0;
+    height:18px;
+    border-left:4px solid #94a3b8;
+  }
+  .brace-line:before{left:0}
+  .brace-line:after{right:0}
+  .note-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:16px;
+    font-weight:800;
+    margin-top:12px;
+  }
+  .note-blue{background:#dbeafe;color:#1d4ed8}
+  .note-pink{background:#fce7f3;color:#be185d}
+  .note-orange{background:#ffedd5;color:#c2410c}
+  .remove-strip{
+    position:absolute;
+    right:18px;
+    top:14px;
+    background:#fef3c7;
+    color:#92400e;
+    border:2px solid #f59e0b;
+    border-radius:999px;
+    padding:8px 12px;
+    font-weight:800;
+  }
+  .animate-away{
+    animation:floatAway .9s ease forwards;
+    transform-origin:left center;
+  }
+  @keyframes floatAway{
+    0%{transform:translate(0,0) scale(1);opacity:1}
+    100%{transform:translate(42px,-26px) scale(.92);opacity:.2}
+  }
+  .pulse{
+    animation:pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.18)}
+    50%{box-shadow:0 0 0 8px rgba(37,99,235,0)}
+  }
+  .fade-in{
+    animation:fadeIn .4s ease;
+  }
+  @keyframes fadeIn{
+    from{opacity:0;transform:translateY(8px)}
+    to{opacity:1;transform:none}
+  }
+  .mini{
+    transform:scale(.92);
+    transform-origin:top left;
+  }
+  .model-card-inner{
+    width:100%;
+  }
+  .mini .model-row{
+    grid-template-columns:66px 1fr;
+    margin:10px 0;
+  }
+  .mini .label{font-size:16px}
+  .mini .seg{height:40px;font-size:14px}
+  .mini .equal{width:120px;min-width:120px}
+  .mini .change{width:96px;min-width:96px}
+  .mini .brace{margin-left:72px;font-size:16px}
+  .parallel{
+    margin-top:16px;
+    padding:16px;
+    border:2px dashed #93c5fd;
+    border-radius:20px;
+    background:#f8fbff;
+  }
+  .parallel h3{
+    margin:0 0 10px 0;
+    font-size:22px;
+  }
+  .streak{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-weight:800;
+    padding:8px 12px;
+    border-radius:999px;
+    margin-bottom:12px;
+  }
+  .finish{
+    margin-top:18px;
+    padding:18px;
+    border-radius:22px;
+    background:linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%);
+    border:2px solid #86efac;
+  }
+  .finish h3{
+    margin:0 0 10px 0;
+    font-size:28px;
+    color:#166534;
+  }
+  .finish p, .finish li{
+    font-size:21px;
+    line-height:1.4;
+  }
+  .finish ul{
+    margin:10px 0 0 22px;
+    padding:0;
+  }
+  .math-line{
+    font-size:28px;
+    font-weight:800;
+    color:#1d4ed8;
+    margin-top:8px;
+  }
+  .hidden{display:none !important;}
+  .sr-only{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    border:0;
+  }
+  @media (max-width:760px){
+    .page{padding:10px}
+    .content{padding:14px}
+    .title{font-size:24px}
+    .action-box{font-size:22px}
+    .prompt-line{font-size:22px}
+    .option{font-size:20px;min-height:78px}
+    .question-body p{font-size:20px}
+    .model-row{grid-template-columns:72px 1fr}
+    .label{font-size:18px}
+    .brace{margin-left:82px}
+    .option-grid.cols-2,.option-grid.cols-3{grid-template-columns:1fr}
+    .remove-strip{position:static; display:inline-flex; margin-top:10px;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="shell">
+    <div class="header">
+      <div class="topline">
+        <div class="badge">Before and After Word Problem</div>
+        <div class="progress-wrap">
+          <div class="progress-text" id="progressText">Screen 1 of 10</div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn-outline" data-act="read">🔊 Read aloud</button>
+        <button class="btn-outline" data-act="toggleQuestion">📘 Show question</button>
+        <button class="btn-outline" data-act="restart">↺ Restart</button>
+      </div>
+    </div>
+    <div class="content" id="app"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const fullQuestion = [
+    "Tina folded 250 white cranes and pink cranes.",
+    "After giving away 80 white cranes, Tina had the same number of white cranes and pink cranes.",
+    "How many pink cranes did Tina fold?"
+  ];
+
+  const screens = [
+    {
+      id:'s1',
+      title:'Find the question',
+      action:'Tap the sentence that tells what to find.',
+      support:'Look for the sentence that asks for the answer at the end.',
+      type:'sentenceChoice',
+      randomize:false,
+      options:[
+        {id:'q1', text:fullQuestion[0]},
+        {id:'q2', text:fullQuestion[1]},
+        {id:'q3', text:fullQuestion[2]}
+      ],
+      correct:'q3',
+      success:'Yes. We need the number of pink cranes Tina folded.',
+      hint1:'Tap the sentence that asks the question.',
+      hint2:'The correct sentence starts with “How many ...”.',
+      explain:'The first two sentences give information. The last sentence tells what number we must find.'
+    },
+    {
+      id:'s2',
+      title:'Which group changed?',
+      action:'Choose which cranes changed after Tina gave some away.',
+      support:'Only one colour changed. Watch the model.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'white', text:'White cranes'},
+        {id:'pink', text:'Pink cranes'},
+        {id:'both', text:'Both colours'}
+      ],
+      correct:'white',
+      success:'Yes. Tina gave away white cranes, so the white group changed.',
+      hint1:'Look at the words “80 white cranes”.',
+      hint2:'The story does not say Tina gave away any pink cranes.',
+      explain:'The white group changes because 80 white cranes were given away. The pink group stays the same.'
+    },
+    {
+      id:'s3',
+      title:'What happened to the total?',
+      action:'Choose what happened to the total number of cranes.',
+      support:'When some cranes are given away, the whole amount changes too.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'smaller', text:'The total got smaller.'},
+        {id:'same', text:'The total stayed the same.'},
+        {id:'bigger', text:'The total got bigger.'}
+      ],
+      correct:'smaller',
+      success:'Yes. Some cranes were given away, so the total got smaller.',
+      hint1:'If you take some away, the total does not stay the same.',
+      hint2:'250 was the total before the giveaway. After the giveaway, there are fewer cranes altogether.',
+      explain:'Because 80 cranes were given away, the whole total becomes smaller than 250.'
+    },
+    {
+      id:'s4',
+      title:'Find the new total',
+      action:'Type the total number of cranes left.',
+      support:'Start with 250 cranes altogether. Then take away the 80 white cranes that were given away.',
+      type:'input',
+      correct:'170',
+      success:'170 cranes are left altogether.',
+      hint1:'The total became smaller. Try 250 - 80.',
+      hint2:'Take away the 80 that were given away from the whole 250.',
+      explain:'250 - 80 = 170. So 170 is the total number of cranes left after the giveaway.'
+    },
+    {
+      id:'s5',
+      title:'Choose the matching model',
+      action:'Choose the model that matches the story now.',
+      support:'After the giveaway, the white and pink cranes are the same number. The new total is 170.',
+      type:'modelChoice',
+      randomize:true,
+      options:[
+        {id:'correct_equal_170', kind:'equal170', text:'Two equal parts with total 170'},
+        {id:'wrong_equal_250', kind:'equal250', text:'Two equal parts with total 250'},
+        {id:'wrong_unequal_170', kind:'unequal170', text:'Unequal parts with total 170'}
+      ],
+      correct:'correct_equal_170',
+      success:'Yes. After giving away 80 white cranes, the story shows 2 equal parts with total 170.',
+      hint1:'Look for “same number” and the new total 170.',
+      hint2:'The right model must show both facts: same number, and total 170.',
+      explain:'After the giveaway, the remaining white cranes and the pink cranes are equal. Together they make 170.'
+    },
+    {
+      id:'s6',
+      title:'What does 170 mean?',
+      action:'Choose what the 170 means in this model.',
+      support:'The brace labelled 170 sits over both equal parts together.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'both', text:'White and pink cranes together'},
+        {id:'pinkOnly', text:'Pink cranes only'},
+        {id:'whiteOnly', text:'White cranes only'},
+        {id:'givenAway', text:'The cranes given away'}
+      ],
+      correct:'both',
+      success:'Yes. 170 is the total left for white and pink together.',
+      hint1:'The 170 is over both bars, not just one bar.',
+      hint2:'Ask: does the brace cover one part or both parts together?',
+      explain:'The 170 is the whole left after the giveaway. It includes the remaining white cranes and the pink cranes together.'
+    },
+    {
+      id:'s7',
+      title:'Choose the operation',
+      action:'Choose the operation that fits the model now.',
+      support:'The model shows 170 split into 2 equal parts.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'add', text:'Add'},
+        {id:'subtract', text:'Subtract'},
+        {id:'multiply', text:'Multiply'},
+        {id:'divide', text:'Divide'}
+      ],
+      correct:'divide',
+      success:'Yes. The 170 is split into 2 equal parts, so we divide.',
+      hint1:'There are 2 equal parts. Which operation finds 1 equal part?',
+      hint2:'When a total is shared into equal parts, we divide.',
+      explain:'The total 170 is split equally into white and pink. To find one equal part, use division.',
+      remediation:true
+    },
+    {
+      id:'s8',
+      title:'Complete the answer',
+      action:'Type the missing number.',
+      support:'Each equal part is half of 170.',
+      type:'input',
+      sentence:'Tina folded __ pink cranes.',
+      correct:'85',
+      success:'Correct. Tina folded 85 pink cranes.',
+      hint1:'Half of 170 is needed here.',
+      hint2:'170 ÷ 2 = 85.',
+      explain:'The 170 cranes left are split into 2 equal parts. 170 ÷ 2 = 85.'
+    },
+    {
+      id:'s9',
+      title:'Why is 85 the pink number at the start too?',
+      action:'Choose the best explanation.',
+      support:'Think about which colour changed and which colour stayed the same.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'pinkSame', text:'Pink cranes did not change, so the pink number stayed 85.'},
+        {id:'pinkMinus80', text:'Pink cranes also lost 80, so the pink number became 85.'},
+        {id:'whitePlus80', text:'White cranes got 80 more, so pink must be 85.'}
+      ],
+      correct:'pinkSame',
+      success:'Yes. Only the white cranes changed. The pink cranes stayed the same.',
+      hint1:'The story says Tina gave away 80 white cranes, not pink cranes.',
+      hint2:'If pink did not change, the pink number after the giveaway is the same as before.',
+      explain:'The pink cranes stayed the same the whole time, so the pink number at the start is also 85.'
+    },
+    {
+      id:'s10',
+      title:'Consolidate the strategy',
+      action:'Choose the best strategy summary for this word problem.',
+      support:'Think about what Tina did first, then what the equal bars showed.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'best', text:'First take away the 80 white cranes from 250. Then split the 170 left into 2 equal parts.'},
+        {id:'divideFirst', text:'First divide 250 by 2. Then take away 80.'},
+        {id:'guess', text:'Guess a pink number first and hope it works.'}
+      ],
+      correct:'best',
+      success:'Yes. First take away 80 from 250. Then split the 170 left into 2 equal parts.',
+      hint1:'Did we use the original total 250 all the way to the end?',
+      hint2:'First take away 80. After that, the 170 left is split into 2 equal parts.',
+      explain:'This problem has 2 steps. First, take away the 80 white cranes from 250 to get 170 left. Then split 170 into 2 equal parts to find the pink cranes.'
+    }
+  ];
+
+  const remediationItems = [
+    {id:'r1', total:12, groups:2},
+    {id:'r2', total:18, groups:2},
+    {id:'r3', total:20, groups:2}
+  ];
+
+  const state = {
+    index:0,
+    selection:{},
+    input:{},
+    attempts:{},
+    solved:{},
+    feedback:{},
+    questionOpen:{},
+    orders:{},
+    s7rem:{
+      active:false,
+      streak:0,
+      step:0,
+      selection:null,
+      orders:{},
+      feedback:null
+    }
+  };
+
+  const app = document.getElementById('app');
+  const progressText = document.getElementById('progressText');
+  const progressBar = document.getElementById('progressBar');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function currentScreen(){
+    return screens[state.index];
+  }
+
+  function getOrder(screen){
+    if(!screen.randomize) return screen.options.map(o => o.id);
+    if(!state.orders[screen.id]){
+      state.orders[screen.id] = shuffle(screen.options.map(o => o.id));
+    }
+    return state.orders[screen.id];
+  }
+
+  function getOptions(screen){
+    const map = new Map(screen.options.map(o => [o.id,o]));
+    return getOrder(screen).map(id => map.get(id));
+  }
+
+  function getFeedback(screenId){
+    return state.feedback[screenId] || null;
+  }
+
+  function setFeedback(screenId, type, text){
+    state.feedback[screenId] = {type,text};
+  }
+
+  function clearFeedback(screenId){
+    delete state.feedback[screenId];
+  }
+
+  function getAttempt(screenId){
+    return state.attempts[screenId] || 0;
+  }
+
+  function bumpAttempt(screenId){
+    state.attempts[screenId] = getAttempt(screenId) + 1;
+    return state.attempts[screenId];
+  }
+
+  function isSolved(screenId){
+    return !!state.solved[screenId];
+  }
+
+  function markSolved(screenId){
+    state.solved[screenId] = true;
+  }
+
+  function restartAll(){
+    state.index = 0;
+    state.selection = {};
+    state.input = {};
+    state.attempts = {};
+    state.solved = {};
+    state.feedback = {};
+    state.orders = {};
+    state.questionOpen = {};
+    state.s7rem = {active:false, streak:0, step:0, selection:null, orders:{}, feedback:null};
+    render();
+  }
+
+  function screenTitle(screen){
+    return `${screen.title}`;
+  }
+
+  function updateProgress(){
+    progressText.textContent = `Screen ${Math.min(state.index+1, screens.length)} of ${screens.length}`;
+    progressBar.style.width = `${((state.index+1)/screens.length)*100}%`;
+  }
+
+  function questionIsOpen(screen){
+    if(screen.id === 's1') return true;
+    return !!state.questionOpen[screen.id];
+  }
+
+  function renderQuestionPanel(screen){
+    const open = questionIsOpen(screen);
+    const focusMap = {
+      s1: 2,
+      s2: 1,
+      s3: 1,
+      s4: 0,
+      s5: 1,
+      s6: 1,
+      s7: 1,
+      s8: 2,
+      s9: 1,
+      s10: 1
+    };
+    const focusIndex = focusMap[screen.id];
+    return `
+      <div class="question-panel ${open ? '' : 'hidden'}" id="questionPanel">
+        <div class="question-head">Question</div>
+        <div class="question-body">
+          ${fullQuestion.map((line, idx) => `<p>${idx===focusIndex ? `<span class="question-focus">${line}</span>` : line}</p>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildBeforeAfterModel(opts = {}){
+    const {
+      showTopBrace=true,
+      topBraceText='250 altogether',
+      showRemovedChip=false,
+      removedChipText='80 white cranes given away',
+      animateExtra=false,
+      hideExtra=false,
+      showAfterBrace=false,
+      afterBraceText='170 altogether',
+      labelUnknown=false,
+      afterEquals=false,
+      highlightEqual=false,
+      showQuestionMarks=false,
+      showValue85=false,
+      emphasisePinkSame=false
+    } = opts;
+
+    const extraClass = animateExtra ? 'animate-away' : '';
+    const whiteEqualLabel = showValue85 ? '85' : (showQuestionMarks ? '?' : (labelUnknown ? 'same number' : ''));
+    const pinkEqualLabel = showValue85 ? '85' : (showQuestionMarks ? '?' : (labelUnknown ? 'same number' : ''));
+    return `
+      <div class="model-wrap fade-in">
+        <div class="model">
+          ${showTopBrace ? `<div class="brace"><div class="brace-line"></div><div>${topBraceText}</div></div>` : ''}
+          <div class="model-row">
+            <div class="label">White</div>
+            <div class="bar-lane">
+              <div class="seg equal white ${hideExtra ? 'single' : 'left'} ${highlightEqual ? 'pulse' : ''}">${whiteEqualLabel}</div>
+              ${hideExtra ? '' : `<div id="extraSeg" class="seg change right ${extraClass}">${showRemovedChip ? '80' : ''}</div>`}
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="label">Pink</div>
+            <div class="bar-lane">
+              <div class="seg equal pink single ${highlightEqual || emphasisePinkSame ? 'pulse' : ''}">${pinkEqualLabel}</div>
+            </div>
+          </div>
+          ${showRemovedChip ? `<div class="remove-strip">80 white cranes given away</div>` : ''}
+          ${showAfterBrace ? `<div class="brace"><div class="brace-line"></div><div>${afterBraceText}</div></div>` : ''}
+          ${afterEquals ? `<div class="note-chip note-blue">Now the two bars are the same number.</div>` : ''}
+          ${emphasisePinkSame ? `<div class="note-chip note-pink">Pink cranes stayed the same.</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildEqualOnlyModel(opts = {}){
+    const {
+      totalText='170 altogether',
+      labelQuestionMarks=false,
+      showValues=false,
+      showBlueNote=false,
+      extraNote='2 equal parts'
+    } = opts;
+    const val = showValues ? '85' : (labelQuestionMarks ? '?' : '');
+    return `
+      <div class="model-wrap fade-in">
+        <div class="model">
+          <div class="brace"><div class="brace-line"></div><div>${totalText}</div></div>
+          <div class="model-row">
+            <div class="label">White</div>
+            <div class="bar-lane">
+              <div class="seg equal white single">${val}</div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="label">Pink</div>
+            <div class="bar-lane">
+              <div class="seg equal pink single">${val}</div>
+            </div>
+          </div>
+          ${showBlueNote ? `<div class="note-chip note-blue">${extraNote}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildModelCard(kind){
+    if(kind === 'equal170'){
+      return `
+        <div class="model-card-inner mini">
+          ${buildEqualOnlyModel({totalText:'170 altogether', labelQuestionMarks:false, showValues:false, showBlueNote:true, extraNote:'2 equal parts'})}
+        </div>
+      `;
+    }
+    if(kind === 'equal250'){
+      return `
+        <div class="model-card-inner mini">
+          ${buildEqualOnlyModel({totalText:'250 altogether', labelQuestionMarks:false, showValues:false, showBlueNote:true, extraNote:'2 equal parts'})}
+        </div>
+      `;
+    }
+    return `
+      <div class="model-card-inner mini">
+        <div class="model-wrap">
+          <div class="model">
+            <div class="brace"><div class="brace-line"></div><div>170 altogether</div></div>
+            <div class="model-row">
+              <div class="label">White</div>
+              <div class="bar-lane">
+                <div class="seg equal white single" style="width:150px;min-width:150px"></div>
+              </div>
+            </div>
+            <div class="model-row">
+              <div class="label">Pink</div>
+              <div class="bar-lane">
+                <div class="seg equal pink single" style="width:120px;min-width:120px"></div>
+              </div>
+            </div>
+            <div class="note-chip note-orange">Not the same number</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildParallelEqualParts(item){
+    const part = item.total / item.groups;
+    return `
+      <div class="parallel fade-in">
+        <div class="streak">Practice streak: ${state.s7rem.streak} / 3</div>
+        <h3>Practice with a simpler equal-parts model</h3>
+        <p class="prompt-line">A total of ${item.total} is shared into ${item.groups} equal parts. Which operation helps us find 1 part?</p>
+        ${buildEqualOnlyModel({totalText:`${item.total} altogether`, labelQuestionMarks:true, showBlueNote:true, extraNote:`${item.groups} equal parts`})}
+        <div class="choice-caption">We are not finding the answer yet. We are choosing the operation that fits the model.</div>
+      </div>
+    `;
+  }
+
+  function renderChoiceOptions(screen){
+    const selected = state.selection[screen.id];
+    const options = getOptions(screen);
+    const cols = screen.type === 'modelChoice' ? 'cols-3' : (options.length === 2 ? 'cols-2' : 'cols-2');
+    return `
+      <div class="option-grid ${cols}">
+        ${options.map(opt => {
+          const selectedClass = selected === opt.id ? 'selected' : '';
+          const content = screen.type === 'modelChoice'
+            ? `${buildModelCard(opt.kind)}<div class="choice-caption">${opt.text}</div>`
+            : `<div>${opt.text}</div>`;
+          const extraClass = screen.type === 'sentenceChoice' ? 'sentence-option' : '';
+          return `
+            <div class="option tappable ${selectedClass} ${extraClass}" data-option="${opt.id}" role="button" tabindex="0" aria-pressed="${selected===opt.id ? 'true' : 'false'}">
+              ${content}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  function renderInputArea(screen){
+    const value = state.input[screen.id] || '';
+    const sentence = screen.sentence
+      ? `<div class="prompt-line">${screen.sentence.replace('__', `<input inputmode="numeric" pattern="[0-9]*" class="answer-input" id="answerInput" value="${value}">`)}</div>`
+      : `<div class="input-wrap"><div class="prompt-line">Total cranes left =</div><input inputmode="numeric" pattern="[0-9]*" class="answer-input" id="answerInput" value="${value}"></div>`;
+    return sentence;
+  }
+
+  function renderVisual(screen){
+    if(screen.id === 's2'){
+      return `
+        <div class="visual-card">
+          ${buildBeforeAfterModel({showTopBrace:true, topBraceText:'250 altogether', showRemovedChip:true, animateExtra:true, hideExtra:false, showAfterBrace:false, labelUnknown:false, emphasisePinkSame:true})}
+        </div>
+      `;
+    }
+    if(screen.id === 's3'){
+      return `
+        <div class="visual-card">
+          ${buildBeforeAfterModel({showTopBrace:true, topBraceText:'250 altogether', showRemovedChip:true, animateExtra:true, hideExtra:false, showAfterBrace:true, afterBraceText:'Now smaller than 250', emphasisePinkSame:true})}
+        </div>
+      `;
+    }
+    if(screen.id === 's4'){
+      const solved = isSolved('s4');
+      const attempts = getAttempt('s4');
+      return `
+        <div class="visual-card">
+          ${solved
+            ? buildBeforeAfterModel({showTopBrace:true, topBraceText:'250 altogether', showRemovedChip:true, hideExtra:true, showAfterBrace:true, afterBraceText:'170 altogether', afterEquals:true, emphasisePinkSame:true})
+            : buildBeforeAfterModel({showTopBrace:true, topBraceText:'250 altogether', showRemovedChip:true, animateExtra:attempts>=2, hideExtra:attempts>=2, showAfterBrace:attempts>=2, afterBraceText:attempts>=2 ? '170 altogether' : 'What is the new total?', emphasisePinkSame:true})
+          }
+          ${attempts>=2 && !solved ? `<div class="note-chip note-orange">Take away the 80 that were given away from the total 250.</div>` : ''}
+        </div>
+      `;
+    }
+    if(screen.id === 's5'){
+      return `
+        <div class="visual-card">
+          <div class="prompt-line">After giving away 80 white cranes, what should the model show now?</div>
+          <div class="choice-caption">The right model must match both ideas: the new total is 170, and the 2 parts are the same number.</div>
+        </div>
+      `;
+    }
+    if(screen.id === 's6'){
+      return `
+        <div class="visual-card">
+          ${buildEqualOnlyModel({totalText:'170 altogether', labelQuestionMarks:true, showBlueNote:true, extraNote:'The brace is over both parts together'})}
+        </div>
+      `;
+    }
+    if(screen.id === 's7'){
+      if(state.s7rem.active){
+        const item = remediationItems[state.s7rem.step % remediationItems.length];
+        const order = getRemediationOrder(item.id);
+        return `
+          <div class="visual-card">
+            ${buildParallelEqualParts(item)}
+            <div class="option-grid cols-2">
+              ${order.map(id => {
+                const labels = {
+                  add:'Add',
+                  subtract:'Subtract',
+                  multiply:'Multiply',
+                  divide:'Divide'
+                };
+                const selected = state.s7rem.selection === id ? 'selected' : '';
+                return `<div class="option tappable ${selected}" data-rem-option="${id}" role="button" tabindex="0" aria-pressed="${state.s7rem.selection===id ? 'true' : 'false'}">${labels[id]}</div>`;
+              }).join('')}
+            </div>
+            ${state.s7rem.feedback ? `<div class="feedback ${state.s7rem.feedback.type}">${state.s7rem.feedback.text}</div>` : ''}
+          </div>
+        `;
+      }
+      const solved = isSolved('s7');
+      return `
+        <div class="visual-card">
+          ${buildEqualOnlyModel({totalText:'170 altogether', labelQuestionMarks:!solved, showValues:false, showBlueNote:true, extraNote:'2 equal parts'})}
+          <div class="note-chip note-blue">Ask: which operation finds 1 equal part?</div>
+        </div>
+      `;
+    }
+    if(screen.id === 's8'){
+      const solved = isSolved('s8');
+      return `
+        <div class="visual-card">
+          ${buildEqualOnlyModel({totalText:'170 altogether', labelQuestionMarks:!solved, showValues:solved, showBlueNote:true, extraNote:solved ? 'Each equal part is 85.' : '2 equal parts'})}
+          ${!solved ? `<div class="math-line">170 ÷ 2 = ?</div>` : `<div class="math-line">170 ÷ 2 = 85</div>`}
+        </div>
+      `;
+    }
+    if(screen.id === 's9'){
+      return `
+        <div class="visual-card">
+          ${buildBeforeAfterModel({showTopBrace:true, topBraceText:'Before', showRemovedChip:true, hideExtra:true, showAfterBrace:true, afterBraceText:'After', labelUnknown:false, emphasisePinkSame:true})}
+          <div class="note-chip note-pink">Pink cranes stayed the same before and after.</div>
+        </div>
+      `;
+    }
+    if(screen.id === 's10'){
+      return `
+        <div class="visual-card">
+          <div class="prompt-line">Which summary matches the strategy we used?</div>
+          ${buildBeforeAfterModel({showTopBrace:true, topBraceText:'250 altogether', showRemovedChip:true, hideExtra:true, showAfterBrace:true, afterBraceText:'170 altogether', afterEquals:true, emphasisePinkSame:true})}
+        </div>
+      `;
+    }
+    return `
+      <div class="visual-card">
+        <div class="question-panel">
+          <div class="question-head">Question</div>
+          <div class="question-body">
+            ${fullQuestion.map(line => `<p>${line}</p>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderFeedback(screen){
+    const feedback = getFeedback(screen.id);
+    if(!feedback) return '';
+    return `<div class="feedback ${feedback.type}">${feedback.text}</div>`;
+  }
+
+  function renderFinishPanel(){
+    if(!isSolved('s10')) return '';
+    return `
+      <div class="finish fade-in">
+        <h3>Finished!</h3>
+        <p><strong>The pink cranes = 85.</strong></p>
+        <ul>
+          <li>First, the total changed: 250 - 80 = 170.</li>
+          <li>Then, the model showed 2 equal parts.</li>
+          <li>So we divided: 170 ÷ 2 = 85.</li>
+          <li>Pink did not change, so Tina folded 85 pink cranes at the start too.</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  function render(){
+    const screen = currentScreen();
+    updateProgress();
+
+    let mainTask = '';
+    if(screen.type === 'input'){
+      mainTask = renderInputArea(screen);
+    } else {
+      mainTask = renderChoiceOptions(screen);
+    }
+
+    const disableBack = state.index === 0 ? 'disabled' : '';
+    const solved = isSolved(screen.id);
+
+    app.innerHTML = `
+      <h1 class="title">${screenTitle(screen)}</h1>
+      <div class="action-box">${screen.action}</div>
+      <div class="support-box">${screen.support}</div>
+      ${renderVisual(screen)}
+      ${screen.type !== 'hidden' ? mainTask : ''}
+      ${renderFeedback(screen)}
+      ${screen.id === 's10' ? renderFinishPanel() : ''}
+      ${renderQuestionPanel(screen)}
+      <div class="footer">
+        <div class="left">
+          <button class="btn-ghost" data-act="back" ${disableBack}>← Back</button>
+        </div>
+        <div class="right">
+          ${screen.id === 's7' && state.s7rem.active
+            ? `<button class="btn-primary" data-act="checkRemediation">Check practice</button>`
+            : solved
+              ? `${screen.id === 's10' ? `<button class="btn-primary" data-act="restart">Start again</button>` : `<button class="btn-primary" data-act="next">Continue →</button>`}`
+              : `<button class="btn-primary" data-act="check">Check</button>`
+          }
+        </div>
+      </div>
+    `;
+
+    const input = document.getElementById('answerInput');
+    if(input){
+      input.addEventListener('input', (e)=>{
+        state.input[screen.id] = e.target.value.replace(/[^0-9]/g,'');
+      });
+      setTimeout(()=>input.focus(), 50);
+    }
+  }
+
+  function handleSelect(optionId){
+    const screen = currentScreen();
+    if(isSolved(screen.id)) return;
+    if(screen.id === 's7' && state.s7rem.active) return;
+    state.selection[screen.id] = optionId;
+    clearFeedback(screen.id);
+    render();
+  }
+
+  function checkChoiceScreen(screen){
+    const selected = state.selection[screen.id];
+    if(!selected){
+      setFeedback(screen.id, 'info', 'Choose one answer first.');
+      render();
+      return;
+    }
+
+    if(selected === screen.correct){
+      markSolved(screen.id);
+      setFeedback(screen.id, 'success', screen.success);
+      if(screen.id === 's7'){
+        state.s7rem.active = false;
+      }
+      render();
+      return;
+    }
+
+    const attempt = bumpAttempt(screen.id);
+
+    if(screen.id === 's7' && attempt >= 2){
+      state.s7rem.active = true;
+      state.s7rem.streak = 0;
+      state.s7rem.step = 0;
+      state.s7rem.selection = null;
+      state.s7rem.feedback = {type:'info', text:'Let us practise choosing the operation with a simpler equal-parts model first.'};
+      render();
+      return;
+    }
+
+    if(attempt === 1){
+      setFeedback(screen.id, 'error', screen.hint1);
+    } else if(attempt === 2){
+      setFeedback(screen.id, 'info', screen.hint2);
+    } else {
+      setFeedback(screen.id, 'info', screen.explain);
+    }
+    render();
+  }
+
+  function checkInputScreen(screen){
+    const raw = (state.input[screen.id] || '').trim();
+    if(!raw){
+      setFeedback(screen.id, 'info', 'Type a number first.');
+      render();
+      return;
+    }
+    if(raw === screen.correct){
+      markSolved(screen.id);
+      setFeedback(screen.id, 'success', screen.success);
+      render();
+      return;
+    }
+    const attempt = bumpAttempt(screen.id);
+    if(attempt === 1){
+      setFeedback(screen.id, 'error', screen.hint1);
+    } else if(attempt === 2){
+      setFeedback(screen.id, 'info', screen.hint2);
+    } else {
+      setFeedback(screen.id, 'info', screen.explain);
+    }
+    render();
+  }
+
+  function getRemediationOrder(itemId){
+    if(!state.s7rem.orders[itemId]){
+      state.s7rem.orders[itemId] = shuffle(['add','subtract','multiply','divide']);
+    }
+    return state.s7rem.orders[itemId];
+  }
+
+  function checkRemediation(){
+    const item = remediationItems[state.s7rem.step % remediationItems.length];
+    if(!state.s7rem.selection){
+      state.s7rem.feedback = {type:'info', text:'Choose an operation first.'};
+      render();
+      return;
+    }
+    if(state.s7rem.selection === 'divide'){
+      state.s7rem.streak += 1;
+      if(state.s7rem.streak >= 3){
+        state.s7rem.active = false;
+        state.s7rem.feedback = null;
+        state.s7rem.selection = null;
+        setFeedback('s7', 'info', 'Great. Now use the same idea for the crane model.');
+        render();
+        return;
+      }
+      state.s7rem.step += 1;
+      state.s7rem.selection = null;
+      state.s7rem.feedback = {type:'success', text:`Correct. A total shared into equal parts uses division. Keep going: ${state.s7rem.streak} correct in a row.`};
+      render();
+      return;
+    }
+    state.s7rem.streak = 0;
+    state.s7rem.feedback = {type:'error', text:'Not yet. The model shows a total split into equal parts, so we use division. Try again.'};
+    render();
+  }
+
+  function readCurrent(){
+    window.speechSynthesis && window.speechSynthesis.cancel();
+    const screen = currentScreen();
+    let text = `${screen.title}. ${screen.action}. ${screen.support}. `;
+    if(questionIsOpen(screen)){
+      text += fullQuestion.join(' ');
+    }
+    const feedback = getFeedback(screen.id);
+    if(feedback) text += ' ' + feedback.text;
+    if(screen.id === 's7' && state.s7rem.active && state.s7rem.feedback){
+      text += ' ' + state.s7rem.feedback.text;
+    }
+    if('speechSynthesis' in window){
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      window.speechSynthesis.speak(utter);
+    } else {
+      alert('Read aloud is not available on this device.');
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    const option = e.target.closest('[data-option]');
+    if(option){
+      handleSelect(option.getAttribute('data-option'));
+      return;
+    }
+    const rem = e.target.closest('[data-rem-option]');
+    if(rem){
+      state.s7rem.selection = rem.getAttribute('data-rem-option');
+      render();
+      return;
+    }
+
+    const actBtn = e.target.closest('[data-act]');
+    if(!actBtn) return;
+    const act = actBtn.getAttribute('data-act');
+    const screen = currentScreen();
+
+    if(act === 'check'){
+      if(screen.type === 'input'){
+        checkInputScreen(screen);
+      } else {
+        checkChoiceScreen(screen);
+      }
+      return;
+    }
+    if(act === 'checkRemediation'){
+      checkRemediation();
+      return;
+    }
+    if(act === 'next'){
+      if(state.index < screens.length - 1){
+        state.index += 1;
+        render();
+      }
+      return;
+    }
+    if(act === 'back'){
+      if(state.index > 0){
+        state.index -= 1;
+        render();
+      }
+      return;
+    }
+    if(act === 'toggleQuestion'){
+      state.questionOpen[screen.id] = !questionIsOpen(screen);
+      render();
+      return;
+    }
+    if(act === 'read'){
+      readCurrent();
+      return;
+    }
+    if(act === 'restart'){
+      restartAll();
+      return;
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    const option = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.option : null;
+    if((e.key === 'Enter' || e.key === ' ') && option){
+      e.preventDefault();
+      handleSelect(option);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Before and After Model Interactive</title>
+  <style>
+    :root{
+      --bg:#f6f8fc; --card:#fff; --text:#17324d; --muted:#5b7289; --line:#d8e1ec;
+      --primary:#1e66f5; --primary2:#0d47c0; --primaryBg:#eaf2ff;
+      --accent:#ffb84d; --accentBg:#fff4df; --good:#0b8758; --goodBg:#e9fff4;
+      --bad:#bf2d2d; --badBg:#fff1f1; --childBorder:#7ba8e8; --childBg:#eaf2ff;
+      --adultBorder:#d89c3e; --adultBg:#fff1db; --shadow:0 10px 28px rgba(23,50,77,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.45}
+    .app{max-width:1100px;margin:0 auto;padding:18px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    h1{margin:0;font-size:clamp(1.45rem,1.1rem + 1vw,2rem)}
+    .progressWrap{min-width:220px;flex:1;max-width:480px}
+    .progressLabel{font-weight:700;color:var(--muted);margin-bottom:6px}
+    .progressBar{height:16px;background:#e5edf6;border:1px solid #d4dfeb;border-radius:999px;overflow:hidden}
+    .progressFill{height:100%;width:0;background:linear-gradient(90deg,var(--primary),#52a4ff);transition:width .25s ease}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+    .btn{border:none;border-radius:14px;padding:12px 16px;font-weight:700;font-size:1rem;cursor:pointer;touch-action:manipulation}
+    .btn.primary{background:var(--primary);color:#fff;box-shadow:var(--shadow)}
+    .btn.primary:hover{background:var(--primary2)}
+    .btn.secondary{background:#eef3fa;color:var(--text);border:1px solid #d7e1ec}
+    .btn.secondary:hover{background:#e4edf7}
+    .btn:disabled{background:#9eb1c8;color:#fff;cursor:not-allowed;box-shadow:none}
+    .questionCard,.screen{background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+    .questionCard{display:none;padding:16px;margin-bottom:16px}
+    .questionCard.open{display:block}
+    .screen{padding:20px}
+    .screenTitle{margin:0 0 14px 0;font-size:1.4rem}
+    .actionBox{background:#eaf2ff;border:2px solid #bfd4ff;color:#113b7d;border-radius:18px;padding:14px 16px;font-weight:700;font-size:1.08rem;margin-bottom:12px}
+    .explainBox{background:var(--accentBg);border:2px solid #ffd48a;color:#6b4600;border-radius:18px;padding:12px 14px;margin-bottom:16px}
+    .grid{display:grid;gap:18px;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);align-items:start}
+    .panel{background:#fbfdff;border:1px solid var(--line);border-radius:18px;padding:14px}
+    .panel h3{margin:0 0 10px 0;font-size:1.06rem}
+    .options{display:grid;gap:12px}
+    .option{width:100%;text-align:left;border:2px solid #d1dbe7;background:#fff;color:var(--text);border-radius:16px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;touch-action:manipulation}
+    .option:hover{border-color:#7da9ff}
+    .option.selected{border-color:var(--primary);background:var(--primaryBg);box-shadow:0 0 0 3px rgba(30,102,245,.12)}
+    .feedback{display:none;margin-top:14px;border-radius:18px;padding:14px;font-weight:700}
+    .feedback.show{display:block}
+    .feedback.good{background:var(--goodBg);border:2px solid #8fdaba;color:#0b6440}
+    .feedback.bad{background:var(--badBg);border:2px solid #ffb4b4;color:#962525}
+    .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+    .smallNote{font-size:.95rem;color:var(--muted)}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{background:#eef4fb;border:1px solid #d2dfec;border-radius:999px;padding:8px 12px;font-weight:700}
+    .callout{background:#f4f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px;color:var(--muted)}
+    .inputRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .mathInput{width:min(100%,280px);padding:12px 14px;font-size:1.18rem;font-weight:700;border-radius:14px;border:2px solid #b7c9dc}
+    .mathInput:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(30,102,245,.13)}
+    .bars{display:grid;gap:12px}
+    .barGroup strong{display:block;margin-bottom:8px}
+    .barRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .rowLabel{min-width:84px;font-weight:700}
+    .segments{display:flex;gap:6px;flex-wrap:nowrap;align-items:center}
+    .segment{width:44px;height:44px;border-radius:10px;border:2px solid var(--childBorder);background:var(--childBg);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#244b82;flex:0 0 44px}
+    .adult{border-color:var(--adultBorder);background:var(--adultBg);color:#7a4a00}
+    .ghost{opacity:.3;border-style:dashed}
+    .highlight{border-color:var(--good);background:#dff7eb;color:#0d6d47}
+    .hotspot{border:none;background:none;padding:0;cursor:pointer;border-radius:14px;touch-action:manipulation}
+    .hotspot .segments{padding:4px;border-radius:14px;border:2px solid transparent}
+    .hotspot.selected .segments{border-color:var(--primary);background:var(--primaryBg);box-shadow:0 0 0 3px rgba(30,102,245,.12)}
+    .splitStrip{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .longUnit{width:138px;height:46px;border-radius:12px;border:2px solid var(--childBorder);background:var(--childBg);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .newUnits{display:flex;gap:6px}
+    .mini{width:42px;height:42px;border-radius:10px;border:2px solid var(--childBorder);background:var(--childBg);display:flex;align-items:center;justify-content:center;font-weight:700}
+
+    .segment.long{width:138px;flex:0 0 138px}
+    .segment.small{width:44px;flex:0 0 44px}
+    .visualNote{font-size:.98rem;font-weight:700;color:#244b82}
+    .visualStack{display:grid;gap:10px}
+    .splitDemo{display:grid;gap:12px;justify-items:start}
+    .groupedValue{display:grid;justify-items:center;gap:4px}
+    .groupedValue .segments{padding:0}
+    .groupBracket{width:94px;height:12px;border-left:3px solid var(--good);border-right:3px solid var(--good);border-bottom:3px solid var(--good);border-radius:0 0 10px 10px}
+    .groupLabel{display:inline-flex;align-items:center;justify-content:center;min-width:52px;padding:3px 12px;border-radius:999px;border:2px solid var(--good);background:#dff7eb;color:#0d6d47;font-weight:800}
+    .hotspot .groupedValue{padding:4px;border-radius:14px;border:2px solid transparent}
+    .hotspot.selected .groupedValue{border-color:var(--primary);background:var(--primaryBg);box-shadow:0 0 0 3px rgba(30,102,245,.12)}
+    .arrowText{font-weight:800;color:#244b82}
+    .pulse{animation:pulseGlow 1.4s ease-in-out infinite}
+    .pulseSlow{animation:pulseGlow 2s ease-in-out infinite}
+    .fadeIn{animation:fadeInUp .7s ease both}
+    .stagger > *{animation:fadeInUp .55s ease both}
+    .stagger > *:nth-child(1){animation-delay:.05s}
+    .stagger > *:nth-child(2){animation-delay:.15s}
+    .stagger > *:nth-child(3){animation-delay:.25s}
+    .stagger > *:nth-child(4){animation-delay:.35s}
+    .stagger > *:nth-child(5){animation-delay:.45s}
+    .stagger > *:nth-child(6){animation-delay:.55s}
+    .stagger > *:nth-child(7){animation-delay:.65s}
+    .stagger > *:nth-child(8){animation-delay:.75s}
+    .stagger > *:nth-child(9){animation-delay:.85s}
+    .fadeMissing{animation:fadeMissing 1.8s ease-in-out infinite}
+    .matchFade{opacity:.45}
+    .simpleSteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+    .simpleStep{border:1px solid var(--line);border-radius:14px;background:#fbfdff;padding:12px;font-weight:700}
+    @keyframes pulseGlow{
+      0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(30,102,245,0)}
+      50%{transform:scale(1.03);box-shadow:0 0 0 8px rgba(30,102,245,.10)}
+    }
+    @keyframes fadeInUp{
+      from{opacity:0;transform:translateY(10px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes fadeMissing{
+      0%,100%{opacity:1}
+      50%{opacity:.25}
+    }
+
+    .checklist{display:grid;gap:10px}
+    .checkItem{display:flex;gap:10px;align-items:flex-start;background:#fbfdff;border:1px solid var(--line);border-radius:14px;padding:12px}
+    .footer{margin-top:16px;text-align:center;color:var(--muted);font-size:.92rem}
+    @media (max-width:880px){
+      .grid{grid-template-columns:1fr}
+      .barRow{align-items:flex-start;flex-direction:column}
+      .rowLabel{min-width:0}
+      .segments,.newUnits{flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top">
+      <h1>Before-and-After Model Strategy</h1>
+      <div class="progressWrap">
+        <div class="progressLabel" id="progressLabel">Screen 1 of 12</div>
+        <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn secondary" id="toggleQuestionBtn" type="button">Show question</button>
+      <button class="btn secondary" id="readAloudBtn" type="button">Read this screen aloud</button>
+    </div>
+
+    <section class="questionCard" id="questionCard" aria-live="polite">
+      <h2 style="margin-top:0">Question</h2>
+      <p id="questionText" style="font-size:1.06rem;margin:0">
+        There were 3 times as many children as adults at a park. After 78 adults left the park, there were 9 times as many children as adults. How many more children than adults were there at the park at first?
+      </p>
+    </section>
+
+    <main class="screen" id="screen" aria-live="polite"></main>
+    <div class="footer">This interactive helps students see the bars clearly, match the pictures, and answer the exact question.</div>
+  </div>
+
+  <script>
+    const questionText = "There were 3 times as many children as adults at a park. After 78 adults left the park, there were 9 times as many children as adults. How many more children than adults were there at the park at first?";
+
+    const state = {
+      screenIndex: 0,
+      questionOpen: false,
+      selected: {},
+      typed: {},
+      completed: {},
+      attempts: {},
+      orders: {}
+    };
+
+    function shuffle(list){
+      const arr = list.slice();
+      for(let i = arr.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function ensureOrder(id, options){
+      if(!state.orders[id]){
+        state.orders[id] = shuffle(options);
+      }
+      return state.orders[id];
+    }
+
+    function attempts(id){
+      return state.attempts[id] || 0;
+    }
+    function bump(id){
+      state.attempts[id] = attempts(id) + 1;
+    }
+
+    function progressText(){
+      return `Screen ${state.screenIndex + 1} of ${screens.length}`;
+    }
+
+    function updateProgress(){
+      document.getElementById('progressLabel').textContent = progressText();
+      document.getElementById('progressFill').style.width = `${((state.screenIndex + 1) / screens.length) * 100}%`;
+    }
+
+    function setQuestionOpen(open){
+      state.questionOpen = open;
+      const card = document.getElementById('questionCard');
+      const btn = document.getElementById('toggleQuestionBtn');
+      card.classList.toggle('open', open);
+      btn.textContent = open ? 'Hide question' : 'Show question';
+    }
+
+    function optionButtons(screenId, options){
+      const order = ensureOrder(screenId, options);
+      return `<div class="options">` + order.map(opt => `
+        <button class="option ${state.selected[screenId] === opt.id ? 'selected' : ''}" type="button"
+          data-role="option" data-screen="${screenId}" data-value="${opt.id}">
+          ${opt.text}
+        </button>`).join('') + `</div>`;
+    }
+
+    function row(label, html){
+      return `<div class="barRow"><div class="rowLabel">${label}</div><div class="segments">${html}</div></div>`;
+    }
+    function seg(count, type='child', labels=[], size='small', extra=''){
+      return Array.from({length:count}, (_,i) => `<div class="segment ${type==='adult' ? 'adult' : ''} ${size==='long' ? 'long' : 'small'} ${extra}">${labels[i] || ''}</div>`).join('');
+    }
+
+    function compareCard(){
+      return `
+        <div class="panel">
+          <h3>Quick look</h3>
+          <div class="bars">
+            <div class="barGroup">
+              <strong>First picture</strong>
+              ${row('Children', seg(3,'child',['','',''],'long'))}
+              ${row('Adults', seg(1,'adult',[''],'long'))}
+            </div>
+            <div class="barGroup">
+              <strong>After 78 adults left</strong>
+              ${row('Children', `<div class="segments stagger">${seg(9,'child')}</div>`)}
+              ${row('Adults', seg(1,'adult'))}
+            </div>
+          </div>
+          <div class="callout">We will later redraw the first picture using the same <strong>small boxes</strong> as the after picture.</div>
+        </div>`;
+    }
+
+    function feedbackHTML(kind, msg){
+      return `<div class="feedback show ${kind}">${msg}</div>`;
+    }
+
+    function baseScreen(screen, leftHtml, rightHtml){
+      const done = !!state.completed[screen.id];
+      return `
+        <h2 class="screenTitle">${screen.title}</h2>
+        <div class="actionBox">${screen.action}</div>
+        <div class="explainBox">${screen.explain}</div>
+        <div class="grid">
+          <div>${leftHtml}</div>
+          <div>${rightHtml}</div>
+        </div>
+        <div class="nav">
+          <button class="btn secondary" id="backBtn" type="button" ${state.screenIndex===0?'disabled':''}>Back</button>
+          <div class="smallNote">${screen.smallNote || ''}</div>
+          <button class="btn primary" id="nextBtn" type="button" ${done ? '' : 'disabled'}>Next</button>
+        </div>`;
+    }
+
+    function getScreenById(id){ return screens.find(s => s.id === id); }
+
+    const screens = [
+      {
+        id:'s1',
+        title:'Spot what changed',
+        action:'Tap the group that changed after 78 left.',
+        explain:'This matters because the children amount stays the same later, even when the model is redrawn.',
+        smallNote:'Start by noticing the change carefully.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Choose one</h3>
+              ${optionButtons(this.id, [
+                {id:'children', text:'Children changed.'},
+                {id:'adults', text:'Adults changed.'}
+              ])}
+              <div class="callout">Question clue: “After 78 adults left the park...”</div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            compareCard()
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose one group first.'};
+          if(value === 'adults') return {ok:true, msg:'Correct. Adults changed because 78 adults left. The children amount stayed the same.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Adults left, so adults changed. Keep this idea in mind: the children amount stayed the same.'
+            : 'Not this one. Read the sentence with 78 again. Who left?'};
+        },
+        speak:'Screen 1. Tap the group that changed after 78 left. Read the clue carefully: seventy-eight adults left the park.'
+      },
+      {
+        id:'s2',
+        title:'Build the before model',
+        action:'Choose the correct model for the situation at first.',
+        explain:'“3 times as many children as adults” means children are 3 equal boxes and adults are 1 box.',
+        smallNote:'This is the before picture only.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Choose the model</h3>
+              ${optionButtons(this.id, [
+                {id:'correct', text:`<strong>Choice A</strong><div class="visualStack" style="margin-top:8px">${row('Children', seg(3,'child',['','',''],'long'))}${row('Adults', seg(1,'adult',[''],'long'))}</div>`},
+                {id:'reverse', text:`<strong>Choice B</strong><div class="visualStack" style="margin-top:8px">${row('Children', seg(1,'child',[''],'long'))}${row('Adults', seg(3,'adult',['','',''],'long'))}</div>`},
+                {id:'same', text:`<strong>Choice C</strong><div class="visualStack" style="margin-top:8px">${row('Children', seg(3,'child',['','',''],'long'))}${row('Adults', seg(3,'adult',['','',''],'long'))}</div>`}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>Remember</h3>
+              <div class="chips">
+                <div class="chip">Children and adults</div>
+                <div class="chip">At first</div>
+                <div class="chip">3 times as many</div>
+              </div>
+              <div class="callout">This is a comparison. Children are the larger group in the first sentence.</div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose a before model first.'};
+          if(value === 'correct') return {ok:true, msg:'Yes. At first, children are 3 equal boxes and adults are 1 box.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Because children are 3 times the adults, the children bar must be longer: 3 equal boxes for children and 1 box for adults.'
+            : 'Check who is larger. The sentence says there were 3 times as many children as adults.'};
+        },
+        speak:'Screen 2. Choose the correct before model. Three times as many children as adults means children are three equal boxes and adults are one box.'
+      },
+      {
+        id:'s3',
+        title:'Build the after model',
+        action:'Choose the correct model for the situation after 78 adults left.',
+        explain:'Now the comparison changes: there are 9 times as many children as adults.',
+        smallNote:'This is the after picture only.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Choose the model</h3>
+              ${optionButtons(this.id, [
+                {id:'correct', text:`<strong>Choice A</strong><div class="visualStack" style="margin-top:8px">${row('Children', `<div class="segments stagger">${seg(9)}</div>`)}${row('Adults', seg(1,'adult'))}</div>`},
+                {id:'reverse', text:`<strong>Choice B</strong><div class="visualStack" style="margin-top:8px">${row('Children', seg(1))}${row('Adults', `<div class="segments stagger">${seg(9,'adult')}</div>`)}</div>`},
+                {id:'sameAsBefore', text:`<strong>Choice C</strong><div class="visualStack" style="margin-top:8px">${row('Children', seg(3,'child',['','',''],'long'))}${row('Adults', seg(1,'adult',[''],'long'))}</div>`}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>After clue</h3>
+              <div class="chips">
+                <div class="chip">After 78 adults left</div>
+                <div class="chip">9 times as many</div>
+              </div>
+              <div class="callout">This sentence describes the later picture, not the first picture.</div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose an after model first.'};
+          if(value === 'correct') return {ok:true, msg:'Correct. After 78 adults left, children are 9 times the adults, so children are 9 small boxes and adults are 1 small box.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'After the change, the comparison is children 9 small boxes to adults 1 small box.'
+            : 'Read the second comparison carefully. It says 9 times as many children as adults.'};
+        },
+        speak:'Screen 3. Choose the after model. After seventy-eight adults left, there were nine times as many children as adults.'
+      },
+      {
+        id:'s4',
+        title:'Hold on to the unchanged amount',
+        action:'Choose the true statement.',
+        explain:'Only adults left. The children amount stayed the same, even though the bar picture later changes.',
+        smallNote:'This idea helps connect the two models.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Which statement is true?</h3>
+              ${optionButtons(this.id, [
+                {id:'same', text:'The children amount stayed the same.'},
+                {id:'smaller', text:'The children amount got smaller.'},
+                {id:'minus78', text:'The children amount became 78 less.'}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>Important idea</h3>
+              ${compareCard()}
+              <div class="callout">The children total is the same in both situations. We will redraw it, not change it.</div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose one statement first.'};
+          if(value === 'same') return {ok:true, msg:'Yes. Adults changed, but the children amount stayed the same.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Only adults left. So the children total stayed the same. We will redraw it, not change it.'
+            : 'Look back at who left. Adults left, not children.'};
+        },
+        speak:'Screen 4. Choose the true statement. Only adults left, so the children amount stayed the same.'
+      },
+      {
+        id:'s5',
+        title:'Make the first children bar match the after picture',
+        action:'Choose the picture that keeps the same children amount but redraws it with 9 small boxes.',
+        explain:'We are not adding more children. We are just redrawing the same children bar. One long box is the same size as 3 small boxes.',
+        smallNote:'This is the key picture-matching step.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Choose the picture</h3>
+              ${optionButtons(this.id, [
+                {id:'correct', text:`<strong>Choice A</strong><div class="visualStack" style="margin-top:8px"><div class="visualNote">Same children, redrawn</div><div class="splitDemo"><div class="segments">${seg(3,'child',['','',''],'long')}</div><div class="arrowText">becomes</div><div class="segments stagger">${seg(9)}</div></div></div>`},
+                {id:'add', text:`<strong>Choice B</strong><div class="visualStack" style="margin-top:8px"><div class="visualNote">Adds more children</div><div class="splitDemo"><div class="segments">${seg(3,'child',['','',''],'long')}</div><div class="arrowText">becomes</div><div class="segments">${seg(3)}${seg(6,'child',[], 'small','highlight')}</div></div></div>`},
+                {id:'same', text:`<strong>Choice C</strong><div class="visualStack" style="margin-top:8px"><div class="visualNote">Does not match the after picture</div><div class="splitDemo"><div class="segments">${seg(3,'child',['','',''],'long')}</div><div class="arrowText">stays</div><div class="segments">${seg(3,'child',['','',''],'long')}</div></div></div>`}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>See it clearly</h3>
+              <div class="splitDemo fadeIn">
+                <div class="visualNote">1 long children box</div>
+                <div class="segments"><div class="segment long pulse"></div></div>
+                <div class="arrowText">is the same size as</div>
+                <div class="visualNote">3 small children boxes</div>
+                <div class="segments stagger">${seg(3)}</div>
+              </div>
+              <div class="callout">We are not adding children. We are only redrawing the same bar with the same small boxes used in the after picture.</div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose a picture first.'};
+          if(value === 'correct') return {ok:true, msg:'Exactly. The children bar stays the same. One long box is the same as 3 small boxes, so 3 long boxes become 9 small boxes.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Do not add more children. Keep the same children bar and redraw it. One long box matches 3 small boxes.'
+            : 'Keep the same children bar. Which picture redraws it without adding more children?'};
+        },
+        speak:'Screen 5. Choose the picture that keeps the same children bar. One long box is the same size as three small boxes.'
+      },
+      {
+        id:'s6',
+        title:'Redraw adults at first using the same small boxes',
+        action:'Adults at first were 1 long box. Type how many small boxes that is.',
+        explain:'Use the same redraw rule. One long box becomes 3 small boxes.',
+        smallNote:'Use the same picture rule.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Complete the sentence</h3>
+              <p>If 1 long box becomes 3 small boxes, then adults at first were <strong>___</strong> small boxes.</p>
+              <div class="inputRow">
+                <input class="mathInput" type="number" inputmode="numeric" aria-label="Number of small boxes for adults at first"
+                  data-role="input" data-screen="${this.id}" value="${state.typed[this.id] || ''}">
+                <button class="btn primary" type="button" data-role="checkTyped" data-screen="${this.id}">Check</button>
+              </div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>See the match</h3>
+              <div class="splitDemo fadeIn">
+                <div class="visualNote">1 long adults box</div>
+                <div class="segments"><div class="segment adult long pulseSlow"></div></div>
+                <div class="arrowText">is the same as</div>
+                <div class="visualNote">3 small adults boxes</div>
+                <div class="segments stagger">${seg(3,'adult')}</div>
+              </div>
+              <div class="callout">Use the same redraw rule for adults.</div>
+            </div>`
+          );
+        },
+        checkTyped(){
+          const value = Number(state.typed[this.id] || '');
+          if(value === 3) return {ok:true, msg:'Correct. Adults at first were 3 small boxes.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Adults at first were 1 long box. One long box becomes 3 small boxes, so adults at first were 3 small boxes.'
+            : 'Use the same redraw rule: 1 long box becomes 3 small boxes.'};
+        },
+        speak:'Screen 6. Adults at first were 1 long box. Type how many small boxes that is.'
+      },
+      {
+        id:'s7',
+        title:'Find the part that disappeared',
+        action:'Tap the part of the adults bar that disappeared when 78 adults left.',
+        explain:'Now both adults bars use the same small boxes, so we can compare them fairly.',
+        smallNote:'Find the missing adult boxes first.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Tap the missing part</h3>
+              <div class="bars">
+                <div class="barGroup">
+                  <strong>Adults at first</strong>
+                  <div class="barRow">
+                    <button class="hotspot ${state.selected[this.id]==='one' ? 'selected' : ''}" type="button" data-role="hotspot" data-screen="${this.id}" data-value="one">
+                      <div class="segments"><div class="segment adult">1</div></div>
+                    </button>
+                    <button class="hotspot ${state.selected[this.id]==='missing' ? 'selected' : ''}" type="button" data-role="hotspot" data-screen="${this.id}" data-value="missing">
+                      <div class="groupedValue fadeMissing">
+                        <div class="segments"><div class="segment adult highlight"></div><div class="segment adult highlight"></div></div>
+                        <div class="groupBracket"></div>
+                        <div class="groupLabel">78</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+                <div class="barGroup">
+                  <strong>Adults after</strong>
+                  <div class="segments"><div class="segment adult highlight">1</div></div>
+                </div>
+              </div>
+              <div class="callout">Tap the part that is gone in the after picture.</div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>What are we comparing?</h3>
+              <div class="chips">
+                <div class="chip">Before adults = 3 small boxes</div>
+                <div class="chip">After adults = 1 small box</div>
+              </div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Tap a part first.'};
+          if(value === 'missing') return {ok:true, msg:'Yes. Two small boxes disappeared, and the 78 belongs to those 2 boxes together.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Before adults were 3 small boxes and after adults were 1 small box. So the lost part is 2 small boxes together.'
+            : 'The after adults bar still has 1 box. The missing part is the rest of the before adults bar.'};
+        },
+        speak:'Screen 7. Tap the part of the adults bar that disappeared. Before adults were three small boxes, and after adults were one small box.'
+      },
+      {
+        id:'s8',
+        title:'Decide what 78 means',
+        action:'First choose what 78 means. Then choose what to do to find 1 small box.',
+        explain:'Look at the missing part first. Then decide what to do.',
+        smallNote:'Meaning first, then what to do.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Part A: What does 78 mean?</h3>
+              ${optionButtons(this.id + '_a', [
+                {id:'2units', text:'78 is 2 small boxes together.'},
+                {id:'1unit', text:'78 is 1 small box.'},
+                {id:'3units', text:'78 is 3 small boxes.'}
+              ])}
+              <h3 style="margin-top:18px">Part B: What should we do to find 1 small box?</h3>
+              ${optionButtons(this.id + '_b', [
+                {id:'divide', text:'Divide by 2.'},
+                {id:'multiply', text:'Multiply by 2.'},
+                {id:'subtract', text:'Subtract 2 from 78.'}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>Adult comparison</h3>
+              ${row('Before', `<div class="segment adult">1</div><div class="segment adult">1</div><div class="segment adult">1</div>`)}
+              ${row('After', `<div class="segment adult highlight">1</div><div class="segment adult ghost">?</div><div class="segment adult ghost">?</div>`)}
+              <div class="callout">The missing adult part is 2 equal small boxes together. The 78 labels the whole missing part, not each box.</div>
+            </div>`
+          );
+        },
+        check(){
+          const a = state.selected[this.id + '_a'];
+          const b = state.selected[this.id + '_b'];
+          if(!a || !b) return {ok:false, msg:'Answer both parts first.'};
+          if(a === '2units' && b === 'divide') return {ok:true, msg:'Correct. 78 is 2 small boxes together, so divide by 2 to find 1 small box.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'The missing adult part is 2 equal small boxes together. So 78 ÷ 2 gives the value of 1 small box.'
+            : 'Look at the missing adult part. How many equal boxes disappeared?'};
+        },
+        speak:'Screen 8. Screen 8. First decide what seventy-eight means. Then choose what to do to find one small box.'
+      },
+      {
+        id:'s9',
+        title:'Find 1 small box',
+        action:'Type the value of 1 small box.',
+        explain:'Use the model: 78 is 2 small boxes together.',
+        smallNote:'Find 1 small box before the final answer.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Find 1 small box</h3>
+              <div class="chips"><div class="chip">2 small boxes together = 78</div><div class="chip">1 small box = 78 ÷ 2</div></div>
+              <div class="inputRow" style="margin-top:12px">
+                <input class="mathInput" type="number" inputmode="numeric" aria-label="Value of 1 small box"
+                  data-role="input" data-screen="${this.id}" value="${state.typed[this.id] || ''}">
+                <button class="btn primary" type="button" data-role="checkTyped" data-screen="${this.id}">Check</button>
+              </div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>See why</h3>
+              <div class="splitDemo fadeIn">
+                <div class="groupedValue">
+                  <div class="segments"><div class="segment adult highlight"></div><div class="segment adult highlight"></div></div>
+                  <div class="groupBracket"></div>
+                  <div class="groupLabel">78</div>
+                </div>
+                <div class="arrowText">2 same boxes together</div>
+                <div class="segments"><div class="segment adult pulse">?</div></div>
+              </div>
+              <div class="callout">These 2 same boxes together make 78, so 1 box is half of 78.</div>
+            </div>`
+          );
+        },
+        checkTyped(){
+          const value = Number(state.typed[this.id] || '');
+          if(value === 39) return {ok:true, msg:'Yes. 1 small box = 39.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? '78 divided by 2 is 39. So 1 small box = 39.'
+            : 'Use 78 ÷ 2. We are finding 1 box from 2 equal boxes.'};
+        },
+        speak:'Screen 9. Type the value of one small box.'
+      },
+      {
+        id:'s10',
+        title:'Find the leftover part at first',
+        action:'Tap the leftover part that shows how many more children there were at first.',
+        explain:'Use the before model with the same small boxes. Match the same part first, then look at what is left over.',
+        smallNote:'See the difference before calculating it.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Tap the leftover part</h3>
+              <div class="bars">
+                <div class="barGroup">
+                  <strong>Children at first = 9 small boxes</strong>
+                  <div class="barRow">
+                    <button class="hotspot ${state.selected[this.id]==='match' ? 'selected' : ''}" type="button" data-role="hotspot" data-screen="${this.id}" data-value="match">
+                      <div class="segments">${Array.from({length:3}, (_,i)=>`<div class="segment">${i+1}</div>`).join('')}</div>
+                    </button>
+                    <button class="hotspot ${state.selected[this.id]==='extra' ? 'selected' : ''}" type="button" data-role="hotspot" data-screen="${this.id}" data-value="extra">
+                      <div class="segments">${Array.from({length:6}, (_,i)=>`<div class="segment highlight">${i+4}</div>`).join('')}</div>
+                    </button>
+                  </div>
+                </div>
+                <div class="barGroup">
+                  <strong>Adults at first = 3 small boxes</strong>
+                  <div class="segments"><div class="segment adult">1</div><div class="segment adult">1</div><div class="segment adult">1</div></div>
+                </div>
+              </div>
+              <div class="callout">The question asks for how many <strong>more</strong>, so tap the leftover children boxes.</div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>Look for the difference</h3>
+              <div class="chips"><div class="chip">Match 3 children boxes with 3 adult boxes</div><div class="chip">Look at what is left</div></div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Tap a part first.'};
+          if(value === 'extra') return {ok:true, msg:'Correct. The leftover part is 6 small boxes.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'Children have 9 small boxes and adults have 3 small boxes, so the leftover part is 6 small boxes.'
+            : 'Match the first 3 children units with the 3 adult units. Then look at what is left over.'};
+        },
+        speak:'Screen 10. Tap the leftover part that shows how many more children there were at first. Match the first three units, then look at what is left over.'
+      },
+      {
+        id:'s11',
+        title:'Find the final answer',
+        action:'Choose the correct picture idea, then type the final answer.',
+        explain:'The leftover part is 6 equal boxes. Each small box is worth 39.',
+        smallNote:'Use only the highlighted leftover part.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Part A: Choose the idea</h3>
+              ${optionButtons(this.id + '_idea', [
+                {id:'correct', text:'6 equal boxes, each worth 39'},
+                {id:'9units', text:'9 equal boxes, each worth 39'},
+                {id:'3units', text:'3 equal boxes, each worth 39'}
+              ])}
+              <h3 style="margin-top:18px">Part B: Type the final answer</h3>
+              <div class="inputRow">
+                <input class="mathInput" type="number" inputmode="numeric" aria-label="Final answer"
+                  data-role="input" data-screen="${this.id}" value="${state.typed[this.id] || ''}">
+                <button class="btn primary" type="button" data-role="checkTyped" data-screen="${this.id}">Check</button>
+              </div>
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>What do we know?</h3>
+              <div class="chips"><div class="chip">Leftover part = 6 boxes</div><div class="chip">1 small box = 39</div></div>
+              <div class="callout">The highlighted leftover part has 6 boxes. Each box is 39.</div>
+            </div>`
+          );
+        },
+        checkTyped(){
+          const idea = state.selected[this.id + '_idea'];
+          const value = Number(state.typed[this.id] || '');
+          if(idea === 'correct' && value === 234){
+            return {ok:true, msg:'Excellent. The leftover part is 6 boxes. Each box is worth 39. So 6 × 39 = 234. There were 234 more children than adults at first.'};
+          }
+          bump(this.id);
+          if(idea !== 'correct' && attempts(this.id) < 2){
+            return {ok:false, msg:'Use the leftover part only. How many boxes are in the part we need?'};
+          }
+          if(idea === 'correct' && value !== 234){
+            return {ok:false, msg:'You chose the right idea. Now compute 6 × 39 carefully.'};
+          }
+          return {ok:false, msg:'The question asks for the leftover part at first. That part is 6 boxes. Since 1 box = 39, the final answer is 6 × 39 = 234.'};
+        },
+        speak:'Screen 11. Choose the correct picture idea, then type the final answer. The leftover part is six equal boxes, and each box is worth thirty-nine.'
+      },
+      {
+        id:'s12',
+        title:'Consolidate the strategy',
+        action:'Choose the best short reminder.',
+        explain:'A short reminder for next time.',
+        smallNote:'Short and simple.',
+        render(){
+          return baseScreen(this,
+            `<div class="panel">
+              <h3>Choose the best reminder</h3>
+              ${optionButtons(this.id, [
+                {id:'correct', text:'Same children. Redraw. 2 boxes together make 78. Find 1 box. Then find 6 boxes.'},
+                {id:'wrong1', text:'Just use the biggest number first.'},
+                {id:'wrong2', text:'Ignore the after picture.'}
+              ])}
+              <div id="feedbackWrap"></div>
+            </div>`,
+            `<div class="panel">
+              <h3>Remember this</h3>
+              <div class="simpleSteps">
+                <div class="simpleStep">Same children</div>
+                <div class="simpleStep">Redraw with small boxes</div>
+                <div class="simpleStep">2 boxes together = 78</div>
+                <div class="simpleStep">Find 1 box, then 6 boxes</div>
+              </div>
+            </div>`
+          );
+        },
+        check(){
+          const value = state.selected[this.id];
+          if(!value) return {ok:false, msg:'Choose a reminder first.'};
+          if(value === 'correct') return {ok:true, msg:'Well done. Remember: same children, redraw, 2 boxes together make 78, then find 1 box and 6 boxes.'};
+          bump(this.id);
+          return {ok:false, msg:attempts(this.id) >= 2
+            ? 'The best strategy is: same children, redraw, 2 boxes together make 78, then find 1 box and 6 boxes.'
+            : 'Choose the reminder that matches the bar steps you used.'};
+        },
+        speak:'Screen 12. Choose the best short reminder.'
+      }
+    ];
+
+    function currentScreen(){ return screens[state.screenIndex]; }
+
+    function render(){
+      const screen = currentScreen();
+      document.getElementById('screen').innerHTML = screen.render();
+      updateProgress();
+      setQuestionOpen(state.questionOpen);
+      document.getElementById('backBtn').addEventListener('click', () => {
+        if(state.screenIndex > 0){ state.screenIndex -= 1; render(); }
+      });
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        if(state.screenIndex < screens.length - 1){ state.screenIndex += 1; render(); }
+      });
+    }
+
+    function showFeedback(ok, msg){
+      const wrap = document.getElementById('feedbackWrap');
+      if(wrap) wrap.innerHTML = feedbackHTML(ok ? 'good' : 'bad', msg);
+    }
+
+    function setComplete(id, ok){
+      state.completed[id] = !!ok;
+      const nextBtn = document.getElementById('nextBtn');
+      if(nextBtn) nextBtn.disabled = !ok;
+    }
+
+    document.getElementById('toggleQuestionBtn').addEventListener('click', () => {
+      setQuestionOpen(!state.questionOpen);
+    });
+
+    document.getElementById('readAloudBtn').addEventListener('click', () => {
+      const screen = currentScreen();
+      const text = `${screen.speak} Question: ${questionText}. ${progressText()}.`;
+      if(!('speechSynthesis' in window)){
+        alert('Read aloud is not supported in this browser.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.96;
+      utter.pitch = 1;
+      window.speechSynthesis.speak(utter);
+    });
+
+    document.getElementById('screen').addEventListener('click', (e) => {
+      const option = e.target.closest('[data-role="option"]');
+      if(option){
+        const screenId = option.dataset.screen;
+        state.selected[screenId] = option.dataset.value;
+        const screen = currentScreen();
+        render();
+        const activeScreen = currentScreen();
+        const checkTarget = getScreenById(activeScreen.id);
+        // Screens with typed check only should not auto-check when idea is selected
+        if(activeScreen.id === 's11' || activeScreen.id === 's8'){
+          if(activeScreen.id === 's8'){
+            // auto-check only when both parts chosen
+            if(state.selected['s8_a'] && state.selected['s8_b']){
+              const result = activeScreen.check();
+              showFeedback(result.ok, result.msg);
+              setComplete(activeScreen.id, result.ok);
+            }
+          } else {
+            setComplete(activeScreen.id, false);
+          }
+        } else {
+          const result = activeScreen.check();
+          showFeedback(result.ok, result.msg);
+          setComplete(activeScreen.id, result.ok);
+        }
+        return;
+      }
+
+      const hotspot = e.target.closest('[data-role="hotspot"]');
+      if(hotspot){
+        const screenId = hotspot.dataset.screen;
+        state.selected[screenId] = hotspot.dataset.value;
+        render();
+        const result = currentScreen().check();
+        showFeedback(result.ok, result.msg);
+        setComplete(screenId, result.ok);
+        return;
+      }
+
+      const checkTyped = e.target.closest('[data-role="checkTyped"]');
+      if(checkTyped){
+        const screenId = checkTyped.dataset.screen;
+        const screen = getScreenById(screenId);
+        const result = screen.checkTyped();
+        showFeedback(result.ok, result.msg);
+        setComplete(screen.id, result.ok);
+        return;
+      }
+    });
+
+    document.getElementById('screen').addEventListener('input', (e) => {
+      const input = e.target.closest('[data-role="input"]');
+      if(input){
+        state.typed[input.dataset.screen] = input.value;
+        setComplete(input.dataset.screen, false);
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

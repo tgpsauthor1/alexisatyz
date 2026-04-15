@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Before and After 5</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --panel:#ffffff; --text:#1d2433; --muted:#5d6b82;
+      --primary:#1f5fbf; --primary-soft:#eaf2ff; --accent:#f59e0b; --accent-soft:#fff5dd;
+      --good:#157347; --good-soft:#e8f6ee; --bad:#b42318; --bad-soft:#fdeceb;
+      --line:#d7dfeb; --shadow:0 10px 28px rgba(19,35,68,0.08); --radius:20px;
+    }
+    * { box-sizing:border-box; }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:Arial, Helvetica, sans-serif; line-height:1.45; -webkit-text-size-adjust:100%; }
+    .app { max-width:1120px; margin:0 auto; padding:18px 16px 36px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .pill { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:var(--panel); border:2px solid var(--line); box-shadow:var(--shadow); font-weight:700; }
+    .toolbar { display:flex; gap:10px; flex-wrap:wrap; }
+    button,.choice-card,.sentence-card,.amount-chip,.slot,.tap-part { touch-action:manipulation; }
+    button { border:none; border-radius:14px; padding:12px 16px; font-size:1rem; font-weight:700; cursor:pointer; transition:transform .08s ease, opacity .15s ease, box-shadow .15s ease; box-shadow:var(--shadow); }
+    button:hover { transform:translateY(-1px); } button:active { transform:translateY(0); }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-secondary { background:#fff; color:var(--text); border:2px solid var(--line); }
+    .btn-ghost { background:var(--primary-soft); color:var(--primary); border:2px solid #cfe0ff; }
+    .btn-disabled { opacity:.5; cursor:not-allowed; transform:none!important; }
+    .question-panel { background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:16px; }
+    .question-head { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 18px; background:#f9fbff; border-bottom:2px solid var(--line); }
+    .question-head h2 { margin:0; font-size:1.2rem; }
+    .question-body { padding:18px; display:none; }
+    .question-body.open { display:block; }
+    .question-body p { margin:0 0 14px; font-size:1.08rem; }
+    .main-card { background:var(--panel); border:2px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; }
+    .screen-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:16px; }
+    .screen-title { margin:0; font-size:1.55rem; }
+    .screen-subtitle { margin:8px 0 0; color:var(--muted); font-size:1rem; max-width:760px; }
+    .step-chip { background:var(--primary-soft); color:var(--primary); font-weight:700; padding:10px 14px; border-radius:999px; border:2px solid #cfe0ff; white-space:nowrap; }
+    .action-box { background:var(--primary-soft); border:2px solid #cfe0ff; border-radius:18px; padding:16px 18px; margin-bottom:14px; }
+    .explain-box { background:var(--accent-soft); border:2px solid #f4d28c; border-radius:18px; padding:14px 16px; margin-bottom:18px; }
+    .label { font-size:.88rem; font-weight:700; letter-spacing:.02em; text-transform:uppercase; margin-bottom:6px; }
+    .action-box .label { color:var(--primary); } .explain-box .label { color:#a15c00; }
+    .action-box .text { font-size:1.15rem; font-weight:700; }
+    .grid { display:grid; gap:14px; } .grid-3 { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); }
+    .sentence-card,.choice-card { background:#fff; border:3px solid var(--line); border-radius:18px; padding:16px; min-height:84px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease, transform .08s ease; }
+    .sentence-card:hover,.choice-card:hover,.amount-chip:hover,.slot:hover,.tap-part:hover { transform:translateY(-1px); }
+    .sentence-card.selected,.choice-card.selected,.amount-chip.selected,.slot.selected,.tap-part.selected { border-color:var(--primary); box-shadow:0 0 0 4px rgba(31,95,191,.12); background:var(--primary-soft); }
+    .choice-card .title { font-weight:700; font-size:1.04rem; margin-bottom:6px; }
+    .desc { color:var(--muted); }
+    .check-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:18px; }
+    .feedback { margin-top:16px; display:none; border-radius:18px; padding:14px 16px; border:2px solid transparent; font-weight:700; }
+    .feedback.show { display:block; } .feedback.good { background:var(--good-soft); border-color:#9fd3b1; color:var(--good); } .feedback.bad { background:var(--bad-soft); border-color:#efb0aa; color:var(--bad); }
+    .hint-box,.help-box { margin-top:14px; display:none; border-radius:18px; padding:14px 16px; }
+    .hint-box.show,.help-box.show { display:block; }
+    .hint-box { background:#f7faff; border:2px dashed #9bbcf2; } .help-box { background:#fffaf0; border:2px solid #f2d7a1; }
+    .bars-wrap { display:grid; gap:18px; margin-top:6px; }
+    .bar-row { display:grid; grid-template-columns:92px 1fr; gap:10px; align-items:center; }
+    .bar-label { font-weight:700; font-size:1rem; }
+    .bar { display:flex; min-height:66px; border-radius:16px; overflow:hidden; border:3px solid #bcc7d8; background:#f2f5fa; }
+    .seg { display:flex; align-items:center; justify-content:center; padding:8px; font-weight:700; text-align:center; min-width:0; font-size:.98rem; border-right:2px solid #cbd4e2; }
+    .seg:last-child { border-right:none; }
+    .unit { background:#e6f2ff; color:#1f5fbf; }
+    .used { background:#ffe8c7; color:#9a5800; }
+    .diff { background:#fde3e1; color:#b42318; }
+    .tap-part { cursor:pointer; }
+    .compare-note,.focus-card { margin-top:12px; background:#f8fbff; border:2px solid #cfe0ff; border-radius:18px; padding:14px 16px; }
+    .equation-strip,.arrow-line { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:center; margin-top:10px; font-weight:700; }
+    .eq-box,.badge { padding:10px 14px; border-radius:14px; background:#fff; border:2px solid var(--line); text-align:center; }
+    .input-row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:8px; }
+    .num-input { width:240px; max-width:100%; padding:14px 16px; font-size:1.12rem; border-radius:16px; border:3px solid var(--line); outline:none; font-weight:700; }
+    .num-input:focus { border-color:var(--primary); box-shadow:0 0 0 4px rgba(31,95,191,.12); }
+    .mini-note { color:var(--muted); font-size:.96rem; margin-top:8px; }
+    .amount-bank { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:8px; }
+    .amount-chip { padding:14px 18px; border-radius:16px; border:3px solid var(--line); background:#fff; font-weight:700; cursor:pointer; box-shadow:var(--shadow); }
+    .place-grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); margin-top:12px; }
+    .place-card { border:2px solid var(--line); border-radius:18px; padding:14px; background:#fff; }
+    .place-card h4 { margin:0 0 10px; font-size:1.05rem; }
+    .place-bar { display:flex; min-height:68px; border-radius:16px; overflow:hidden; border:3px solid #bcc7d8; background:#f2f5fa; }
+    .blank-left { flex:2; display:flex; align-items:center; justify-content:center; background:#e6f2ff; color:#1f5fbf; border-right:2px solid #cbd4e2; font-weight:700; padding:8px; text-align:center; }
+    .blank-right { flex:1; display:flex; align-items:center; justify-content:center; padding:6px; background:#fff4df; }
+    .slot { min-height:72px; width:100%; border:3px dashed #9db0c7; border-radius:16px; display:flex; align-items:center; justify-content:center; padding:12px; background:#f9fbff; font-weight:700; text-align:center; cursor:pointer; }
+    .slot.filled { border-style:solid; background:#fff; }
+    .success-card { background:linear-gradient(180deg,#f8fffb 0%,#eefaf2 100%); border:2px solid #9fd3b1; border-radius:22px; padding:18px; margin-top:18px; }
+    .summary-list { margin:10px 0 0 18px; padding:0; } .summary-list li { margin:8px 0; }
+    .tiny { color:var(--muted); font-size:.92rem; }
+    @media (max-width:760px){
+      .app { padding:12px 10px 26px; } .main-card { padding:16px; } .screen-title { font-size:1.35rem; } .action-box .text { font-size:1.05rem; }
+      .bar-row { grid-template-columns:1fr; } .bar-label { margin-bottom:4px; } .question-head { padding:14px; } .question-body { padding:14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="pill" id="progressPill">Step 1 of 15</div>
+      <div class="toolbar">
+        <button class="btn-secondary" id="toggleQuestionBtn" type="button">Show question</button>
+        <button class="btn-ghost" id="readAloudBtn" type="button">Read aloud</button>
+        <button class="btn-secondary" id="restartBtn" type="button">Restart</button>
+      </div>
+    </div>
+
+    <div class="question-panel">
+      <div class="question-head">
+        <h2>Question</h2>
+        <div class="tiny">The question stays available on every step.</div>
+      </div>
+      <div class="question-body" id="questionBody">
+        <p><strong>Ashley and Belinda were each given the same length of ribbon.</strong></p>
+        <p>After Ashley used <strong>62 cm</strong> of ribbon and Belinda used <strong>187 cm</strong> of ribbon, <strong>Ashley’s ribbon was 6 times as long as Belinda’s ribbon</strong>.</p>
+        <p><strong>What was the length of ribbon given to each girl?</strong></p>
+      </div>
+    </div>
+
+    <div class="main-card" id="screenHost" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (function(){
+      const questionLines = [
+        "Ashley and Belinda were each given the same length of ribbon.",
+        "After Ashley used 62 cm of ribbon and Belinda used 187 cm of ribbon, Ashley’s ribbon was 6 times as long as Belinda’s ribbon.",
+        "What was the length of ribbon given to each girl?"
+      ];
+
+      const screens = [
+        { id:"s1", title:"Start with the clue", subtitle:"Read carefully before building the bar model.", action:"Tap the sentence that tells you the starting ribbon lengths were the same.", explain:"We are looking for the clue that tells us how the two starting bars should look." },
+        { id:"s2", title:"Find the goal", subtitle:"We should know exactly what the question wants before we solve.", action:"What are we finding?", explain:"Choose the final answer the question asks for." },
+        { id:"s3", title:"Choose the starting model", subtitle:"Use the clue about the starting ribbon length.", action:"How should the starting bars look?", explain:"Pick the model that matches 'each given the same length'." },
+        { id:"s4", title:"Place the used amounts", subtitle:"Now match each used amount to the correct girl.", action:"Tap an amount. Then tap the correct used part.", explain:"Only place the amounts on the used sections, not on the ribbon left sections." },
+        { id:"s5", title:"Show the ribbon left", subtitle:"The bars started the same, but the leftover parts are different.", action:"How should the ribbon left look?", explain:"Look at the words 'Ashley’s ribbon was 6 times as long as Belinda’s ribbon'." },
+        { id:"s6", title:"Notice the extra used part", subtitle:"Keep the equal units in view.", action:"Tap the extra used part in Belinda’s bar.", explain:"Belinda used more than Ashley. The extra Belinda-used part lines up with the extra equal units left in Ashley." },
+        { id:"s7", title:"Build the number sentence", subtitle:"Use the model to show why we subtract.", action:"Choose the number sentence for the extra used part.", explain:"Belinda used 187 cm altogether. The 62 cm part matches Ashley’s used part. So we subtract to find the extra used part." },
+        { id:"s8", title:"Calculate the extra used part", subtitle:"Now work out the value of that extra part.", action:"Type how much more ribbon Belinda used than Ashley.", explain:"Use the number sentence for the extra part: 187 - 62." },
+        { id:"s9", title:"Match 125 to the leftover difference", subtitle:"This is the key model idea.", action:"The 125 matches which part?", explain:"Because the bars start equal and end at the same place, the extra Belinda-used part lines up with the difference between the leftover equal units." },
+        { id:"s10", title:"Count the equal units in that difference", subtitle:"Now decide how many equal units that difference is.", action:"How many equal units does the 125 represent?", explain:"Ashley-left is 6 equal units and Belinda-left is 1 equal unit." },
+        { id:"s11", title:"Find 1 equal unit", subtitle:"Now use the model meaning, not just the numbers.", action:"Type the value of 1 equal unit.", explain:"The 125 matched 5 equal units, so divide by 5 to find 1 equal unit." },
+        { id:"s12", title:"Say what 1 equal unit means", subtitle:"Keep track of what the unit stands for.", action:"What does 1 equal unit stand for?", explain:"Do not stop at the unit value. We need to know what it refers to in this question." },
+        { id:"s13", title:"Choose how to find the starting ribbon length", subtitle:"We know Belinda’s ribbon used and Belinda’s ribbon left.", action:"What should we do to find the ribbon given to each girl at the beginning?", explain:"The beginning ribbon length is the whole bar, so we put used ribbon and ribbon left back together." },
+        { id:"s14", title:"Find the ribbon given to each girl", subtitle:"Now complete the final step.", action:"Type the ribbon length given to each girl.", explain:"Think: starting ribbon length = Belinda used + Belinda left." },
+        { id:"s15", title:"Consolidate the strategy", subtitle:"Say the idea clearly so you can use it again.", action:"Which summary explains the strategy best?", explain:"Pick the summary that matches the model and the steps you used." }
+      ];
+
+      function baseState(){
+        return { current:0, questionOpen:false, selections:{}, inputs:{}, attempts:{}, feedback:{}, screenDone:{}, placements:{ ashley:null, belinda:null } };
+      }
+      let state = baseState();
+
+      const host = document.getElementById("screenHost");
+      const questionBody = document.getElementById("questionBody");
+      const toggleQuestionBtn = document.getElementById("toggleQuestionBtn");
+      const readAloudBtn = document.getElementById("readAloudBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const progressPill = document.getElementById("progressPill");
+
+      function stopSpeech(){ if ("speechSynthesis" in window) window.speechSynthesis.cancel(); }
+      function speak(text){
+        if (!("speechSynthesis" in window)) return;
+        stopSpeech();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.95; utter.pitch = 1; utter.lang = "en-SG";
+        window.speechSynthesis.speak(utter);
+      }
+      function updateQuestionToggle(){
+        questionBody.classList.toggle("open", state.questionOpen);
+        toggleQuestionBtn.textContent = state.questionOpen ? "Hide question" : "Show question";
+      }
+      function getAttempts(id){ return state.attempts[id] || 0; }
+      function bumpAttempts(id){ state.attempts[id] = getAttempts(id) + 1; }
+      function markDone(id){ state.screenDone[id] = true; }
+      function canGoNext(){ return !!state.screenDone[screens[state.current].id]; }
+      function selectedId(id){ return state.selections[id] || null; }
+      function setSelected(screenId, choiceId){ state.selections[screenId] = choiceId; clearFeedback(); render(); }
+      function setFeedback(kind, message){ state.feedback[screens[state.current].id] = { kind, message }; render(); }
+      function clearFeedback(){ delete state.feedback[screens[state.current].id]; }
+      function shuffleWithState(screenId, options){
+        const key = "_order_" + screenId;
+        if (!state.selections[key]) {
+          const ids = options.map(o => o.id);
+          for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+          }
+          state.selections[key] = ids;
+        }
+        const order = state.selections[key];
+        return order.map(id => options.find(o => o.id === id)).filter(Boolean);
+      }
+      function nextScreen(){ if (canGoNext() && state.current < screens.length - 1) { stopSpeech(); state.current += 1; render(); } }
+      function prevScreen(){ if (state.current > 0) { stopSpeech(); state.current -= 1; render(); } }
+      function restart(){ stopSpeech(); state = baseState(); render(); }
+
+      function renderShell(content){
+        const screen = screens[state.current];
+        return `
+          <div class="screen-top">
+            <div>
+              <h1 class="screen-title">${screen.title}</h1>
+              <p class="screen-subtitle">${screen.subtitle}</p>
+            </div>
+            <div class="step-chip">Step ${state.current + 1}</div>
+          </div>
+          <div class="action-box">
+            <div class="label">Do this now</div>
+            <div class="text">${screen.action}</div>
+          </div>
+          <div class="explain-box">
+            <div class="label">Why this matters</div>
+            <div>${screen.explain}</div>
+          </div>
+          ${content}
+        `;
+      }
+
+      function renderFeedbackAndButtons(screenId, extraHint="", extraHelp=""){
+        const feedback = state.feedback[screenId];
+        return `
+          <div class="check-row">
+            <button type="button" class="btn-primary" data-kind="check" data-screen="${screenId}">Check</button>
+            <button type="button" class="btn-secondary" data-kind="back" ${state.current === 0 ? 'disabled' : ''}>Back</button>
+            <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+          </div>
+          <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+          <div class="hint-box ${extraHint ? 'show' : ''}">${extraHint}</div>
+          <div class="help-box ${extraHelp ? 'show' : ''}">${extraHelp}</div>
+        `;
+      }
+
+      function renderChoiceCards(screenId, options){
+        const ordered = shuffleWithState(screenId, options);
+        const selected = selectedId(screenId);
+        return `<div class="grid grid-3">${ordered.map(opt => `
+          <div class="choice-card ${selected === opt.id ? 'selected' : ''}" data-kind="select-choice" data-screen="${screenId}" data-id="${opt.id}" role="button" tabindex="0" aria-pressed="${selected === opt.id}">
+            <div class="title">${opt.title}</div>
+            ${opt.desc ? `<div class="desc">${opt.desc}</div>` : ``}
+            ${opt.preview || ``}
+          </div>`).join("")}</div>`;
+      }
+
+
+      function renderReferenceModel(){
+        return `
+          <div class="bars-wrap">
+            <div class="bar-row">
+              <div class="bar-label">Ashley</div>
+              <div class="bar">
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg used" style="flex:1.5;">62 cm used</div>
+              </div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-label">Belinda</div>
+              <div class="bar">
+                <div class="seg unit" style="flex:1;">1 unit</div>
+                <div class="seg diff" style="flex:5;">125 extra used</div>
+                <div class="seg used" style="flex:1.5;">62 cm used</div>
+              </div>
+            </div>
+          </div>
+          <div class="compare-note">The bars start equal and end at the same place. So the <strong>125 extra used</strong> part in Belinda’s bar lines up with the difference between Ashley’s <strong>6 equal units</strong> and Belinda’s <strong>1 equal unit</strong>.</div>
+        `;
+      }
+
+      function renderScreen(){
+        const id = screens[state.current].id;
+        progressPill.textContent = `Step ${state.current + 1} of ${screens.length}`;
+
+        if (id === "s1") {
+          const selected = selectedId("s1");
+          const attempts = getAttempts("s1");
+          return renderShell(`<div class="grid">${[
+            { id:"same", text:questionLines[0] },
+            { id:"after", text:questionLines[1] },
+            { id:"find", text:questionLines[2] }
+          ].map(item => `<div class="sentence-card ${selected === item.id ? 'selected' : ''}" data-kind="select-choice" data-screen="s1" data-id="${item.id}" role="button" tabindex="0" aria-pressed="${selected === item.id}"><strong>Sentence</strong><div style="margin-top:6px;">${item.text}</div></div>`).join("")}</div>${renderFeedbackAndButtons("s1", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look for the sentence that tells you how the two starting bars compare before any ribbon was used." : "", "")}`);
+        }
+
+        if (id === "s2") {
+          const attempts = getAttempts("s2");
+          return renderShell(renderChoiceCards("s2", [
+            { id:"start", title:"the ribbon given to each girl at the beginning", desc:"the whole ribbon length before any was used" },
+            { id:"ashley-left", title:"Ashley’s ribbon left", desc:"the amount after using ribbon" },
+            { id:"belinda-left", title:"Belinda’s ribbon left", desc:"the amount after using ribbon" }
+          ]) + renderFeedbackAndButtons("s2", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look at the last sentence. Which whole amount are we trying to find?" : "", ""));
+        }
+
+        if (id === "s3") {
+          const attempts = getAttempts("s3");
+          return renderShell(renderChoiceCards("s3", [
+            { id:"equal", title:"Equal starting bars", desc:"Ashley and Belinda start with the same ribbon length.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1;">same total</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1;">same total</div></div></div></div>` },
+            { id:"ashley-longer", title:"Ashley starts longer", desc:"Ashley starts with more ribbon.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1.3;">longer total</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:0.8;">shorter total</div></div></div></div>` },
+            { id:"belinda-longer", title:"Belinda starts longer", desc:"Belinda starts with more ribbon.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:0.8;">shorter total</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1.3;">longer total</div></div></div></div>` }
+          ]) + renderFeedbackAndButtons("s3", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> 'Each given the same length' means the two starting bars are equal." : "", ""));
+        }
+
+        if (id === "s4") {
+          const selectedAmount = selectedId("s4");
+          const attempts = getAttempts("s4");
+          return renderShell(`
+            <div class="focus-card"><strong>Selected amount:</strong> ${selectedAmount ? selectedAmount + " cm" : "None yet"}<div class="mini-note">Tap one amount. Then tap the correct used part.</div></div>
+            <div class="amount-bank" style="margin-top:14px;">${["62","187"].map(amount => `<div class="amount-chip ${selectedAmount === amount ? 'selected' : ''}" data-kind="select-choice" data-screen="s4" data-id="${amount}" role="button" tabindex="0" aria-pressed="${selectedAmount === amount}">${amount} cm</div>`).join("")}</div>
+            <div class="place-grid">
+              <div class="place-card"><h4>Ashley</h4><div class="place-bar"><div class="blank-left">Ashley ribbon left</div><div class="blank-right"><div class="slot ${state.placements.ashley ? 'filled' : ''}" data-kind="place-slot" data-slot="ashley" role="button" tabindex="0">${state.placements.ashley ? state.placements.ashley + " cm" : "tap to place Ashley used"}</div></div></div></div>
+              <div class="place-card"><h4>Belinda</h4><div class="place-bar"><div class="blank-left">Belinda ribbon left</div><div class="blank-right"><div class="slot ${state.placements.belinda ? 'filled' : ''}" data-kind="place-slot" data-slot="belinda" role="button" tabindex="0">${state.placements.belinda ? state.placements.belinda + " cm" : "tap to place Belinda used"}</div></div></div></div>
+            </div>
+            ${renderFeedbackAndButtons("s4", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Read the question again. Who used 62 cm? Who used 187 cm?" : "", "")}
+          `);
+        }
+
+        if (id === "s5") {
+          const attempts = getAttempts("s5");
+          return renderShell(renderChoiceCards("s5", [
+            { id:"correct", title:"Ashley-left = 6 equal units, Belinda-left = 1 equal unit", desc:"This matches 'Ashley’s ribbon was 6 times as long as Belinda’s ribbon'.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:1.4;">used</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:6.4;">used</div></div></div></div>` },
+            { id:"reverse", title:"Ashley-left = 1 equal unit, Belinda-left = 6 equal units", desc:"This reverses the girls.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:6.4;">used</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:1.4;">used</div></div></div></div>` },
+            { id:"used-rule", title:"Belinda used 6 times Ashley used", desc:"This uses the wrong relationship.", preview:`<div class="bars-wrap" style="margin-top:10px;"><div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1.5;">left</div><div class="seg used" style="flex:1;">used</div></div></div><div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1.2;">left</div><div class="seg used" style="flex:3;">used</div></div></div></div>` }
+          ]) + renderFeedbackAndButtons("s5", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The clue is about the ribbon left. Ashley-left has 6 equal units. Belinda-left has 1 equal unit." : "", ""));
+        }
+
+        if (id === "s6") {
+          const selected = selectedId("s6");
+          const attempts = getAttempts("s6");
+          return renderShell(`
+            <div class="bars-wrap">
+              <div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:1.5;">62 cm used</div></div></div>
+              <div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg diff tap-part ${selected === 'extra-belinda-used' ? 'selected' : ''}" style="flex:5;" data-kind="select-choice" data-screen="s6" data-id="extra-belinda-used" role="button" tabindex="0" aria-pressed="${selected === 'extra-belinda-used'}">tap the extra Belinda used part</div><div class="seg used" style="flex:1.5;">62 cm used</div></div></div>
+            </div>
+            <div class="compare-note">The bars start equal and the <strong>62 cm used</strong> parts line up at the end. So the long middle part in Belinda’s bar is the <strong>extra used part</strong>, and it lines up with the difference between Ashley’s <strong>6 equal units</strong> and Belinda’s <strong>1 equal unit</strong>.</div>
+            ${renderFeedbackAndButtons("s6", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Look at Belinda’s bar. Tap the part between the 1 equal unit and the shared 62 cm used part." : "", "")}
+          `);
+        }
+
+        if (id === "s7") {
+          const attempts = getAttempts("s7");
+          return renderShell(`
+            <div class="bars-wrap"><div class="bar-row"><div class="bar-label">Belinda used</div><div class="bar"><div class="seg diff" style="flex:5;">extra used part</div><div class="seg used" style="flex:1.5;">62 cm</div></div></div></div>
+            <div class="focus-card">
+              <strong>Read Belinda’s used bar from the model:</strong>
+              <div class="arrow-line"><span class="badge">187 cm</span><span>=</span><span class="badge">extra used part</span><span>+</span><span class="badge">62 cm</span></div>
+              <div class="mini-note">Belinda used 187 cm altogether. The 62 cm part matches Ashley’s used part. So the extra used part is what is left after taking away 62 cm.</div>
+              <div class="equation-strip"><div class="eq-box">187</div><div>−</div><div class="eq-box">62</div><div>=</div><div class="eq-box">extra used part</div></div>
+            </div>
+            ${renderChoiceCards("s7", [
+              { id:"187-62", title:"extra used part = 187 - 62", desc:"take away the 62 cm part that matches Ashley’s used ribbon" },
+              { id:"62-187", title:"extra used part = 62 - 187", desc:"this subtracts in the wrong order" },
+              { id:"187+62", title:"extra used part = 187 + 62", desc:"this makes the amount bigger, not the extra part" }
+            ])}
+            ${renderFeedbackAndButtons("s7", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Start with Belinda’s whole used amount, then take away the 62 cm that matches Ashley’s used amount." : "", "")}
+          `);
+        }
+
+        if (id === "s8") {
+          const attempts = getAttempts("s8");
+          const feedback = state.feedback["s8"];
+          const value = state.inputs["s8"] || "";
+          return renderShell(`
+            <div class="focus-card"><strong>Use the number sentence for the extra used part.</strong><div class="equation-strip"><div class="eq-box">187</div><div>−</div><div class="eq-box">62</div><div>=</div><div class="eq-box">?</div></div><div class="mini-note">We are finding how much more ribbon Belinda used than Ashley.</div></div>
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type a number" aria-label="Type the extra used part">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s8">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> Use the number sentence from the last step: 187 - 62.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 187 - 62 = 125</div>
+          `);
+        }
+
+        if (id === "s9") {
+          const attempts = getAttempts("s9");
+          return renderShell(`
+            <div class="bars-wrap">
+              <div class="bar-row"><div class="bar-label">Ashley</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg unit" style="flex:1;">1 unit</div><div class="seg used" style="flex:1.5;">62 cm used</div></div></div>
+              <div class="bar-row"><div class="bar-label">Belinda</div><div class="bar"><div class="seg unit" style="flex:1;">1 unit</div><div class="seg diff" style="flex:5;">125 extra used</div><div class="seg used" style="flex:1.5;">62 cm used</div></div></div>
+            </div>
+            <div class="compare-note">The bars start equal and end at the same place. So the <strong>125 extra used</strong> part in Belinda’s bar lines up with the difference between Ashley’s <strong>6 equal units</strong> and Belinda’s <strong>1 equal unit</strong>.</div>
+            ${renderChoiceCards("s9", [
+              { id:"leftover-difference", title:"the difference between the leftover units", desc:"This is the gap between 6 equal units and 1 equal unit." },
+              { id:"all-six-units", title:"all 6 equal units", desc:"This is all of Ashley’s ribbon left, not the difference." },
+              { id:"one-unit", title:"1 equal unit", desc:"This is only Belinda’s ribbon left." }
+            ])}
+            ${renderFeedbackAndButtons("s9", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Match the 125 part to the gap between Ashley’s 6 equal units and Belinda’s 1 equal unit." : "", "")}
+          `);
+        }
+
+        if (id === "s10") {
+          const attempts = getAttempts("s10");
+          return renderShell(
+            renderReferenceModel() +
+            renderChoiceCards("s10", [
+              { id:"5", title:"5 equal units", desc:"6 equal units - 1 equal unit = 5 equal units" },
+              { id:"6", title:"6 equal units", desc:"This is all of Ashley’s ribbon left, not the difference." },
+              { id:"1", title:"1 equal unit", desc:"This is only Belinda’s ribbon left." }
+            ]) + renderFeedbackAndButtons("s10", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The difference is between 6 equal units and 1 equal unit." : "", attempts >= 2 && !canGoNext() ? "<strong>Stronger help:</strong> 6 equal units - 1 equal unit = 5 equal units." : "")
+          );
+        }
+
+        if (id === "s11") {
+          const attempts = getAttempts("s11");
+          const feedback = state.feedback["s11"];
+          const value = state.inputs["s11"] || "";
+          return renderShell(`
+            ${renderReferenceModel()}
+            <div class="focus-card"><strong>Use the equal units.</strong><div class="equation-strip"><div class="eq-box">125</div><div>÷</div><div class="eq-box">5</div><div>=</div><div class="eq-box">1 equal unit</div></div></div>
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type a number" aria-label="Type the value of one equal unit">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s11">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="mini-note">We are finding the value of 1 equal unit.</div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> The 125 matched 5 equal units, so divide by 5.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 125 ÷ 5 = 25</div>
+          `);
+        }
+
+        if (id === "s12") {
+          const attempts = getAttempts("s12");
+          return renderShell(
+            renderReferenceModel() +
+            renderChoiceCards("s12", [
+              { id:"belinda-left", title:"Belinda’s ribbon left", desc:"1 equal unit is Belinda’s ribbon left." },
+              { id:"ashley-used", title:"Ashley’s ribbon used", desc:"That is the 62 cm part, not the equal unit." },
+              { id:"start-length", title:"the ribbon given at the beginning", desc:"That is the whole bar, not one equal unit." }
+            ]) + renderFeedbackAndButtons("s12", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> Belinda-left was shown as 1 equal unit." : "", "")
+          );
+        }
+
+        if (id === "s13") {
+          const attempts = getAttempts("s13");
+          return renderShell(
+            renderReferenceModel() +
+            renderChoiceCards("s13", [
+              { id:"187+25", title:"187 + 25", desc:"Belinda used + Belinda left" },
+              { id:"62+25", title:"62 + 25", desc:"This uses Ashley’s used amount with Belinda’s left amount." },
+              { id:"125+25", title:"125 + 25", desc:"125 was only the difference, not a used amount." }
+            ]) + renderFeedbackAndButtons("s13", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The beginning ribbon length is the whole bar. Whole = Belinda used + Belinda left." : "", "")
+          );
+        }
+
+        if (id === "s14") {
+          const attempts = getAttempts("s14");
+          const feedback = state.feedback["s14"];
+          const value = state.inputs["s14"] || "";
+          return renderShell(`
+            ${renderReferenceModel()}
+            <div class="input-row">
+              <input class="num-input" inputmode="numeric" pattern="[0-9]*" id="numInput" value="${value}" placeholder="Type the number" aria-label="Type the ribbon given to each girl">
+              <button type="button" class="btn-primary" data-kind="check" data-screen="s14">Check</button>
+              <button type="button" class="btn-secondary" data-kind="back">Back</button>
+              <button type="button" class="btn-secondary ${canGoNext() ? '' : 'btn-disabled'}" data-kind="next">Next</button>
+            </div>
+            <div class="mini-note">Type the ribbon length given to each girl.</div>
+            <div class="feedback ${feedback ? 'show ' + feedback.kind : ''}">${feedback ? feedback.message : ''}</div>
+            <div class="hint-box ${attempts >= 1 && !canGoNext() ? 'show' : ''}"><strong>Hint:</strong> Use starting ribbon length = Belinda used + Belinda left.</div>
+            <div class="help-box ${attempts >= 2 && !canGoNext() ? 'show' : ''}"><strong>Stronger help:</strong> 187 + 25 = 212</div>
+          `);
+        }
+
+        if (id === "s15") {
+          const attempts = getAttempts("s15");
+          return renderShell(`
+            ${renderChoiceCards("s15", [
+              { id:"best", title:"Start with equal bars. Show the used amounts. The extra Belinda-used part matches 5 equal units. Find 1 equal unit, then add Belinda used and Belinda left.", desc:"This matches the model." },
+              { id:"wrong-1", title:"Subtract 187 - 62, then divide by 6 and add that answer to 187.", desc:"This uses the wrong number of equal units." },
+              { id:"wrong-2", title:"After finding 25, stop because that is the ribbon left.", desc:"This stops too early." }
+            ])}
+            ${renderFeedbackAndButtons("s15", attempts >= 1 && !canGoNext() ? "<strong>Hint:</strong> The key idea is: equal starting bars, extra used part, 5 equal units, 1 equal unit, then the whole bar." : "", "")}
+            ${canGoNext() ? `<div class="success-card"><h3 style="margin:0 0 10px;">Great job.</h3><div>You used the strategy for this kind of before-and-after problem:</div><ul class="summary-list"><li>Start with equal bars because the girls were given the same ribbon length.</li><li>Show the used amounts on the correct bars.</li><li>Show Ashley-left as 6 equal units and Belinda-left as 1 equal unit.</li><li>Find the extra used part: 187 - 62 = 125.</li><li>Match 125 to the difference between 6 equal units and 1 equal unit, which is 5 equal units.</li><li>Find 1 equal unit: 125 ÷ 5 = 25.</li><li>Then rebuild the starting ribbon length: 187 + 25 = 212.</li></ul></div>` : ``}
+          `);
+        }
+        return "";
+      }
+
+      function checkScreen(screenId){
+        if (screenId === "s1") { const selected = selectedId("s1"); if (!selected) return setFeedback("bad", "Choose a sentence first."); if (selected === "same") { markDone("s1"); return setFeedback("good", "Yes. That sentence tells us the starting ribbon lengths were the same, so the two starting bars must be equal."); } bumpAttempts("s1"); return setFeedback("bad", "Not yet. That sentence does not tell us how the starting bars compare before any ribbon was used."); }
+        if (screenId === "s2") { const selected = selectedId("s2"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "start") { markDone("s2"); return setFeedback("good", "Yes. We are finding the ribbon given to each girl at the beginning."); } bumpAttempts("s2"); return setFeedback("bad", "Not yet. The question is asking for the whole ribbon length at the beginning, not a leftover amount."); }
+        if (screenId === "s3") { const selected = selectedId("s3"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "equal") { markDone("s3"); return setFeedback("good", "Yes. The starting bars are equal because the girls were each given the same length of ribbon."); } bumpAttempts("s3"); return setFeedback("bad", "Not yet. 'Each given the same length' means the two starting bars are equal."); }
+        if (screenId === "s4") { const a = state.placements.ashley, b = state.placements.belinda; if (!a || !b) return setFeedback("bad", "Place both amounts first."); if (a === "62" && b === "187") { markDone("s4"); return setFeedback("good", "Good. Ashley used 62 cm and Belinda used 187 cm."); } bumpAttempts("s4"); return setFeedback("bad", "Not yet. Check who used 62 cm and who used 187 cm."); }
+        if (screenId === "s5") { const selected = selectedId("s5"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "correct") { markDone("s5"); return setFeedback("good", "Yes. Ashley-left is 6 equal units and Belinda-left is 1 equal unit."); } bumpAttempts("s5"); return setFeedback("bad", "Not yet. The clue is about the ribbon left, not about the ribbon used."); }
+        if (screenId === "s6") { const selected = selectedId("s6"); if (!selected) return setFeedback("bad", "Tap the extra used part first."); if (selected === "extra-belinda-used") { markDone("s6"); return setFeedback("good", "Yes. That long middle part is the extra ribbon Belinda used."); } bumpAttempts("s6"); return setFeedback("bad", "Not yet. Tap the part in Belinda’s bar between the 1 equal unit and the shared 62 cm used part."); }
+        if (screenId === "s7") { const selected = selectedId("s7"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "187-62") { markDone("s7"); return setFeedback("good", "Yes. The extra used part is what is left after taking away the 62 cm part that matches Ashley’s used ribbon."); } bumpAttempts("s7"); return setFeedback("bad", "Not yet. Start with Belinda’s whole used amount, then take away the 62 cm that matches Ashley’s used amount."); }
+        if (screenId === "s8") { const raw = (state.inputs.s8 || "").trim(); if (!raw) return setFeedback("bad", "Type a number first."); if (Number(raw) === 125) { markDone("s8"); return setFeedback("good", "Yes. The extra used part is 125 cm."); } bumpAttempts("s8"); return setFeedback("bad", "Not yet. Use 187 - 62."); }
+        if (screenId === "s9") { const selected = selectedId("s9"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "leftover-difference") { markDone("s9"); return setFeedback("good", "Yes. The 125 matches the difference between the leftovers."); } bumpAttempts("s9"); return setFeedback("bad", "Not yet. Match the 125 part to the gap between Ashley’s 6 equal units and Belinda’s 1 equal unit."); }
+        if (screenId === "s10") { const selected = selectedId("s10"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "5") { markDone("s10"); return setFeedback("good", "Yes. 6 equal units - 1 equal unit = 5 equal units."); } bumpAttempts("s10"); return setFeedback("bad", "Not yet. The difference is between 6 equal units and 1 equal unit."); }
+        if (screenId === "s11") { const raw = (state.inputs.s11 || "").trim(); if (!raw) return setFeedback("bad", "Type a number first."); if (Number(raw) === 25) { markDone("s11"); return setFeedback("good", "Yes. 1 equal unit = 25 cm."); } bumpAttempts("s11"); return setFeedback("bad", "Not yet. Divide 125 by 5."); }
+        if (screenId === "s12") { const selected = selectedId("s12"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "belinda-left") { markDone("s12"); return setFeedback("good", "Yes. 1 equal unit is Belinda’s ribbon left."); } bumpAttempts("s12"); return setFeedback("bad", "Not yet. Belinda-left was shown as 1 equal unit."); }
+        if (screenId === "s13") { const selected = selectedId("s13"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "187+25") { markDone("s13"); return setFeedback("good", "Yes. Starting ribbon length = Belinda used + Belinda left, so use 187 + 25."); } bumpAttempts("s13"); return setFeedback("bad", "Not yet. To find the whole bar, put Belinda used and Belinda left back together."); }
+        if (screenId === "s14") { const raw = (state.inputs.s14 || "").trim(); if (!raw) return setFeedback("bad", "Type a number first."); if (Number(raw) === 212) { markDone("s14"); return setFeedback("good", "Yes. Each girl was given 212 cm of ribbon."); } bumpAttempts("s14"); return setFeedback("bad", "Not yet. Use 187 + 25."); }
+        if (screenId === "s15") { const selected = selectedId("s15"); if (!selected) return setFeedback("bad", "Choose one answer first."); if (selected === "best") { markDone("s15"); return setFeedback("good", "Yes. That is the strategy to remember for this question."); } bumpAttempts("s15"); return setFeedback("bad", "Not yet. Choose the summary that uses equal starting bars, the extra used part, 5 equal units, 1 equal unit, and then the whole bar."); }
+      }
+
+      function render(){
+        updateQuestionToggle();
+        host.innerHTML = renderScreen();
+        const input = document.getElementById("numInput");
+        if (input) {
+          input.addEventListener("input", (e) => {
+            state.inputs[screens[state.current].id] = e.target.value.replace(/[^0-9]/g, "");
+          });
+        }
+      }
+
+      host.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-kind]");
+        if (!t) return;
+        const kind = t.dataset.kind;
+        if (kind === "select-choice") { setSelected(t.dataset.screen, t.dataset.id); return; }
+        if (kind === "place-slot") {
+          const amount = selectedId("s4");
+          if (!amount) { setFeedback("bad", "Tap an amount first."); return; }
+          state.placements[t.dataset.slot] = amount;
+          clearFeedback();
+          render();
+          return;
+        }
+        if (kind === "check") { checkScreen(t.dataset.screen); return; }
+        if (kind === "back") { prevScreen(); return; }
+        if (kind === "next") { if (canGoNext()) nextScreen(); return; }
+      });
+
+      host.addEventListener("keydown", (e) => {
+        const t = e.target.closest("[data-kind]");
+        if (!t) return;
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); t.click(); }
+      });
+
+      toggleQuestionBtn.addEventListener("click", () => { state.questionOpen = !state.questionOpen; render(); });
+      readAloudBtn.addEventListener("click", () => {
+        const screen = screens[state.current];
+        speak(["Step " + (state.current + 1), screen.title, screen.action, screen.explain, "Question", questionLines.join(" ")].join(". "));
+      });
+      restartBtn.addEventListener("click", restart);
+      window.addEventListener("beforeunload", stopSpeech);
+      render();
+    })();
+  </script>
+</body>
+</html>

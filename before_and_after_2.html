@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before and After 2</title>
+<style>
+
+  :root{
+    --bg:#f7f9fc;
+    --card:#ffffff;
+    --text:#17324d;
+    --muted:#5f7388;
+    --line:#d7e0ea;
+    --primary:#2563eb;
+    --primary-soft:#dbeafe;
+    --success:#166534;
+    --success-soft:#dcfce7;
+    --warn:#92400e;
+    --warn-soft:#ffedd5;
+    --danger:#b91c1c;
+    --danger-soft:#fee2e2;
+    --purple:#7c3aed;
+    --purple-soft:#ede9fe;
+    --redbar:#fca5a5;
+    --redbar-soft:#fee2e2;
+    --bluebar:#93c5fd;
+    --bluebar-soft:#dbeafe;
+    --change:#f59e0b;
+    --shadow:0 10px 30px rgba(23,50,77,.08);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+  body{min-height:100vh}
+  .page{max-width:980px;margin:0 auto;padding:18px;}
+  .shell{background:var(--card);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);overflow:hidden;}
+  .header{padding:16px 18px 10px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);}
+  .topline{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:#eef6ff;color:#1d4ed8;padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;}
+  .progress-wrap{flex:1 1 280px;min-width:220px;}
+  .progress-text{font-size:14px;color:var(--muted);margin-bottom:6px;font-weight:700;}
+  .progress{height:12px;background:#edf2f7;border-radius:999px;overflow:hidden;}
+  .progress > div{height:100%;background:linear-gradient(90deg,#60a5fa 0%,#2563eb 100%);width:0%;transition:width .35s ease;}
+  .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  button{font:inherit;border:none;border-radius:16px;padding:14px 18px;cursor:pointer;touch-action:manipulation;}
+  .btn{background:#eef2f7;color:var(--text);font-weight:700;}
+  .btn-primary{background:var(--primary);color:white;}
+  .btn-outline{background:white;border:2px solid var(--line);color:var(--text);font-weight:700;}
+  .btn-ghost{background:transparent;border:2px solid var(--line);color:var(--text);font-weight:700;}
+  .content{padding:20px;}
+  .title{font-size:28px;line-height:1.2;margin:0 0 8px 0;}
+  .action-box{background:var(--primary-soft);border:2px solid #93c5fd;border-radius:20px;padding:16px;font-size:26px;line-height:1.25;font-weight:800;}
+  .support-box{margin-top:12px;background:var(--warn-soft);border:2px solid #fdba74;border-radius:18px;padding:14px 16px;font-size:18px;line-height:1.35;color:#7c2d12;}
+  .visual-card{margin-top:16px;padding:18px;border:2px solid var(--line);border-radius:24px;background:#fbfdff;}
+  .option-grid{display:grid;gap:14px;margin-top:16px;}
+  .option-grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .option-grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .option{background:white;border:3px solid var(--line);border-radius:22px;padding:16px;min-height:84px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:22px;line-height:1.25;font-weight:700;user-select:none;}
+  .option.tappable:hover{border-color:#9db4cc}
+  .option.selected{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.12);background:#f5f9ff;}
+  .option.correct{border-color:var(--success);background:var(--success-soft);}
+  .option.wrong{border-color:var(--danger);background:var(--danger-soft);}
+  .sentence-option{justify-content:flex-start;text-align:left;}
+  .choice-caption{font-size:14px;line-height:1.35;color:var(--muted);margin-top:6px;}
+  .feedback{margin-top:16px;border-radius:18px;padding:14px 16px;font-size:20px;line-height:1.35;font-weight:700;}
+  .feedback.success{background:var(--success-soft); color:var(--success); border:2px solid #86efac;}
+  .feedback.error{background:var(--danger-soft); color:var(--danger); border:2px solid #fca5a5;}
+  .feedback.info{background:var(--warn-soft); color:var(--warn); border:2px solid #fdba74;}
+  .input-wrap{margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+  .answer-input{width:220px;max-width:100%;font-size:28px;font-weight:800;border:3px solid var(--line);border-radius:18px;padding:14px 16px;color:var(--text);}
+  .answer-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.12);}
+  .prompt-line{font-size:24px;line-height:1.3;font-weight:700;}
+  .question-panel{margin-top:16px;border:2px solid var(--line);border-radius:20px;overflow:hidden;background:#ffffff;}
+  .question-panel .question-head{background:#f8fbff;padding:12px 16px;font-size:18px;font-weight:800;color:var(--muted);border-bottom:1px solid var(--line);}
+  .question-body{padding:14px 16px;}
+  .question-body p{margin:0 0 10px 0;font-size:22px;line-height:1.4;}
+  .question-body p:last-child{margin-bottom:0}
+  .question-focus{background:linear-gradient(90deg,#fff7ed 0%,#ffedd5 100%);padding:6px 8px;border-radius:10px;display:inline;}
+  .footer{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:12px;border-top:1px solid var(--line);}
+  .footer .left, .footer .right{display:flex;gap:10px;flex-wrap:wrap;}
+
+  .model-wrap{display:grid;gap:18px;}
+  .model{width:100%;border-radius:18px;background:white;padding:12px;border:2px solid var(--line);position:relative;}
+  .model-row{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:center;margin:12px 0;}
+  .label{font-weight:800;font-size:20px;text-align:right;}
+  .bar-lane{display:flex;align-items:center;gap:0;min-height:56px;position:relative;flex-wrap:nowrap;}
+  .seg{height:54px;border:3px solid rgba(23,50,77,.12);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 10px;font-weight:800;font-size:18px;line-height:1.15;color:#17324d;}
+  .equal{width:min(22vw,150px);min-width:110px;}
+  .wide{width:min(44vw,300px);min-width:220px;}
+  .mid{width:min(31vw,220px);min-width:150px;}
+  .small{width:min(18vw,120px);min-width:84px;}
+  .equal.red,.wide.red,.mid.red,.small.red{background:var(--redbar-soft);}
+  .equal.blue,.wide.blue,.mid.blue,.small.blue{background:var(--bluebar-soft);}
+  .change{width:min(18vw,120px);min-width:84px;background:#fef3c7;border-left:none;}
+  .seg.left{border-radius:14px 0 0 14px;}
+  .seg.middle{border-radius:0;}
+  .seg.right{border-radius:0 14px 14px 0;}
+  .single{border-radius:14px;}
+  .brace{margin-left:100px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--muted);}
+  .brace-line{height:14px;flex:1;border-top:4px solid #94a3b8;position:relative;}
+  .brace-line:before,.brace-line:after{content:"";position:absolute;top:-4px;width:0;height:18px;border-left:4px solid #94a3b8;}
+  .brace-line:before{left:0}
+  .brace-line:after{right:0}
+  .note-chip{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:8px 12px;font-size:16px;font-weight:800;margin-top:12px;}
+  .note-blue{background:#dbeafe;color:#1d4ed8}
+  .note-red{background:#fee2e2;color:#be123c}
+  .note-orange{background:#ffedd5;color:#c2410c}
+  .note-purple{background:#ede9fe;color:#6d28d9}
+  .add-strip,.remove-strip{position:absolute;right:18px;top:14px;background:#fef3c7;color:#92400e;border:2px solid #f59e0b;border-radius:999px;padding:8px 12px;font-weight:800;}
+  .animate-add{animation:addIn .9s ease forwards;transform-origin:left center;}
+  .animate-remove{animation:removeOut .9s ease forwards;transform-origin:right center;}
+  @keyframes addIn{0%{transform:translate(-36px,18px) scale(.9);opacity:.15}100%{transform:translate(0,0) scale(1);opacity:1}}
+  @keyframes removeOut{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(34px,-24px) scale(.92);opacity:.22}}
+  .pulse{animation:pulse 1.2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.18)}50%{box-shadow:0 0 0 8px rgba(37,99,235,0)}}
+  .fade-in{animation:fadeIn .4s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .mini{transform:scale(.92);transform-origin:top left;}
+  .model-card-inner{width:100%;}
+  .mini .model-row{grid-template-columns:66px 1fr;margin:10px 0;}
+  .mini .label{font-size:16px}
+  .mini .seg{height:40px;font-size:14px}
+  .mini .equal{width:92px;min-width:92px}
+  .mini .wide{width:185px;min-width:185px}
+  .mini .mid{width:135px;min-width:135px}
+  .mini .small,.mini .change{width:70px;min-width:70px}
+  .mini .brace{margin-left:72px;font-size:16px}
+  .parallel{margin-top:16px;padding:16px;border:2px dashed #93c5fd;border-radius:20px;background:#f8fbff;}
+  .parallel h3{margin:0 0 10px 0;font-size:22px;}
+  .streak{display:inline-flex;align-items:center;gap:8px;background:#eff6ff;color:#1d4ed8;font-weight:800;padding:8px 12px;border-radius:999px;margin-bottom:12px;}
+  .finish{margin-top:18px;padding:18px;border-radius:22px;background:linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%);border:2px solid #86efac;}
+  .finish h3{margin:0 0 10px 0;font-size:28px;color:#166534;}
+  .finish p,.finish li{font-size:21px;line-height:1.4;}
+  .finish ul{margin:10px 0 0 22px;padding:0;}
+  .math-line{font-size:28px;font-weight:800;color:#1d4ed8;margin-top:8px;}
+  .hidden{display:none !important;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;}
+  @media (max-width:760px){
+    .page{padding:10px}
+    .content{padding:14px}
+    .title{font-size:24px}
+    .action-box{font-size:22px}
+    .prompt-line{font-size:22px}
+    .option{font-size:20px;min-height:78px}
+    .question-body p{font-size:20px}
+    .model-row{grid-template-columns:72px 1fr}
+    .label{font-size:18px}
+    .brace{margin-left:82px}
+    .option-grid.cols-2,.option-grid.cols-3{grid-template-columns:1fr}
+    .add-strip,.remove-strip{position:static;display:inline-flex;margin-top:10px;}
+  }
+
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="shell">
+    <div class="header">
+      <div class="topline">
+        <div class="badge">Before and After Word Problem</div>
+        <div class="progress-wrap">
+          <div class="progress-text" id="progressText">Screen 1 of 13</div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn-outline" data-act="read">🔊 Read aloud</button>
+        <button class="btn-outline" data-act="toggleQuestion">📘 Show question</button>
+        <button class="btn-outline" data-act="restart">↺ Restart</button>
+      </div>
+    </div>
+    <div class="content" id="app"></div>
+  </div>
+</div>
+
+<script>
+
+(function(){
+  const fullQuestion = [
+    "There was a total of 1580 red and blue balls in the ball pit.",
+    "After 250 new blue balls were added to the pit, there were twice as many red balls as blue balls.",
+    "How many blue balls were there at first?"
+  ];
+
+  const screens = [
+    {
+      id:'s1',
+      title:'Find the question',
+      action:'Tap the sentence that tells what to find.',
+      support:'Look for the sentence that asks for the answer at the end.',
+      type:'sentenceChoice',
+      randomize:false,
+      options:[
+        {id:'q1', text:fullQuestion[0]},
+        {id:'q2', text:fullQuestion[1]},
+        {id:'q3', text:fullQuestion[2]}
+      ],
+      correct:'q3',
+      success:'Yes. We need the number of blue balls at first.',
+      hint1:'Tap the sentence that asks the question.',
+      hint2:'The correct sentence starts with “How many ...”.',
+      explain:'The first two sentences give information. The last sentence tells what number we must find.'
+    },
+    {
+      id:'s2',
+      title:'What changed?',
+      action:'Choose what changed after 250 blue balls were added.',
+      support:'Watch the before-and-after picture. Only one colour gets more balls.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'blue', text:'Blue balls changed.'},
+        {id:'red', text:'Red balls changed.'},
+        {id:'both', text:'Both colours changed.'}
+      ],
+      correct:'blue',
+      success:'Yes. The blue balls changed because 250 new blue balls were added.',
+      hint1:'Look for the colour named in “250 new blue balls were added”.',
+      hint2:'The story does not say any new red balls were added.',
+      explain:'Blue changed because 250 blue balls were added. Red stayed the same.'
+    },
+    {
+      id:'s3',
+      title:'What stayed the same?',
+      action:'Choose what stayed the same after the blue balls were added.',
+      support:'One colour changed. The other colour stayed the same.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'red', text:'Red balls stayed the same.'},
+        {id:'blue', text:'Blue balls stayed the same.'},
+        {id:'total', text:'The total stayed the same.'}
+      ],
+      correct:'red',
+      success:'Yes. The red balls stayed the same.',
+      hint1:'The story only says blue balls were added.',
+      hint2:'If blue changed, then red is the colour that stayed the same.',
+      explain:'The number of red balls does not change. Only the blue balls increase.'
+    },
+    {
+      id:'s4',
+      title:'What happened to the total?',
+      action:'Choose what happened to the total number of balls.',
+      support:'When more balls are added to the pit, the total changes too.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'bigger', text:'The total got bigger.'},
+        {id:'same', text:'The total stayed the same.'},
+        {id:'smaller', text:'The total got smaller.'}
+      ],
+      correct:'bigger',
+      success:'Yes. More balls were added, so the total got bigger.',
+      hint1:'If 250 more balls go into the pit, there are more balls altogether.',
+      hint2:'1580 was the total at first. After adding balls, the total is bigger than 1580.',
+      explain:'Because 250 new blue balls were added, the whole total becomes bigger than 1580.'
+    },
+    {
+      id:'s5',
+      title:'Find the new total',
+      action:'Type the total number of balls after the 250 blue balls were added.',
+      support:'Start with 1580 balls altogether. Then add the 250 blue balls.',
+      type:'input',
+      inputLabel:'Total after the change =',
+      correct:'1830',
+      success:'1830 balls are in the pit after the change.',
+      hint1:'The total got bigger. Try 1580 + 250.',
+      hint2:'Add the 250 new blue balls to the first total of 1580.',
+      explain:'1580 + 250 = 1830. So 1830 is the total number of balls after the blue balls were added.'
+    },
+    {
+      id:'s6',
+      title:'What does “twice as many” look like?',
+      action:'Choose the model that matches: “twice as many red balls as blue balls.”',
+      support:'The correct model must show 2 equal red units and 1 equal blue unit.',
+      type:'modelChoice',
+      randomize:true,
+      options:[
+        {id:'correct_2r1b', kind:'ratio2to1', text:'Red has 2 equal units. Blue has 1 equal unit.'},
+        {id:'wrong_1r2b', kind:'ratio1to2', text:'Red has 1 unit. Blue has 2 equal units.'},
+        {id:'wrong_2r2b', kind:'ratio2to2', text:'Red and blue both have 2 units.'}
+      ],
+      correct:'correct_2r1b',
+      success:'Yes. “Twice as many red balls as blue balls” means red has 2 equal units and blue has 1 equal unit.',
+      hint1:'Read the sentence carefully: which colour is twice the other colour?',
+      hint2:'Red must be the bigger amount here, not blue.',
+      explain:'If red is twice blue, then red is made of 2 equal blue-sized units. Blue is 1 equal unit.'
+    },
+    {
+      id:'s7',
+      title:'Which total goes on this model?',
+      action:'Choose the number that belongs on the total brace of the 3-unit model.',
+      support:'The model shows what happens after the blue balls were added, so it needs the after total.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'1580', text:'1580'},
+        {id:'1830', text:'1830'},
+        {id:'250', text:'250'}
+      ],
+      correct:'1830',
+      success:'Yes. 1830 is the total after the blue balls were added, so it belongs on the 3-unit model.',
+      hint1:'Does this model match the first total or the total after the change?',
+      hint2:'Find the new total first. That is the number that belongs on this model.',
+      explain:'The sentence “there were twice as many red balls as blue balls” tells us about the situation after the 250 blue balls were added. So the total on the model is 1830.'
+    },
+    {
+      id:'s8',
+      title:'Choose the operation',
+      action:'Choose the operation that finds 1 unit from this 3-unit model.',
+      support:'The model shows 1830 split into 3 equal units altogether.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'add', text:'Add'},
+        {id:'subtract', text:'Subtract'},
+        {id:'multiply', text:'Multiply'},
+        {id:'divide', text:'Divide'}
+      ],
+      correct:'divide',
+      success:'Yes. The total 1830 is shared into 3 equal units, so we divide.',
+      hint1:'There are 3 equal units. Which operation finds 1 unit from a total?',
+      hint2:'When a whole is shared into equal units, we divide.',
+      explain:'The model has 3 equal units in total: 2 red units and 1 blue unit. To find 1 unit from the total 1830, divide by 3.',
+      remediationItems:[
+        {id:'d1', kind:'equalParts', total:12, groups:3},
+        {id:'d2', kind:'equalParts', total:15, groups:3},
+        {id:'d3', kind:'equalParts', total:21, groups:3}
+      ]
+    },
+    {
+      id:'s9',
+      title:'Find the blue balls after the change',
+      action:'Type the number of blue balls after the 250 blue balls were added.',
+      support:'Use the 3 equal units to work out 1 blue unit after the change.',
+      type:'input',
+      sentence:'Blue balls after the change = __',
+      correct:'610',
+      success:'Correct. There were 610 blue balls after the 250 blue balls were added.',
+      hint1:'First find 1 unit from the 3 equal units.',
+      hint2:'1830 ÷ 3 = 610.',
+      explain:'The total 1830 is 3 equal units altogether. So 1 unit = 1830 ÷ 3 = 610. The blue balls after the change are 610.'
+    },
+    {
+      id:'s10',
+      title:'Are we done yet?',
+      action:'Choose the best answer.',
+      support:'Check what the question asks for. Does it ask for blue balls after the change, or blue balls at first?',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'notDone', text:'No. 610 is the blue balls after the change, not the blue balls at first.'},
+        {id:'done', text:'Yes. 610 answers the question already.'}
+      ],
+      correct:'notDone',
+      success:'Right. 610 is not the final answer because the question asks for blue balls at first.',
+      hint1:'Look again at the last sentence of the question.',
+      hint2:'The problem asks for the number of blue balls at first, before the 250 were added.',
+      explain:'610 is the blue amount after the change. The question asks for the blue amount at first, so we still need one more step.'
+    },
+    {
+      id:'s11',
+      title:'Work backwards',
+      action:'Choose the operation that goes back from 610 blue balls after the change to the number of blue balls at first.',
+      support:'The 610 blue balls after the change includes the extra 250 blue balls that were added.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'add', text:'Add 250'},
+        {id:'subtract', text:'Subtract 250'},
+        {id:'divide', text:'Divide by 250'}
+      ],
+      correct:'subtract',
+      success:'Yes. To go back to the blue balls at first, subtract the 250 blue balls that were added.',
+      hint1:'To go back to the first amount, undo what happened.',
+      hint2:'250 blue balls were added. To undo that, subtract 250.',
+      explain:'610 is the blue amount after 250 blue balls were added. To find the blue amount at first, subtract 250: 610 - 250.',
+      remediationItems:[
+        {id:'b1', kind:'goBack', after:9, added:2},
+        {id:'b2', kind:'goBack', after:14, added:4},
+        {id:'b3', kind:'goBack', after:11, added:3}
+      ]
+    },
+    {
+      id:'s12',
+      title:'Complete the answer',
+      action:'Type the missing number.',
+      support:'Start with the blue amount after the change, 610. Then subtract the 250 blue balls that were added.',
+      type:'input',
+      sentence:'There were __ blue balls at first.',
+      correct:'360',
+      success:'Correct. There were 360 blue balls at first.',
+      hint1:'Use 610 - 250.',
+      hint2:'Take away the 250 blue balls that were added from 610.',
+      explain:'610 - 250 = 360. So there were 360 blue balls at first.'
+    },
+    {
+      id:'s13',
+      title:'Consolidate the strategy',
+      action:'Choose the best strategy summary for this word problem.',
+      support:'Think about the order of the steps: new total, equal-units model, then work backwards.',
+      type:'choice',
+      randomize:true,
+      options:[
+        {id:'best', text:'First find the new total after the 250 blue balls were added. Then use the 3 equal units to find the blue balls after. Last, subtract 250 to work back to the blue balls at first.'},
+        {id:'divideFirst', text:'First divide 1580 by 2. Then add 250.'},
+        {id:'guess', text:'Guess a blue number first and hope it works.'}
+      ],
+      correct:'best',
+      success:'Yes. New total first, then equal-units model, then work backwards.',
+      hint1:'Did we use the first total 1580 all the way to the end?',
+      hint2:'The total changed first. Then the 3-unit model helped us find the blue balls after the change.',
+      explain:'This problem has 3 linked steps. First, add 250 to 1580 to get the new total 1830. Then use the 3 equal units to find the blue balls after the change: 1830 ÷ 3 = 610. Last, subtract 250 to go back to the blue balls at first: 360.'
+    }
+  ];
+
+  const state = {
+    index:0,
+    selection:{},
+    input:{},
+    attempts:{},
+    solved:{},
+    feedback:{},
+    questionOpen:{},
+    orders:{},
+    rem:{
+      active:false,
+      screenId:null,
+      streak:0,
+      step:0,
+      selection:null,
+      feedback:null,
+      orders:{}
+    }
+  };
+
+  const app = document.getElementById('app');
+  const progressText = document.getElementById('progressText');
+  const progressBar = document.getElementById('progressBar');
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function currentScreen(){ return screens[state.index]; }
+  function getScreen(screenId){ return screens.find(s => s.id === screenId); }
+
+  function getOrder(screen){
+    if(!screen.randomize) return screen.options.map(o => o.id);
+    if(!state.orders[screen.id]){
+      state.orders[screen.id] = shuffle(screen.options.map(o => o.id));
+    }
+    return state.orders[screen.id];
+  }
+
+  function getOptions(screen){
+    const map = new Map(screen.options.map(o => [o.id,o]));
+    return getOrder(screen).map(id => map.get(id));
+  }
+
+  function getFeedback(screenId){ return state.feedback[screenId] || null; }
+  function setFeedback(screenId, type, text){ state.feedback[screenId] = {type,text}; }
+  function clearFeedback(screenId){ delete state.feedback[screenId]; }
+  function getAttempt(screenId){ return state.attempts[screenId] || 0; }
+  function bumpAttempt(screenId){ state.attempts[screenId] = getAttempt(screenId) + 1; return state.attempts[screenId]; }
+  function isSolved(screenId){ return !!state.solved[screenId]; }
+  function markSolved(screenId){ state.solved[screenId] = true; }
+
+  function restartAll(){
+    state.index = 0;
+    state.selection = {};
+    state.input = {};
+    state.attempts = {};
+    state.solved = {};
+    state.feedback = {};
+    state.questionOpen = {};
+    state.orders = {};
+    state.rem = {active:false, screenId:null, streak:0, step:0, selection:null, feedback:null, orders:{}};
+    render();
+  }
+
+  function updateProgress(){
+    progressText.textContent = `Screen ${Math.min(state.index+1, screens.length)} of ${screens.length}`;
+    progressBar.style.width = `${((state.index+1)/screens.length)*100}%`;
+  }
+
+  function questionIsOpen(screen){
+    if(screen.id === 's1') return true;
+    return !!state.questionOpen[screen.id];
+  }
+
+  function renderQuestionPanel(screen){
+    const open = questionIsOpen(screen);
+    const focusMap = {
+      s1:2, s2:1, s3:1, s4:1, s5:1, s6:1, s7:1, s8:1, s9:1, s10:2, s11:2, s12:2, s13:2
+    };
+    const focusIndex = focusMap[screen.id];
+    return `
+      <div class="question-panel ${open ? '' : 'hidden'}" id="questionPanel">
+        <div class="question-head">Question</div>
+        <div class="question-body">
+          ${fullQuestion.map((line, idx) => `<p>${idx===focusIndex ? `<span class="question-focus">${line}</span>` : line}</p>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildBallPitBeforeAfter(opts = {}){
+    const {
+      topBraceText='1580 altogether at first',
+      showAdded=false,
+      addedText='250 blue added',
+      animateAdd=false,
+      afterBraceText='',
+      showAfterBrace=false,
+      showQuestionMarks=false,
+      highlightBlue=false,
+      highlightRed=false,
+      highlightTotal=false,
+      note=''
+    } = opts;
+
+    const redLabel = highlightRed ? 'same red' : (showQuestionMarks ? '?' : '');
+    const blueLabel = highlightBlue ? 'blue changed' : (showQuestionMarks ? '?' : '');
+    return `
+      <div class="model-wrap fade-in">
+        <div class="model">
+          <div class="brace"><div class="brace-line"></div><div>${topBraceText}</div></div>
+          <div class="model-row">
+            <div class="label">Red</div>
+            <div class="bar-lane">
+              <div class="seg wide red single ${highlightRed ? 'pulse' : ''}">${redLabel}</div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="label">Blue</div>
+            <div class="bar-lane">
+              <div class="seg mid blue ${showAdded ? 'left' : 'single'} ${highlightBlue ? 'pulse' : ''}">${blueLabel}</div>
+              ${showAdded ? `<div class="seg change right ${animateAdd ? 'animate-add' : ''}">250</div>` : ''}
+            </div>
+          </div>
+          ${showAdded ? `<div class="add-strip">${addedText}</div>` : ''}
+          ${showAfterBrace ? `<div class="brace"><div class="brace-line"></div><div class="${highlightTotal ? 'pulse' : ''}">${afterBraceText}</div></div>` : ''}
+          ${note ? `<div class="note-chip note-purple">${note}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildRatioModel(opts = {}){
+    const {
+      totalText='1830 altogether',
+      redText='',
+      blueText='',
+      totalNote='',
+      highlightBlue=false,
+      highlightUnits=false,
+      showBrace=true
+    } = opts;
+    return `
+      <div class="model-wrap fade-in">
+        <div class="model">
+          ${showBrace ? `<div class="brace"><div class="brace-line"></div><div>${totalText}</div></div>` : ''}
+          <div class="model-row">
+            <div class="label">Red</div>
+            <div class="bar-lane">
+              <div class="seg equal red left ${highlightUnits ? 'pulse' : ''}">${redText}</div>
+              <div class="seg equal red right ${highlightUnits ? 'pulse' : ''}">${redText}</div>
+            </div>
+          </div>
+          <div class="model-row">
+            <div class="label">Blue</div>
+            <div class="bar-lane">
+              <div class="seg equal blue single ${highlightBlue ? 'pulse' : ''}">${blueText}</div>
+            </div>
+          </div>
+          <div class="note-chip note-blue">2 equal red units and 1 equal blue unit</div>
+          ${totalNote ? `<div class="note-chip note-orange">${totalNote}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function buildGoBackModel(opts = {}){
+    const {
+      afterText='610 blue after the change',
+      firstText='?',
+      showFirstValue=false,
+      animateRemove=false,
+      note='Take away 250 to go back'
+    } = opts;
+    const firstDisplay = showFirstValue ? firstText : '?';
+    return `
+      <div class="model-wrap fade-in">
+        <div class="model">
+          <div class="brace"><div class="brace-line"></div><div>${afterText}</div></div>
+          <div class="model-row">
+            <div class="label">Blue</div>
+            <div class="bar-lane">
+              <div class="seg mid blue left pulse">${firstDisplay}</div>
+              <div class="seg change right ${animateRemove ? 'animate-remove' : ''}">250</div>
+            </div>
+          </div>
+          <div class="note-chip note-orange">${note}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildModelCard(kind){
+    if(kind === 'ratio2to1'){
+      return `<div class="model-card-inner mini">${buildRatioModel({totalText:'', showBrace:false})}</div>`;
+    }
+    if(kind === 'ratio1to2'){
+      return `
+        <div class="model-card-inner mini">
+          <div class="model-wrap">
+            <div class="model">
+              <div class="model-row">
+                <div class="label">Red</div>
+                <div class="bar-lane">
+                  <div class="seg equal red single"></div>
+                </div>
+              </div>
+              <div class="model-row">
+                <div class="label">Blue</div>
+                <div class="bar-lane">
+                  <div class="seg equal blue left"></div>
+                  <div class="seg equal blue right"></div>
+                </div>
+              </div>
+              <div class="note-chip note-orange">Blue is bigger here</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="model-card-inner mini">
+        <div class="model-wrap">
+          <div class="model">
+            <div class="model-row">
+              <div class="label">Red</div>
+              <div class="bar-lane">
+                <div class="seg equal red left"></div>
+                <div class="seg equal red right"></div>
+              </div>
+            </div>
+            <div class="model-row">
+              <div class="label">Blue</div>
+              <div class="bar-lane">
+                <div class="seg equal blue left"></div>
+                <div class="seg equal blue right"></div>
+              </div>
+            </div>
+            <div class="note-chip note-orange">Both are the same size</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildRemediationVisual(screen){
+    const item = screen.remediationItems[state.rem.step % screen.remediationItems.length];
+    const order = getRemediationOrder(screen.id, item.id);
+    if(item.kind === 'equalParts'){
+      return `
+        <div class="parallel fade-in">
+          <div class="streak">Practice streak: ${state.rem.streak} / 3</div>
+          <h3>Practice with a simpler equal-units model</h3>
+          <p class="prompt-line">A total of ${item.total} is split into ${item.groups} equal units. Which operation finds 1 unit?</p>
+          ${buildRatioModel({totalText:`${item.total} altogether`, redText:'?', blueText:'?', totalNote:`${item.groups} equal units in all`, highlightUnits:true})}
+          <div class="option-grid cols-2">
+            ${order.map(id => `
+              <div class="option tappable ${state.rem.selection === id ? 'selected' : ''}" data-rem-option="${id}" role="button" tabindex="0" aria-pressed="${state.rem.selection===id ? 'true' : 'false'}">
+                <div>${labelForOp(id)}</div>
+              </div>
+            `).join('')}
+          </div>
+          ${state.rem.feedback ? `<div class="feedback ${state.rem.feedback.type}">${state.rem.feedback.text}</div>` : ''}
+        </div>
+      `;
+    }
+    return `
+      <div class="parallel fade-in">
+        <div class="streak">Practice streak: ${state.rem.streak} / 3</div>
+        <h3>Practice going back to the first amount</h3>
+        <p class="prompt-line">${item.added} blue balls were added. Now there are ${item.after} blue balls. Which operation goes back to the blue balls at first?</p>
+        ${buildGoBackModel({afterText:`${item.after} blue after the change`, firstText:'?', showFirstValue:false, animateRemove:false, note:`Undo the +${item.added}`}).replace('250', String(item.added))}
+        <div class="option-grid cols-2">
+          ${order.map(id => `
+            <div class="option tappable ${state.rem.selection === id ? 'selected' : ''}" data-rem-option="${id}" role="button" tabindex="0" aria-pressed="${state.rem.selection===id ? 'true' : 'false'}">
+              <div>${labelForOp(id)}</div>
+            </div>
+          `).join('')}
+        </div>
+        ${state.rem.feedback ? `<div class="feedback ${state.rem.feedback.type}">${state.rem.feedback.text}</div>` : ''}
+      </div>
+    `;
+  }
+
+  function labelForOp(id){
+    const map = {
+      add:'Add',
+      subtract:'Subtract',
+      multiply:'Multiply',
+      divide:'Divide',
+      'add250':'Add 250',
+      'subtract250':'Subtract 250'
+    };
+    return map[id] || id;
+  }
+
+  function getRemediationOrder(screenId, itemId){
+    const key = `${screenId}_${itemId}`;
+    if(!state.rem.orders[key]){
+      const ops = screenId === 's11' ? ['add','subtract','divide'] : ['add','subtract','multiply','divide'];
+      state.rem.orders[key] = shuffle(ops);
+    }
+    return state.rem.orders[key];
+  }
+
+  function renderChoiceOptions(screen){
+    const selected = state.selection[screen.id];
+    const options = getOptions(screen);
+    const cols = screen.type === 'modelChoice' ? 'cols-3' : (options.length === 2 ? 'cols-2' : 'cols-2');
+    return `
+      <div class="option-grid ${cols}">
+        ${options.map(opt => {
+          const selectedClass = selected === opt.id ? 'selected' : '';
+          const content = screen.type === 'modelChoice'
+            ? `${buildModelCard(opt.kind)}<div class="choice-caption">${opt.text}</div>`
+            : `<div>${opt.text}</div>`;
+          const extraClass = screen.type === 'sentenceChoice' ? 'sentence-option' : '';
+          return `
+            <div class="option tappable ${selectedClass} ${extraClass}" data-option="${opt.id}" role="button" tabindex="0" aria-pressed="${selected===opt.id ? 'true' : 'false'}">
+              ${content}
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  function renderInputArea(screen){
+    const value = state.input[screen.id] || '';
+    if(screen.sentence){
+      return `<div class="prompt-line">${screen.sentence.replace('__', `<input inputmode="numeric" pattern="[0-9]*" class="answer-input" id="answerInput" value="${value}">`)}</div>`;
+    }
+    const label = screen.inputLabel || 'Answer =';
+    return `<div class="input-wrap"><div class="prompt-line">${label}</div><input inputmode="numeric" pattern="[0-9]*" class="answer-input" id="answerInput" value="${value}"></div>`;
+  }
+
+  function renderVisual(screen){
+    if(screen.id === 's2'){
+      return `<div class="visual-card">${buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, animateAdd:true, highlightBlue:true, note:'Blue changed'})}</div>`;
+    }
+    if(screen.id === 's3'){
+      return `<div class="visual-card">${buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, highlightRed:true, note:'Red stayed the same'})}</div>`;
+    }
+    if(screen.id === 's4'){
+      return `<div class="visual-card">${buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, showAfterBrace:true, afterBraceText:'Now bigger than 1580', highlightTotal:true, note:'Adding 250 makes the total bigger'})}</div>`;
+    }
+    if(screen.id === 's5'){
+      const solved = isSolved('s5');
+      const attempts = getAttempt('s5');
+      return `<div class="visual-card">
+        ${solved
+          ? buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, showAfterBrace:true, afterBraceText:'1830 altogether after the change', note:'This is the new total'})
+          : buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, showAfterBrace:attempts>=2, afterBraceText:attempts>=2 ? '1830 altogether after the change' : 'What is the new total?', note:attempts>=2 ? 'Add 250 to 1580' : ''})
+        }
+      </div>`;
+    }
+    if(screen.id === 's6'){
+      return `<div class="visual-card"><div class="prompt-line">Which model shows red twice blue?</div><div class="choice-caption">“Twice as many red balls as blue balls” means red is the bigger amount.</div></div>`;
+    }
+    if(screen.id === 's7'){
+      const attempts = getAttempt('s7');
+      return `<div class="visual-card">
+        ${buildRatioModel({totalText: attempts>=2 || isSolved('s7') ? '1830 altogether' : 'Which total fits here?', blueText:'?', redText:'?', totalNote:'This model is for after the 250 blue balls were added'})}
+      </div>`;
+    }
+    if(screen.id === 's8'){
+      if(state.rem.active && state.rem.screenId === 's8'){
+        return `<div class="visual-card">${buildRemediationVisual(screen)}</div>`;
+      }
+      const attempts = getAttempt('s8');
+      return `<div class="visual-card">
+        ${buildRatioModel({totalText:'1830 altogether', blueText: attempts>=2 ? '?' : '', redText: attempts>=2 ? '?' : '', totalNote: attempts>=2 ? '3 equal units altogether' : '2 red units and 1 blue unit', highlightUnits: attempts>=2})}
+      </div>`;
+    }
+    if(screen.id === 's9'){
+      const attempts = getAttempt('s9');
+      const solved = isSolved('s9');
+      return `<div class="visual-card">
+        ${buildRatioModel({
+          totalText:'1830 altogether',
+          redText: solved ? '610' : '?',
+          blueText: solved ? '610' : '?',
+          highlightBlue:true,
+          totalNote: solved
+            ? '1 blue unit = 610 after the change'
+            : attempts >= 2
+              ? 'Work out 1830 ÷ 3 to find 1 blue unit'
+              : 'Find 1 blue unit from the 3 equal units'
+        })}
+      </div>`;
+    }
+    if(screen.id === 's10'){
+      return `<div class="visual-card">
+        ${buildBallPitBeforeAfter({topBraceText:'1580 altogether at first', showAdded:true, showAfterBrace:true, afterBraceText:'1830 altogether after the change', highlightBlue:true, note:'610 is the blue amount after the change'})}
+      </div>`;
+    }
+    if(screen.id === 's11'){
+      if(state.rem.active && state.rem.screenId === 's11'){
+        return `<div class="visual-card">${buildRemediationVisual(screen)}</div>`;
+      }
+      const attempts = getAttempt('s11');
+      return `<div class="visual-card">
+        ${buildGoBackModel({afterText:'610 blue after the change', firstText:'?', showFirstValue:false, animateRemove:attempts>=2, note:attempts>=2 ? 'Undo the +250 by subtracting 250' : 'Which operation goes back to the first amount?'})}
+      </div>`;
+    }
+    if(screen.id === 's12'){
+      return `<div class="visual-card">${buildGoBackModel({afterText:'610 blue after the change', firstText:'360', showFirstValue:isSolved('s12'), animateRemove:false, note:isSolved('s12') ? '360 blue at first' : 'Take away the 250 added blue balls'})}</div>`;
+    }
+    if(screen.id === 's13'){
+      return `<div class="visual-card">
+        <div class="prompt-line">Which summary matches the steps in this problem?</div>
+        <div class="choice-caption">Keep the order clear: change the total, use the 3-unit model, then work backwards.</div>
+      </div>`;
+    }
+    return '';
+  }
+
+  function renderFeedback(screen){
+    const feedback = getFeedback(screen.id);
+    if(!feedback) return '';
+    return `<div class="feedback ${feedback.type}">${feedback.text}</div>`;
+  }
+
+  function renderFinishPanel(){
+    if(!isSolved('s13')) return '';
+    return `
+      <div class="finish fade-in">
+        <h3>Finished!</h3>
+        <p><strong>The blue balls at first = 360.</strong></p>
+        <ul>
+          <li>First, the total changed: 1580 + 250 = 1830.</li>
+          <li>Then, the model showed 3 equal units altogether: 2 red units and 1 blue unit.</li>
+          <li>So 1 unit = 1830 ÷ 3 = 610. That is the blue balls after the change.</li>
+          <li>Last, work backwards: 610 - 250 = 360.</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  function render(){
+    const screen = currentScreen();
+    updateProgress();
+
+    let mainTask = '';
+    const remActiveHere = state.rem.active && state.rem.screenId === screen.id;
+    if(remActiveHere){
+      mainTask = '';
+    } else if(screen.type === 'input'){
+      mainTask = renderInputArea(screen);
+    } else {
+      mainTask = renderChoiceOptions(screen);
+    }
+
+    const disableBack = state.index === 0 ? 'disabled' : '';
+    const solved = isSolved(screen.id);
+
+    app.innerHTML = `
+      <h1 class="title">${screen.title}</h1>
+      <div class="action-box">${screen.action}</div>
+      <div class="support-box">${screen.support}</div>
+      ${renderVisual(screen)}
+      ${screen.type !== 'hidden' ? mainTask : ''}
+      ${renderFeedback(screen)}
+      ${screen.id === 's13' ? renderFinishPanel() : ''}
+      ${renderQuestionPanel(screen)}
+      <div class="footer">
+        <div class="left">
+          <button class="btn-ghost" data-act="back" ${disableBack}>← Back</button>
+        </div>
+        <div class="right">
+          ${remActiveHere
+            ? `<button class="btn-primary" data-act="checkRemediation">Check practice</button>`
+            : solved
+              ? `${screen.id === 's13' ? `<button class="btn-primary" data-act="restart">Start again</button>` : `<button class="btn-primary" data-act="next">Continue →</button>`}`
+              : `<button class="btn-primary" data-act="check">Check</button>`
+          }
+        </div>
+      </div>
+    `;
+
+    const input = document.getElementById('answerInput');
+    if(input){
+      input.addEventListener('input', (e)=>{
+        state.input[screen.id] = e.target.value.replace(/[^0-9]/g,'');
+      });
+      setTimeout(()=>input.focus(), 50);
+    }
+  }
+
+  function handleSelect(optionId){
+    const screen = currentScreen();
+    if(isSolved(screen.id)) return;
+    if(state.rem.active && state.rem.screenId === screen.id) return;
+    state.selection[screen.id] = optionId;
+    clearFeedback(screen.id);
+    render();
+  }
+
+  function activateRemediation(screen){
+    state.rem.active = true;
+    state.rem.screenId = screen.id;
+    state.rem.streak = 0;
+    state.rem.step = 0;
+    state.rem.selection = null;
+    state.rem.feedback = {type:'info', text: screen.id === 's8'
+      ? 'Let us practise choosing the operation with a simpler equal-units model first.'
+      : 'Let us practise going back to the first amount first.'
+    };
+  }
+
+  function checkChoiceScreen(screen){
+    const selected = state.selection[screen.id];
+    if(!selected){
+      setFeedback(screen.id, 'info', 'Choose one answer first.');
+      render();
+      return;
+    }
+
+    if(selected === screen.correct){
+      markSolved(screen.id);
+      setFeedback(screen.id, 'success', screen.success);
+      if(state.rem.screenId === screen.id){
+        state.rem.active = false;
+      }
+      render();
+      return;
+    }
+
+    const attempt = bumpAttempt(screen.id);
+
+    if(screen.remediationItems && attempt >= 2){
+      activateRemediation(screen);
+      render();
+      return;
+    }
+
+    if(attempt === 1){
+      setFeedback(screen.id, 'error', screen.hint1);
+    } else if(attempt === 2){
+      setFeedback(screen.id, 'info', screen.hint2);
+    } else {
+      setFeedback(screen.id, 'info', screen.explain);
+    }
+    render();
+  }
+
+  function checkInputScreen(screen){
+    const raw = (state.input[screen.id] || '').trim();
+    if(!raw){
+      setFeedback(screen.id, 'info', 'Type a number first.');
+      render();
+      return;
+    }
+    if(raw === screen.correct){
+      markSolved(screen.id);
+      setFeedback(screen.id, 'success', screen.success);
+      render();
+      return;
+    }
+    const attempt = bumpAttempt(screen.id);
+    if(attempt === 1){
+      setFeedback(screen.id, 'error', screen.hint1);
+    } else if(attempt === 2){
+      setFeedback(screen.id, 'info', screen.hint2);
+    } else {
+      setFeedback(screen.id, 'info', screen.explain);
+    }
+    render();
+  }
+
+  function checkRemediation(){
+    const screen = currentScreen();
+    const item = screen.remediationItems[state.rem.step % screen.remediationItems.length];
+    if(!state.rem.selection){
+      state.rem.feedback = {type:'info', text:'Choose one operation first.'};
+      render();
+      return;
+    }
+    const correct = screen.correct;
+    if(state.rem.selection === correct){
+      state.rem.streak += 1;
+      if(state.rem.streak >= 3){
+        state.rem.active = false;
+        state.rem.feedback = null;
+        state.rem.selection = null;
+        setFeedback(screen.id, 'info', screen.id === 's8'
+          ? 'Great. Now use the same idea for the 3-unit ball model.'
+          : 'Great. Now use the same idea to go back from 610 to the first amount.'
+        );
+        render();
+        return;
+      }
+      state.rem.step += 1;
+      state.rem.selection = null;
+      state.rem.feedback = {type:'success', text: screen.id === 's8'
+        ? `Correct. A total split into equal units uses division. Keep going: ${state.rem.streak} correct in a row.`
+        : `Correct. To undo an amount that was added, subtract it. Keep going: ${state.rem.streak} correct in a row.`
+      };
+      render();
+      return;
+    }
+    state.rem.streak = 0;
+    state.rem.feedback = {type:'error', text: screen.id === 's8'
+      ? 'Not yet. The whole is being split into equal units, so use division.'
+      : 'Not yet. To go back to the first amount, undo the addition by subtracting.'
+    };
+    render();
+  }
+
+  function readCurrent(){
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    const screen = currentScreen();
+    let text = `${screen.title}. ${screen.action}. ${screen.support}. `;
+    if(questionIsOpen(screen)) text += fullQuestion.join(' ');
+    const feedback = getFeedback(screen.id);
+    if(feedback) text += ' ' + feedback.text;
+    if(state.rem.active && state.rem.screenId === screen.id && state.rem.feedback){
+      text += ' ' + state.rem.feedback.text;
+    }
+    if('speechSynthesis' in window){
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      window.speechSynthesis.speak(utter);
+    } else {
+      alert('Read aloud is not available on this device.');
+    }
+  }
+
+  document.addEventListener('click', function(e){
+    const option = e.target.closest('[data-option]');
+    if(option){
+      handleSelect(option.getAttribute('data-option'));
+      return;
+    }
+    const rem = e.target.closest('[data-rem-option]');
+    if(rem){
+      state.rem.selection = rem.getAttribute('data-rem-option');
+      render();
+      return;
+    }
+
+    const actBtn = e.target.closest('[data-act]');
+    if(!actBtn) return;
+    const act = actBtn.getAttribute('data-act');
+    const screen = currentScreen();
+
+    if(act === 'check'){
+      if(screen.type === 'input'){
+        checkInputScreen(screen);
+      } else {
+        checkChoiceScreen(screen);
+      }
+      return;
+    }
+    if(act === 'checkRemediation'){
+      checkRemediation();
+      return;
+    }
+    if(act === 'next'){
+      if(state.index < screens.length - 1){
+        state.index += 1;
+        render();
+      }
+      return;
+    }
+    if(act === 'back'){
+      if(state.index > 0){
+        state.index -= 1;
+        render();
+      }
+      return;
+    }
+    if(act === 'toggleQuestion'){
+      state.questionOpen[screen.id] = !questionIsOpen(screen);
+      render();
+      return;
+    }
+    if(act === 'read'){
+      readCurrent();
+      return;
+    }
+    if(act === 'restart'){
+      restartAll();
+      return;
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    const option = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.option : null;
+    if((e.key === 'Enter' || e.key === ' ') && option){
+      e.preventDefault();
+      handleSelect(option);
+    }
+  });
+
+  render();
+})();
+
+</script>
+</body>
+</html>
