@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internal Transfer, Total Unchanged</title>
+<style>
+  :root{
+    --bg:#f6f8fc;
+    --card:#ffffff;
+    --ink:#12233a;
+    --muted:#48607a;
+    --line:#d9e2ef;
+    --primary:#0b63ce;
+    --primary-soft:#e8f1ff;
+    --secondary:#ffedd2;
+    --success:#1f8a4c;
+    --success-soft:#e9f8ef;
+    --error:#b2432f;
+    --error-soft:#fdecea;
+    --shadow:0 12px 30px rgba(18,35,58,.08);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.45}
+  body{padding:18px}
+  .app{max-width:1080px;margin:0 auto}
+  .topbar{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+    margin-bottom:14px
+  }
+  .title-wrap h1{margin:0;font-size:2rem}
+  .title-wrap p{margin:.25rem 0 0;color:var(--muted);font-size:1rem}
+  .control-row{display:flex;flex-wrap:wrap;gap:10px}
+  button{
+    font:inherit;border:none;border-radius:16px;padding:14px 18px;background:var(--primary);color:#fff;
+    cursor:pointer;box-shadow:var(--shadow);min-height:52px
+  }
+  button.secondary{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+  button.ghost{background:var(--primary-soft);color:var(--primary);box-shadow:none}
+  button.success{background:var(--success)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .question-panel{
+    background:var(--card);border:2px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)
+  }
+  .question-panel h2{margin:.1rem 0 .5rem;font-size:1.3rem}
+  .question-card{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:18px;padding:16px 18px
+  }
+  .question-card p{margin:.4rem 0;font-size:1.12rem}
+  .progress-wrap{
+    background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:16px;
+    box-shadow:var(--shadow)
+  }
+  .progress-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700;margin-bottom:10px}
+  .progress-bar{height:14px;background:#edf2fa;border-radius:999px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#0b63ce,#68a7ff);width:0%;transition:width .35s ease}
+  .screen{
+    background:var(--card);border:2px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)
+  }
+  .screen h2{margin:.1rem 0 .35rem;font-size:1.6rem}
+  .callout{
+    border-radius:20px;padding:16px 18px;margin:10px 0 14px;border:2px solid transparent
+  }
+  .callout.action{background:var(--primary-soft);border-color:#cddfff}
+  .callout.help{background:var(--secondary);border-color:#ffd39a}
+  .callout strong{display:block;font-size:1.14rem;margin-bottom:6px}
+  .content-area{margin-top:14px}
+  .option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .option-card{
+    border:3px solid var(--line);border-radius:22px;padding:18px;background:#fff;min-height:116px;
+    display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;
+    transition:transform .15s ease,border-color .15s ease,background .15s ease;
+    color:var(--ink);box-shadow:none;cursor:pointer
+  }
+  .option-card:hover{transform:translateY(-2px)}
+  .option-card.selected{
+    border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 4px rgba(11,99,206,.12)
+  }
+  .option-card .small{font-size:.95rem;color:var(--muted);margin-top:6px}
+  .sentence-list{display:grid;gap:12px}
+  .sentence-card{
+    width:100%;text-align:left;background:#fff;color:var(--ink);border:3px solid var(--line);
+    border-radius:20px;padding:18px;font-size:1.12rem;box-shadow:none
+  }
+  .sentence-card.selected{border-color:var(--primary);background:var(--primary-soft)}
+  .sentence-card.hint-pulse{animation:pulse 1.2s ease-in-out infinite}
+  .feedback{
+    margin-top:16px;border-radius:20px;padding:16px 18px;border:2px solid var(--line)
+  }
+  .feedback.success{background:var(--success-soft);border-color:#bfe3ca}
+  .feedback.error{background:var(--error-soft);border-color:#efc1b7}
+  .feedback h3{margin:.1rem 0 .4rem;font-size:1.15rem}
+  .feedback p{margin:.25rem 0}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .nav-row{display:flex;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}
+  .input-wrap{
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:10px
+  }
+  input.answer{
+    font:inherit;font-size:1.25rem;padding:14px 16px;border-radius:16px;border:3px solid var(--line);
+    width:180px;max-width:100%
+  }
+  input.answer:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(11,99,206,.12)}
+  .equation{
+    font-size:1.35rem;font-weight:700;background:#fbfcff;border:2px dashed #cfdcf0;
+    border-radius:18px;padding:18px;margin:10px 0 6px;text-align:center
+  }
+  .visual-panel{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:24px;padding:18px;margin-top:10px
+  }
+  .people-row{display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:center}
+  .person{
+    background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px;position:relative;min-height:168px
+  }
+  .person h4{margin:0 0 10px;font-size:1.12rem}
+  .bar{
+    height:28px;border-radius:999px;background:#dbe7f8;position:relative;overflow:hidden;margin-top:8px
+  }
+  .bar-fill{
+    height:100%;background:linear-gradient(90deg,#6ea7ff,#0b63ce);border-radius:999px
+  }
+  .bar-fill.gold{background:linear-gradient(90deg,#ffcf65,#ff9b16)}
+  .money-tag{
+    display:inline-block;background:#fff5d9;border:2px solid #ffcf65;border-radius:999px;
+    padding:8px 12px;font-weight:700;margin-top:10px
+  }
+  .transfer-lane{
+    display:flex;justify-content:center;align-items:center;position:relative;min-height:160px
+  }
+  .transfer-chip{
+    position:absolute;left:10px;top:58px;background:#fff5d9;border:3px solid #ffcf65;border-radius:16px;
+    padding:12px 14px;font-weight:700;animation:moveChip 2.6s ease-in-out infinite
+  }
+  .transfer-arrow{
+    font-size:2.2rem;font-weight:700;color:var(--primary)
+  }
+  .caption{
+    color:var(--muted);font-size:1rem;margin-top:8px
+  }
+  .mini-example{
+    margin-top:12px;padding:14px 16px;border-radius:18px;background:#fff;border:2px dashed #d4ddec
+  }
+  .mini-example h4{margin:.1rem 0 .4rem}
+  .model-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .model-card{
+    border:3px solid var(--line);border-radius:22px;padding:16px;background:#fff;
+    color:var(--ink);box-shadow:none;cursor:pointer;text-align:left
+  }
+  .model-card.selected{border-color:var(--primary);background:var(--primary-soft)}
+  .model-total{font-weight:700;margin-bottom:10px}
+  .bar-stack{display:grid;gap:10px}
+  .bar-piece{height:26px;border-radius:999px;background:#dbe7f8;position:relative}
+  .bar-piece.equal{background:linear-gradient(90deg,#6ea7ff,#0b63ce)}
+  .bar-piece.short{width:58%}
+  .bar-piece.long{width:100%}
+  .bar-piece.mid{width:78%}
+  .bar-label{
+    font-size:.95rem;color:var(--muted);margin-top:8px
+  }
+  .timeline{
+    display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:center
+  }
+  .time-card{
+    background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px
+  }
+  .time-card h4{margin:0 0 10px}
+  .equal-badge{
+    display:inline-block;background:var(--success-soft);border:2px solid #bfe3ca;color:var(--success);
+    font-weight:700;padding:7px 12px;border-radius:999px;margin-top:8px
+  }
+  .table-wrap{overflow:auto;margin-top:12px}
+  table.listing{
+    border-collapse:collapse;width:100%;min-width:700px;background:#fff;border-radius:18px;overflow:hidden
+  }
+  table.listing th, table.listing td{
+    border:2px solid #dbe5f2;padding:14px 12px;text-align:left;vertical-align:top;font-size:1rem
+  }
+  table.listing th{background:#eef4fc}
+  .blank-cell{height:44px;background:linear-gradient(180deg,#fff 55%,#d9e2ef 56%,#fff 57%)}
+  .summary-card{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:20px;padding:16px;margin-top:10px
+  }
+  .chip{
+    display:inline-block;padding:8px 12px;border-radius:999px;background:#eef4fc;color:var(--ink);font-weight:700;margin:4px 6px 0 0
+  }
+  .footer-note{margin-top:12px;color:var(--muted)}
+  .tag{
+    display:inline-block;padding:7px 11px;border-radius:999px;background:#eef4fc;font-weight:700;margin-bottom:8px
+  }
+  .pill-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .screen-divider{height:1px;background:var(--line);margin:18px 0}
+  @keyframes moveChip{
+    0%{transform:translateX(0)}
+    50%{transform:translateX(70px)}
+    100%{transform:translateX(0)}
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(11,99,206,.18)}
+    50%{box-shadow:0 0 0 8px rgba(11,99,206,.08)}
+  }
+  @media (max-width: 760px){
+    body{padding:10px}
+    .people-row,.timeline{grid-template-columns:1fr;gap:10px}
+    .transfer-lane{min-height:70px}
+    .transfer-chip{position:relative;left:auto;top:auto;animation:none}
+    .transfer-arrow{transform:rotate(90deg)}
+    .screen{padding:18px}
+    .title-wrap h1{font-size:1.6rem}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="title-wrap">
+      <h1>Transfer question: total unchanged</h1>
+      <p>Use the model, the comparison, and the transfer to work backwards.</p>
+    </div>
+    <div class="control-row">
+      <button class="secondary" data-action="toggleQuestion">Hide question</button>
+      <button class="ghost" data-action="speakQuestion">Read question</button>
+      <button class="ghost" data-action="speakScreen">Read screen</button>
+    </div>
+  </div>
+
+  <section class="question-panel" id="questionPanel">
+    <h2>Question</h2>
+    <div class="question-card">
+      <p>1. Pauline's mother bought her and her brother a booklet of <strong>1200 stickers</strong>.</p>
+      <p>2. After Pauline gave her brother <strong>250 stickers</strong>, he had <strong>twice as many stickers as her</strong>.</p>
+      <p>3. How many stickers did Pauline have <strong>at first</strong>?</p>
+    </div>
+  </section>
+
+  <section class="progress-wrap">
+    <div class="progress-meta">
+      <div id="stepLabel">Step 1 of 10</div>
+      <div id="stepName">Read the question carefully.</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </section>
+
+  <main class="screen" id="screen"></main>
+</div>
+
+
+<script>
+(() => {
+  const questionText = "Pauline's mother bought her and her brother a booklet of one thousand two hundred stickers. After Pauline gave her brother two hundred and fifty stickers, he had twice as many stickers as her. How many stickers did Pauline have at first?";
+  const lineOptions = [
+    "Pauline's mother bought her and her brother a booklet of 1200 stickers.",
+    "After Pauline gave her brother 250 stickers, he had twice as many stickers as her.",
+    "How many stickers did Pauline have at first?"
+  ];
+
+  const state = {
+    screenIndex: 0,
+    showQuestion: true,
+    showBlankTable: false,
+    screenState: {}
+  };
+
+  const screens = [
+    {
+      id: "totalLine",
+      title: "Find the total",
+      prompt: "Tap the line with the total number of stickers.",
+      help: "The whole booklet has 1200 stickers altogether.",
+      speak: "Tap the line with the total number of stickers. The whole booklet has one thousand two hundred stickers altogether.",
+      render: renderTotalLine,
+      check: checkTotalLine
+    },
+    {
+      id: "twiceClue",
+      title: "Find the ending clue",
+      prompt: "Tap the words that tell what happens in the end.",
+      help: "Look for the comparison after Pauline gave away 250 stickers.",
+      speak: "Tap the words that tell what happens in the end. Look for the comparison after Pauline gave away two hundred and fifty stickers.",
+      render: renderTwiceClue,
+      check: checkTwiceClue
+    },
+    {
+      id: "totalStaysSame",
+      title: "Watch the transfer",
+      prompt: "What stays the same when 250 stickers move from Pauline to her brother?",
+      help: "The stickers move from one person to the other. They do not disappear.",
+      speak: "What stays the same when two hundred and fifty stickers move from Pauline to her brother? The stickers move from one person to the other. They do not disappear.",
+      render: renderTotalStaysSame,
+      check: checkTotalStaysSame
+    },
+    {
+      id: "pickTwiceModel",
+      title: "Choose the ending model",
+      prompt: "Which model matches 'he had twice as many stickers as her'?",
+      help: "If Pauline has 1 unit in the end, her brother has 2 equal units in the end.",
+      speak: "Which model matches he had twice as many stickers as her? If Pauline has one unit in the end, her brother has two equal units in the end.",
+      render: renderPickTwiceModel,
+      check: checkPickTwiceModel
+    },
+    {
+      id: "countUnits",
+      title: "Count the equal units",
+      prompt: "How many equal units make the total of 1200 in the ending model?",
+      help: "Pauline has 1 unit. Her brother has 2 units. Count all the equal units together.",
+      speak: "How many equal units make the total of one thousand two hundred in the ending model? Pauline has one unit. Her brother has two units. Count all the equal units together.",
+      render: renderCountUnits,
+      check: checkCountUnits
+    },
+    {
+      id: "chooseDivide",
+      title: "Choose the operation",
+      prompt: "Three equal units make 1200. Which operation finds 1 equal unit?",
+      help: "When a total is split into equal units, we divide.",
+      speak: "Three equal units make one thousand two hundred. Which operation finds one equal unit? When a total is split into equal units, we divide.",
+      render: renderChooseDivide,
+      check: checkChooseDivide
+    },
+    {
+      id: "findAfterAmount",
+      title: "Find Pauline's stickers after the transfer",
+      prompt: "Type Pauline's number of stickers after the transfer.",
+      help: "Pauline's after amount is 1 equal unit.",
+      speak: "Type Pauline's number of stickers after the transfer. Pauline's after amount is one equal unit.",
+      render: renderFindAfterAmount,
+      check: checkFindAfterAmount
+    },
+    {
+      id: "whatDoes400Mean",
+      title: "Track what 400 means",
+      prompt: "What does 400 mean here?",
+      help: "Be careful. 400 is Pauline's amount after the transfer, not at first.",
+      speak: "What does four hundred mean here? Be careful. Four hundred is Pauline's amount after the transfer, not at first.",
+      render: renderWhatDoes400Mean,
+      check: checkWhatDoes400Mean
+    },
+    {
+      id: "chooseAddBack",
+      title: "Go backwards",
+      prompt: "Pauline had 400 after giving away 250. To find how many she had at first, what should we do with 250?",
+      help: "To go backwards, undo the giving. Pauline had more stickers before she gave 250 away.",
+      speak: "Pauline had four hundred after giving away two hundred and fifty. To find how many she had at first, what should we do with two hundred and fifty? To go backwards, undo the giving.",
+      render: renderChooseAddBack,
+      check: checkChooseAddBack
+    },
+    {
+      id: "finalAnswer",
+      title: "Find Pauline's stickers at first",
+      prompt: "Type Pauline's number of stickers at first.",
+      help: "Use 400 + 250.",
+      speak: "Type Pauline's number of stickers at first. Use four hundred plus two hundred and fifty.",
+      render: renderFinalAnswer,
+      check: checkFinalAnswer
+    },
+    {
+      id: "systematicTable",
+      title: "Correction layout",
+      prompt: "Copy this systematic listing table when you do your corrections.",
+      help: "This table shows the before-and-after story clearly.",
+      speak: "Copy this systematic listing table when you do your corrections. This table shows the before and after story clearly.",
+      render: renderSystematicTable,
+      check: null
+    }
+  ];
+
+  const screenEl = document.getElementById("screen");
+  const questionPanel = document.getElementById("questionPanel");
+  const stepLabel = document.getElementById("stepLabel");
+  const stepName = document.getElementById("stepName");
+  const progressFill = document.getElementById("progressFill");
+
+  function getLocal(screenId){
+    if(!state.screenState[screenId]){
+      state.screenState[screenId] = {selected:null,input:"",attempts:0,solved:false,feedback:null};
+    }
+    return state.screenState[screenId];
+  }
+
+  function escapeHtml(text){
+    return String(text)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function setFeedback(screenId, type, title, body){
+    const local = getLocal(screenId);
+    local.feedback = {type, title, body};
+  }
+
+  function markSolved(screenId){
+    const local = getLocal(screenId);
+    local.solved = true;
+  }
+
+  function selectChoice(choice){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    local.selected = choice;
+    render();
+  }
+
+  function updateInput(value){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    local.input = value;
+  }
+
+  function speak(text){
+    if(!("speechSynthesis" in window)){ return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  }
+
+  function renderFeedback(local){
+    if(!local.feedback){ return ""; }
+    return `
+      <div class="feedback ${local.feedback.type}">
+        <h3>${escapeHtml(local.feedback.title)}</h3>
+        <div>${local.feedback.body}</div>
+      </div>
+    `;
+  }
+
+  function renderNav(showNext = true, showCheck = true){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    const isLast = state.screenIndex === screens.length - 1;
+    const canNext = local.solved || isLast;
+    return `
+      <div class="nav-row">
+        <button class="secondary" data-action="back" ${state.screenIndex===0 ? "disabled" : ""}>Back</button>
+        <div class="actions">
+          ${current.check && showCheck ? `<button class="secondary" data-action="check">Check</button>` : ""}
+          ${showNext ? `<button class="success" data-action="${isLast ? 'restart' : 'next'}" ${canNext ? "" : "disabled"}>${isLast ? "Start again" : "Next"}</button>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPromptBlock(screen){
+    return `
+      <h2>${escapeHtml(screen.title)}</h2>
+      <div class="callout action">
+        <strong>Do this now</strong>
+        <div>${escapeHtml(screen.prompt)}</div>
+      </div>
+      <div class="callout help">
+        <strong>Helpful reminder</strong>
+        <div>${escapeHtml(screen.help)}</div>
+      </div>
+    `;
+  }
+
+  function renderLineButtons(options, selected, hintIndex){
+    return `
+      <div class="sentence-list">
+        ${options.map((line, idx) => {
+          const extraClass = selected === String(idx) ? "selected" : "";
+          const pulseClass = hintIndex === idx ? "hint-pulse" : "";
+          return `
+            <button class="sentence-card ${extraClass} ${pulseClass}" data-action="selectChoice" data-choice="${idx}">
+              ${escapeHtml(line)}
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderChoiceCards(options, selected){
+    return `
+      <div class="option-grid">
+        ${options.map(opt => `
+          <button class="option-card ${selected===opt.value ? "selected" : ""}" data-action="selectChoice" data-choice="${escapeHtml(opt.value)}">
+            <div><strong>${escapeHtml(opt.label)}</strong></div>
+            ${opt.small ? `<div class="small">${escapeHtml(opt.small)}</div>` : ""}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderTwiceModelCard(card, selected){
+    return `
+      <button class="model-card ${selected===card.value ? "selected" : ""}" data-action="selectChoice" data-choice="${card.value}">
+        <div class="model-total">${card.label}</div>
+        <div class="bar-stack">
+          <div>
+            <div><strong>Pauline</strong></div>
+            ${card.pauline}
+          </div>
+          <div>
+            <div><strong>Brother</strong></div>
+            ${card.brother}
+          </div>
+        </div>
+        <div class="bar-label">${card.note}</div>
+      </button>
+    `;
+  }
+
+  function renderTwiceStructure(showEquation = true){
+    return `
+      <div class="visual-panel">
+        <div class="tag">Ending model</div>
+        <div class="bar-stack">
+          <div>
+            <div><strong>Pauline</strong></div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;max-width:240px">
+              <div class="bar-piece equal" style="width:100%"></div>
+            </div>
+          </div>
+          <div>
+            <div><strong>Brother</strong></div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;max-width:500px">
+              <div class="bar-piece equal" style="width:100%"></div>
+              <div class="bar-piece equal" style="width:100%"></div>
+            </div>
+          </div>
+        </div>
+        ${showEquation ? `<div class="equation">1 unit + 2 units = 3 equal units</div>` : ``}
+        <div class="caption">"Twice as many as her" means brother has 2 equal units when Pauline has 1 equal unit.</div>
+      </div>
+    `;
+  }
+
+  function renderTransferVisual(reverse=false){
+    return `
+      <div class="visual-panel">
+        <div class="people-row">
+          <div class="person">
+            <h4>Pauline</h4>
+            <div class="bar"><div class="bar-fill" style="width:${reverse ? "50%" : "82%"}"></div></div>
+            <div class="money-tag">${reverse ? "after" : "before"}</div>
+          </div>
+          <div class="transfer-lane">
+            <div class="transfer-arrow">${reverse ? "←" : "→"}</div>
+            <div class="transfer-chip" style="${reverse ? "animation-direction:reverse;" : ""}">250 stickers</div>
+          </div>
+          <div class="person">
+            <h4>Brother</h4>
+            <div class="bar"><div class="bar-fill gold" style="width:${reverse ? "100%" : "68%"}"></div></div>
+            <div class="money-tag">${reverse ? "after" : "before"}</div>
+          </div>
+        </div>
+        <div class="caption">${reverse ? "To go backwards, move the 250 stickers back to Pauline." : "The 250 stickers move from Pauline to her brother. The total stays the same."}</div>
+      </div>
+    `;
+  }
+
+  function renderTotalLine(screen){
+    const local = getLocal(screen.id);
+    const hintIndex = local.attempts >= 2 ? 0 : -1;
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="content-area">
+        ${renderLineButtons(lineOptions, local.selected, hintIndex)}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkTotalLine(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "0"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p><strong>1200 stickers</strong> is the total number of stickers.</p><p>That is the whole booklet altogether.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Look for the line with the whole booklet of stickers.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the total clue.", `<p>The whole booklet has <strong>1200 stickers</strong>. That is the total.</p><div class="mini-example"><h4>Small reminder</h4><p><strong>Total</strong> means all together.</p></div>`);
+      }
+    }
+    render();
+  }
+
+  function renderTwiceClue(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"gave", label:"gave her brother 250 stickers"},
+      {value:"twice", label:"he had twice as many stickers as her"},
+      {value:"first", label:"at first"},
+      {value:"booklet", label:"a booklet of 1200 stickers"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="visual-panel">
+            <div class="tag">Stronger clue</div>
+            <div class="pill-row">
+              <span class="chip">Pauline = 1 unit</span>
+              <span class="chip">Brother = 2 units</span>
+            </div>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkTwiceClue(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "twice"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>The ending clue is <strong>he had twice as many stickers as her</strong>.</p><p>That means in the end Pauline has <strong>1 unit</strong> and her brother has <strong>2 units</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Look for the words that compare Pauline's brother with Pauline <strong>in the end</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the comparison clue.", `<p><strong>Twice as many as her</strong> tells us the end relationship.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderTotalStaysSame(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"total", label:"The total number of stickers"},
+      {value:"pauline", label:"Pauline's number of stickers"},
+      {value:"brother", label:"Brother's number of stickers"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTransferVisual(false)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>18 counters move from one box to another box.</p>
+            <p>The number in each box changes, but the <strong>total number of counters</strong> stays the same.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkTotalStaysSame(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "total"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>The <strong>total number of stickers</strong> stays the same.</p><p>The stickers only moved from Pauline to her brother.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Pauline's amount changes. Her brother's amount changes. The <strong>whole total</strong> does not change.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Remember the invariant.", `<p>Moving stickers between the 2 people does <strong>not</strong> change the total of 1200.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderPickTwiceModel(screen){
+    const local = getLocal(screen.id);
+    const oneUnit = `<div class="bar-piece equal" style="width:110px;flex:0 0 110px"></div>`;
+    const twoUnits = `<div style="display:flex;gap:10px;align-items:center;margin-top:8px">${oneUnit}${oneUnit}</div>`;
+    const singleUnit = `<div style="display:flex;gap:10px;align-items:center;margin-top:8px">${oneUnit}</div>`;
+    const cards = [
+      {
+        value:"correct",
+        label:"Pauline 1 unit, Brother 2 units",
+        pauline: singleUnit,
+        brother: twoUnits,
+        note:`This matches "twice as many as her".`
+      },
+      {
+        value:"swapped",
+        label:"Pauline 2 units, Brother 1 unit",
+        pauline: twoUnits,
+        brother: singleUnit,
+        note:`This says Pauline has twice as many.`
+      },
+      {
+        value:"equal",
+        label:"Pauline 1 unit, Brother 1 unit",
+        pauline: singleUnit,
+        brother: singleUnit,
+        note:`This only shows the same amount.`
+      }
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="model-choice">
+        ${cards.map(card => renderTwiceModelCard(card, local.selected)).join("")}
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="summary-card">
+          <div class="tag">Stronger clue</div>
+          <p>Brother had <strong>twice as many</strong> as Pauline, so brother must have <strong>2 equal units</strong> while Pauline has <strong>1 equal unit</strong>.</p>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true)}
+    `;
+  }
+
+  function checkPickTwiceModel(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "correct"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>The ending model is <strong>Pauline 1 unit</strong> and <strong>Brother 2 units</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Read the comparison carefully: <strong>he</strong> had twice as many as <strong>her</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the twice clue.", `<p>If Pauline has 1 equal unit, her brother has <strong>2 equal units</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderCountUnits(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"2", label:"2 equal units"},
+      {value:"3", label:"3 equal units"},
+      {value:"4", label:"4 equal units"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTwiceStructure(true)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkCountUnits(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "3"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>Pauline has <strong>1 unit</strong> and her brother has <strong>2 units</strong>.</p><p>So the total of 1200 is made of <strong>3 equal units</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Count all the equal units: 1 for Pauline and 2 for her brother.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Count the units again.", `<p><strong>1 unit + 2 units = 3 units</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderChooseDivide(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"add", label:"Add", small:"Put amounts together"},
+      {value:"subtract", label:"Subtract", small:"Find the difference"},
+      {value:"divide", label:"Divide", small:"Find 1 equal unit from 3 equal units"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTwiceStructure(false)}
+      <div class="equation">1200 ÷ 3 = ?</div>
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>15 equal cubes make 3 equal groups.</p>
+            <p>To find 1 equal group, do <strong>15 ÷ 3</strong>.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkChooseDivide(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "divide"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>We <strong>divide</strong> because the total of 1200 is split into <strong>3 equal units</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>This is an <strong>equal units</strong> idea.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the 3 equal units.", `<p>When a total is shared into <strong>3 equal units</strong>, we use <strong>division</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderFindAfterAmount(screen){
+    const local = getLocal(screen.id);
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="equation">1200 ÷ 3 = ?</div>
+      <div class="input-wrap">
+        <input class="answer" data-input="answer" inputmode="numeric" value="${escapeHtml(local.input || "")}" aria-label="Type Pauline's stickers after the transfer" />
+        <button data-action="check">Check</button>
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="visual-panel">
+          <div class="tag">Stronger clue</div>
+          <div class="equation">400 + 400 + 400 = 1200</div>
+          <p class="caption">One equal unit is 400, so Pauline's after amount is 400.</p>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true, false)}
+    `;
+  }
+
+  function checkFindAfterAmount(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    const value = String(local.input).trim().replaceAll(",","");
+    if(value === "400"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>Pauline had <strong>400 stickers after the transfer</strong>.</p><p>Her brother had <strong>800 stickers after the transfer</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Find <strong>1 equal unit</strong> from 1200 ÷ 3.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the 3 equal units.", `<p><strong>1200 ÷ 3 = 400</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderWhatDoes400Mean(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"first", label:"Pauline had 400 at first"},
+      {value:"after", label:"Pauline had 400 after giving away 250"},
+      {value:"brother", label:"Brother had 400 after the transfer"},
+      {value:"total", label:"They had 400 in total"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="timeline">
+        <div class="time-card">
+          <h4>At first</h4>
+          <div class="bar"><div class="bar-fill" style="width:82%"></div></div>
+          <div class="caption">Pauline had more before the transfer.</div>
+        </div>
+        <div class="transfer-lane" style="min-height:110px">
+          <div class="transfer-arrow">→</div>
+          <div class="money-tag">250 stickers</div>
+        </div>
+        <div class="time-card">
+          <h4>After</h4>
+          <div class="bar"><div class="bar-fill" style="width:50%"></div></div>
+          <div class="equal-badge">400</div>
+          <div class="caption">This is Pauline's amount after the transfer.</div>
+        </div>
+      </div>
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="summary-card">
+            <div class="tag">Timeline clue</div>
+            <p><strong>400</strong> belongs to the <strong>after</strong> part of the story.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkWhatDoes400Mean(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "after"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p><strong>400</strong> is Pauline's amount <strong>after</strong> she gave away 250 stickers.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Think about <strong>when</strong> the 3-unit model was true.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Track the time.", `<p>The 3-unit model belongs to the <strong>after the transfer</strong> part of the story.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderChooseAddBack(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"add", label:"Add 250 back"},
+      {value:"subtract", label:"Subtract 250"},
+      {value:"divide", label:"Divide by 250"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTransferVisual(true)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>After giving away 5 counters, Sam has 12 counters left.</p>
+            <p>To find how many Sam had before, do <strong>12 + 5 = 17</strong>.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkChooseAddBack(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "add"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>To go backwards, we <strong>undo the giving</strong>.</p><p>So we <strong>add 250 back</strong> to Pauline's after amount.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Pauline had <strong>more</strong> stickers before she gave 250 away.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Undo the transfer.", `<p>She gave away 250, so to go back to the start we must <strong>add back</strong> the 250.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderFinalAnswer(screen){
+    const local = getLocal(screen.id);
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="equation">400 + 250 = ?</div>
+      <div class="input-wrap">
+        <input class="answer" data-input="answer" inputmode="numeric" value="${escapeHtml(local.input || "")}" aria-label="Type Pauline's stickers at first" />
+        <button data-action="check">Check</button>
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="visual-panel">
+          <div class="tag">Worked line</div>
+          <div class="equation">400 + 250 = 650</div>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true, false)}
+    `;
+  }
+
+  function checkFinalAnswer(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    const value = String(local.input).trim().replaceAll(",","");
+    if(value === "650"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>Pauline had <strong>650 stickers at first</strong>.</p><p>You found the ending amount first, then you worked backwards.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Pauline had more stickers <strong>before</strong> she gave away 250.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the backward step.", `<p>Start from Pauline's after amount: <strong>400 + 250 = 650</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderSystematicTable(screen){
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="summary-card">
+        <div class="tag">Method summary</div>
+        <p><strong>1.</strong> Keep the total unchanged at <strong>1200</strong>.</p>
+        <p><strong>2.</strong> Use the ending clue: brother had <strong>twice as many</strong> as Pauline.</p>
+        <p><strong>3.</strong> Draw the ending model: Pauline <strong>1 unit</strong>, brother <strong>2 units</strong>, so total = <strong>3 units</strong>.</p>
+        <p><strong>4.</strong> Find 1 unit: <strong>1200 ÷ 3 = 400</strong>.</p>
+        <p><strong>5.</strong> Work backwards for Pauline: <strong>400 + 250 = 650</strong>.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="listing" aria-label="Systematic listing table">
+          <thead>
+            <tr>
+              <th>Stage</th>
+              <th>Pauline</th>
+              <th>Brother</th>
+              <th>What we know</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>At first</strong></td>
+              <td>650</td>
+              <td>550</td>
+              <td>Total = 1200</td>
+            </tr>
+            <tr>
+              <td><strong>After Pauline gave 250</strong></td>
+              <td>400</td>
+              <td>800</td>
+              <td>Brother had twice as many as Pauline, total unchanged</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="summary-card">
+        <div class="tag">Check the story</div>
+        <p>Pauline: <strong>650 - 250 = 400</strong></p>
+        <p>Brother: <strong>550 + 250 = 800</strong></p>
+        <p>Comparison: <strong>800 = 2 × 400</strong></p>
+        <p>Total: <strong>650 + 550 = 1200</strong></p>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" data-action="toggleBlankTable">${state.showBlankTable ? "Hide blank copy" : "Show blank copy to draw"}</button>
+      </div>
+
+      ${state.showBlankTable ? `
+        <div class="table-wrap">
+          <table class="listing" aria-label="Blank correction table">
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Pauline</th>
+                <th>Brother</th>
+                <th>What we know</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>At first</strong></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+              </tr>
+              <tr>
+                <td><strong>After Pauline gave 250</strong></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>` : ""}
+
+      <p class="footer-note">Copy the table into your corrections if it helps you organise the before-and-after story.</p>
+      ${renderNav(true)}
+    `;
+  }
+
+  function render(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+
+    questionPanel.style.display = state.showQuestion ? "block" : "none";
+    document.querySelector('[data-action="toggleQuestion"]').textContent = state.showQuestion ? "Hide question" : "Show question";
+
+    stepLabel.textContent = `Step ${state.screenIndex + 1} of ${screens.length}`;
+    stepName.textContent = screen.title;
+    progressFill.style.width = `${((state.screenIndex + 1) / screens.length) * 100}%`;
+
+    screenEl.innerHTML = screen.render(screen, local);
+  }
+
+  function nextScreen(){
+    if(state.screenIndex < screens.length - 1){
+      state.screenIndex += 1;
+      render();
+      screenEl.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+
+  function prevScreen(){
+    if(state.screenIndex > 0){
+      state.screenIndex -= 1;
+      render();
+      screenEl.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-action]");
+    if(!button){ return; }
+    const action = button.dataset.action;
+
+    if(action === "toggleQuestion"){
+      state.showQuestion = !state.showQuestion;
+      render();
+      return;
+    }
+    if(action === "speakQuestion"){
+      speak(questionText);
+      return;
+    }
+    if(action === "speakScreen"){
+      const current = screens[state.screenIndex];
+      speak(current.title + ". " + current.speak);
+      return;
+    }
+    if(action === "selectChoice"){
+      selectChoice(button.dataset.choice);
+      return;
+    }
+    if(action === "check"){
+      const current = screens[state.screenIndex];
+      if(current.check){ current.check(); }
+      return;
+    }
+    if(action === "next"){
+      nextScreen();
+      return;
+    }
+    if(action === "back"){
+      prevScreen();
+      return;
+    }
+    if(action === "restart"){
+      state.screenIndex = 0;
+      state.showBlankTable = false;
+      state.screenState = {};
+      render();
+      return;
+    }
+    if(action === "toggleBlankTable"){
+      state.showBlankTable = !state.showBlankTable;
+      render();
+      return;
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if(event.target.matches("[data-input='answer']")){
+      updateInput(event.target.value);
+    }
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

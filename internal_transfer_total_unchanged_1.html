@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internal Transfer, Total Unchanged</title>
+<style>
+  :root{
+    --bg:#f6f8fc;
+    --card:#ffffff;
+    --ink:#12233a;
+    --muted:#48607a;
+    --line:#d9e2ef;
+    --primary:#0b63ce;
+    --primary-soft:#e8f1ff;
+    --secondary:#ffedd2;
+    --success:#1f8a4c;
+    --success-soft:#e9f8ef;
+    --error:#b2432f;
+    --error-soft:#fdecea;
+    --shadow:0 12px 30px rgba(18,35,58,.08);
+    --radius:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;line-height:1.45}
+  body{padding:18px}
+  .app{max-width:1080px;margin:0 auto}
+  .topbar{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+    margin-bottom:14px
+  }
+  .title-wrap h1{margin:0;font-size:2rem}
+  .title-wrap p{margin:.25rem 0 0;color:var(--muted);font-size:1rem}
+  .control-row{display:flex;flex-wrap:wrap;gap:10px}
+  button{
+    font:inherit;border:none;border-radius:16px;padding:14px 18px;background:var(--primary);color:#fff;
+    cursor:pointer;box-shadow:var(--shadow);min-height:52px
+  }
+  button.secondary{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+  button.ghost{background:var(--primary-soft);color:var(--primary);box-shadow:none}
+  button.success{background:var(--success)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .question-panel{
+    background:var(--card);border:2px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;margin-bottom:16px;box-shadow:var(--shadow)
+  }
+  .question-panel h2{margin:.1rem 0 .5rem;font-size:1.3rem}
+  .question-card{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:18px;padding:16px 18px
+  }
+  .question-card p{margin:.4rem 0;font-size:1.12rem}
+  .progress-wrap{
+    background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:16px;
+    box-shadow:var(--shadow)
+  }
+  .progress-meta{display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700;margin-bottom:10px}
+  .progress-bar{height:14px;background:#edf2fa;border-radius:999px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#0b63ce,#68a7ff);width:0%;transition:width .35s ease}
+  .screen{
+    background:var(--card);border:2px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)
+  }
+  .screen h2{margin:.1rem 0 .35rem;font-size:1.6rem}
+  .callout{
+    border-radius:20px;padding:16px 18px;margin:10px 0 14px;border:2px solid transparent
+  }
+  .callout.action{background:var(--primary-soft);border-color:#cddfff}
+  .callout.help{background:var(--secondary);border-color:#ffd39a}
+  .callout strong{display:block;font-size:1.14rem;margin-bottom:6px}
+  .content-area{margin-top:14px}
+  .option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .option-card{
+    border:3px solid var(--line);border-radius:22px;padding:18px;background:#fff;min-height:116px;
+    display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;
+    transition:transform .15s ease,border-color .15s ease,background .15s ease;
+    color:var(--ink);box-shadow:none;cursor:pointer
+  }
+  .option-card:hover{transform:translateY(-2px)}
+  .option-card.selected{
+    border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 4px rgba(11,99,206,.12)
+  }
+  .option-card .small{font-size:.95rem;color:var(--muted);margin-top:6px}
+  .sentence-list{display:grid;gap:12px}
+  .sentence-card{
+    width:100%;text-align:left;background:#fff;color:var(--ink);border:3px solid var(--line);
+    border-radius:20px;padding:18px;font-size:1.12rem;box-shadow:none
+  }
+  .sentence-card.selected{border-color:var(--primary);background:var(--primary-soft)}
+  .sentence-card.hint-pulse{animation:pulse 1.2s ease-in-out infinite}
+  .feedback{
+    margin-top:16px;border-radius:20px;padding:16px 18px;border:2px solid var(--line)
+  }
+  .feedback.success{background:var(--success-soft);border-color:#bfe3ca}
+  .feedback.error{background:var(--error-soft);border-color:#efc1b7}
+  .feedback h3{margin:.1rem 0 .4rem;font-size:1.15rem}
+  .feedback p{margin:.25rem 0}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .nav-row{display:flex;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}
+  .input-wrap{
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:10px
+  }
+  input.answer{
+    font:inherit;font-size:1.25rem;padding:14px 16px;border-radius:16px;border:3px solid var(--line);
+    width:180px;max-width:100%
+  }
+  input.answer:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(11,99,206,.12)}
+  .equation{
+    font-size:1.35rem;font-weight:700;background:#fbfcff;border:2px dashed #cfdcf0;
+    border-radius:18px;padding:18px;margin:10px 0 6px;text-align:center
+  }
+  .visual-panel{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:24px;padding:18px;margin-top:10px
+  }
+  .people-row{display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:center}
+  .person{
+    background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px;position:relative;min-height:168px
+  }
+  .person h4{margin:0 0 10px;font-size:1.12rem}
+  .bar{
+    height:28px;border-radius:999px;background:#dbe7f8;position:relative;overflow:hidden;margin-top:8px
+  }
+  .bar-fill{
+    height:100%;background:linear-gradient(90deg,#6ea7ff,#0b63ce);border-radius:999px
+  }
+  .bar-fill.gold{background:linear-gradient(90deg,#ffcf65,#ff9b16)}
+  .money-tag{
+    display:inline-block;background:#fff5d9;border:2px solid #ffcf65;border-radius:999px;
+    padding:8px 12px;font-weight:700;margin-top:10px
+  }
+  .transfer-lane{
+    display:flex;justify-content:center;align-items:center;position:relative;min-height:160px
+  }
+  .transfer-chip{
+    position:absolute;left:10px;top:58px;background:#fff5d9;border:3px solid #ffcf65;border-radius:16px;
+    padding:12px 14px;font-weight:700;animation:moveChip 2.6s ease-in-out infinite
+  }
+  .transfer-arrow{
+    font-size:2.2rem;font-weight:700;color:var(--primary)
+  }
+  .caption{
+    color:var(--muted);font-size:1rem;margin-top:8px
+  }
+  .mini-example{
+    margin-top:12px;padding:14px 16px;border-radius:18px;background:#fff;border:2px dashed #d4ddec
+  }
+  .mini-example h4{margin:.1rem 0 .4rem}
+  .model-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .model-card{
+    border:3px solid var(--line);border-radius:22px;padding:16px;background:#fff;
+    color:var(--ink);box-shadow:none;cursor:pointer;text-align:left
+  }
+  .model-card.selected{border-color:var(--primary);background:var(--primary-soft)}
+  .model-total{font-weight:700;margin-bottom:10px}
+  .bar-stack{display:grid;gap:10px}
+  .bar-piece{height:26px;border-radius:999px;background:#dbe7f8;position:relative}
+  .bar-piece.equal{background:linear-gradient(90deg,#6ea7ff,#0b63ce)}
+  .bar-piece.short{width:58%}
+  .bar-piece.long{width:100%}
+  .bar-piece.mid{width:78%}
+  .bar-label{
+    font-size:.95rem;color:var(--muted);margin-top:8px
+  }
+  .timeline{
+    display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:center
+  }
+  .time-card{
+    background:#fff;border:2px solid var(--line);border-radius:20px;padding:16px
+  }
+  .time-card h4{margin:0 0 10px}
+  .equal-badge{
+    display:inline-block;background:var(--success-soft);border:2px solid #bfe3ca;color:var(--success);
+    font-weight:700;padding:7px 12px;border-radius:999px;margin-top:8px
+  }
+  .table-wrap{overflow:auto;margin-top:12px}
+  table.listing{
+    border-collapse:collapse;width:100%;min-width:700px;background:#fff;border-radius:18px;overflow:hidden
+  }
+  table.listing th, table.listing td{
+    border:2px solid #dbe5f2;padding:14px 12px;text-align:left;vertical-align:top;font-size:1rem
+  }
+  table.listing th{background:#eef4fc}
+  .blank-cell{height:44px;background:linear-gradient(180deg,#fff 55%,#d9e2ef 56%,#fff 57%)}
+  .summary-card{
+    background:#fbfcff;border:2px solid #e6edf7;border-radius:20px;padding:16px;margin-top:10px
+  }
+  .chip{
+    display:inline-block;padding:8px 12px;border-radius:999px;background:#eef4fc;color:var(--ink);font-weight:700;margin:4px 6px 0 0
+  }
+  .footer-note{margin-top:12px;color:var(--muted)}
+  .tag{
+    display:inline-block;padding:7px 11px;border-radius:999px;background:#eef4fc;font-weight:700;margin-bottom:8px
+  }
+  .pill-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .screen-divider{height:1px;background:var(--line);margin:18px 0}
+  @keyframes moveChip{
+    0%{transform:translateX(0)}
+    50%{transform:translateX(70px)}
+    100%{transform:translateX(0)}
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(11,99,206,.18)}
+    50%{box-shadow:0 0 0 8px rgba(11,99,206,.08)}
+  }
+  @media (max-width: 760px){
+    body{padding:10px}
+    .people-row,.timeline{grid-template-columns:1fr;gap:10px}
+    .transfer-lane{min-height:70px}
+    .transfer-chip{position:relative;left:auto;top:auto;animation:none}
+    .transfer-arrow{transform:rotate(90deg)}
+    .screen{padding:18px}
+    .title-wrap h1{font-size:1.6rem}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="title-wrap">
+      <h1>Transfer question: total unchanged</h1>
+      <p>Use the model and the transfer to work backwards.</p>
+    </div>
+    <div class="control-row">
+      <button class="secondary" data-action="toggleQuestion">Hide question</button>
+      <button class="ghost" data-action="speakQuestion">Read question</button>
+      <button class="ghost" data-action="speakScreen">Read screen</button>
+    </div>
+  </div>
+
+  <section class="question-panel" id="questionPanel">
+    <h2>Question</h2>
+    <div class="question-card">
+      <p>1. Kenneth and his sister had a total of <strong>$880</strong>.</p>
+      <p>2. After Kenneth gave <strong>$140</strong> to his sister, they had the <strong>same amount</strong> of money.</p>
+      <p>3. How much money did Kenneth have <strong>at first</strong>?</p>
+    </div>
+  </section>
+
+  <section class="progress-wrap">
+    <div class="progress-meta">
+      <div id="stepLabel">Step 1 of 10</div>
+      <div id="stepName">Read the question carefully.</div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </section>
+
+  <main class="screen" id="screen"></main>
+</div>
+
+<script>
+(() => {
+  const questionText = "Kenneth and his sister had a total of eight hundred and eighty dollars. After Kenneth gave one hundred and forty dollars to his sister, they had the same amount of money. How much money did Kenneth have at first?";
+  const lineOptions = [
+    "Kenneth and his sister had a total of $880.",
+    "After Kenneth gave $140 to his sister, they had the same amount of money.",
+    "How much money did Kenneth have at first?"
+  ];
+
+  const state = {
+    screenIndex: 0,
+    showQuestion: true,
+    showBlankTable: false,
+    screenState: {}
+  };
+
+  const screens = [
+    {
+      id: "totalLine",
+      title: "Find the total",
+      prompt: "Tap the line with the total amount.",
+      help: "We want the whole amount Kenneth and his sister had together.",
+      speak: "Tap the line with the total amount. We want the whole amount Kenneth and his sister had together.",
+      render: renderTotalLine,
+      check: checkTotalLine
+    },
+    {
+      id: "sameLine",
+      title: "Find the ending clue",
+      prompt: "Tap the words that tell what happens in the end.",
+      help: "Look for the words that compare Kenneth's money and his sister's money after the transfer.",
+      speak: "Tap the words that tell what happens in the end. Look for the words that compare Kenneth's money and his sister's money after the transfer.",
+      render: renderSameLine,
+      check: checkSameLine
+    },
+    {
+      id: "totalStaysSame",
+      title: "Watch the transfer",
+      prompt: "What stays the same when $140 moves from Kenneth to his sister?",
+      help: "Money moves from one person to the other. It does not disappear.",
+      speak: "What stays the same when one hundred and forty dollars moves from Kenneth to his sister? Money moves from one person to the other. It does not disappear.",
+      render: renderTotalStaysSame,
+      check: checkTotalStaysSame
+    },
+    {
+      id: "pickAfterModel",
+      title: "Choose the ending model",
+      prompt: "Which model matches the ending?",
+      help: "In the end, Kenneth and his sister have the same amount, so the ending model must show 2 equal parts.",
+      speak: "Which model matches the ending? In the end, Kenneth and his sister have the same amount, so the ending model must show two equal parts.",
+      render: renderPickAfterModel,
+      check: checkPickAfterModel
+    },
+    {
+      id: "chooseDivide",
+      title: "Choose the operation",
+      prompt: "The ending has 2 equal parts making $880. Which operation finds 1 equal part?",
+      help: "When a total is shared equally into 2 equal parts, we divide.",
+      speak: "The ending has two equal parts making eight hundred and eighty dollars. Which operation finds one equal part? When a total is shared equally into two equal parts, we divide.",
+      render: renderChooseDivide,
+      check: checkChooseDivide
+    },
+    {
+      id: "findAfterAmount",
+      title: "Find Kenneth's amount after the transfer",
+      prompt: "Type Kenneth's amount after the transfer.",
+      help: "After the transfer, Kenneth's amount is 1 equal part of $880.",
+      speak: "Type Kenneth's amount after the transfer. After the transfer, Kenneth's amount is one equal part of eight hundred and eighty dollars.",
+      render: renderFindAfterAmount,
+      check: checkFindAfterAmount
+    },
+    {
+      id: "whatDoes440Mean",
+      title: "Track what $440 means",
+      prompt: "What does $440 mean here?",
+      help: "Be careful. $440 is not Kenneth's amount at first. It is his amount after the transfer.",
+      speak: "What does four hundred and forty dollars mean here? Be careful. Four hundred and forty dollars is not Kenneth's amount at first. It is his amount after the transfer.",
+      render: renderWhatDoes440Mean,
+      check: checkWhatDoes440Mean
+    },
+    {
+      id: "chooseAddBack",
+      title: "Go backwards",
+      prompt: "Kenneth had $440 after giving away $140. To find how much he had at first, what should we do with $140?",
+      help: "To go backwards, undo the giving. Kenneth had more money before he gave $140 away.",
+      speak: "Kenneth had four hundred and forty dollars after giving away one hundred and forty dollars. To find how much he had at first, what should we do with one hundred and forty dollars? To go backwards, undo the giving.",
+      render: renderChooseAddBack,
+      check: checkChooseAddBack
+    },
+    {
+      id: "finalAnswer",
+      title: "Find Kenneth's amount at first",
+      prompt: "Type Kenneth's amount at first.",
+      help: "Use 440 + 140.",
+      speak: "Type Kenneth's amount at first. Use four hundred and forty plus one hundred and forty.",
+      render: renderFinalAnswer,
+      check: checkFinalAnswer
+    },
+    {
+      id: "systematicTable",
+      title: "Correction layout",
+      prompt: "Copy this systematic listing table when you do your corrections.",
+      help: "This table shows the before-and-after story clearly.",
+      speak: "Copy this systematic listing table when you do your corrections. This table shows the before and after story clearly.",
+      render: renderSystematicTable,
+      check: null
+    }
+  ];
+
+  const screenEl = document.getElementById("screen");
+  const questionPanel = document.getElementById("questionPanel");
+  const stepLabel = document.getElementById("stepLabel");
+  const stepName = document.getElementById("stepName");
+  const progressFill = document.getElementById("progressFill");
+
+  function getLocal(screenId){
+    if(!state.screenState[screenId]){
+      state.screenState[screenId] = {selected:null,input:"",attempts:0,solved:false,feedback:null};
+    }
+    return state.screenState[screenId];
+  }
+
+  function escapeHtml(text){
+    return String(text)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function setFeedback(screenId, type, title, body){
+    const local = getLocal(screenId);
+    local.feedback = {type, title, body};
+  }
+
+  function markSolved(screenId){
+    const local = getLocal(screenId);
+    local.solved = true;
+  }
+
+  function selectChoice(choice){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    local.selected = choice;
+    render();
+  }
+
+  function updateInput(value){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    local.input = value;
+  }
+
+  function speak(text){
+    if(!("speechSynthesis" in window)){ return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  }
+
+  function renderFeedback(local){
+    if(!local.feedback){ return ""; }
+    return `
+      <div class="feedback ${local.feedback.type}">
+        <h3>${escapeHtml(local.feedback.title)}</h3>
+        <div>${local.feedback.body}</div>
+      </div>
+    `;
+  }
+
+  function renderNav(showNext = true, showCheck = true){
+    const current = screens[state.screenIndex];
+    const local = getLocal(current.id);
+    const isLast = state.screenIndex === screens.length - 1;
+    const canNext = local.solved || isLast;
+    return `
+      <div class="nav-row">
+        <button class="secondary" data-action="back" ${state.screenIndex===0 ? "disabled" : ""}>Back</button>
+        <div class="actions">
+          ${current.check && showCheck ? `<button class="secondary" data-action="check">Check</button>` : ""}
+          ${showNext ? `<button class="success" data-action="${isLast ? 'restart' : 'next'}" ${canNext ? "" : "disabled"}>${isLast ? "Start again" : "Next"}</button>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPromptBlock(screen){
+    return `
+      <h2>${escapeHtml(screen.title)}</h2>
+      <div class="callout action">
+        <strong>Do this now</strong>
+        <div>${escapeHtml(screen.prompt)}</div>
+      </div>
+      <div class="callout help">
+        <strong>Helpful reminder</strong>
+        <div>${escapeHtml(screen.help)}</div>
+      </div>
+    `;
+  }
+
+  function renderLineButtons(options, selected, hintIndex){
+    return `
+      <div class="sentence-list">
+        ${options.map((line, idx) => {
+          const extraClass = selected === String(idx) ? "selected" : "";
+          const pulseClass = hintIndex === idx ? "hint-pulse" : "";
+          return `
+            <button class="sentence-card ${extraClass} ${pulseClass}" data-action="selectChoice" data-choice="${idx}">
+              ${escapeHtml(line)}
+            </button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderChoiceCards(options, selected){
+    return `
+      <div class="option-grid">
+        ${options.map(opt => `
+          <button class="option-card ${selected===opt.value ? "selected" : ""}" data-action="selectChoice" data-choice="${escapeHtml(opt.value)}">
+            <div><strong>${escapeHtml(opt.label)}</strong></div>
+            ${opt.small ? `<div class="small">${escapeHtml(opt.small)}</div>` : ""}
+          </button>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  function renderTotalLine(screen){
+    const local = getLocal(screen.id);
+    const hintIndex = local.attempts >= 2 ? 0 : -1;
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="content-area">
+        ${renderLineButtons(lineOptions, local.selected, hintIndex)}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkTotalLine(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "0"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p><strong>$880</strong> is the total amount.</p><p>This is the whole amount Kenneth and his sister had together.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Look for the words <strong>total of</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the clue.", `<p>The line with the total says <strong>total of $880</strong>.</p><div class="mini-example"><h4>Small reminder</h4><p><strong>Total</strong> means all together.</p></div>`);
+      }
+    }
+    render();
+  }
+
+  function renderSameLine(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"total", label:"a total of $880"},
+      {value:"gave", label:"gave $140 to his sister"},
+      {value:"same", label:"they had the same amount of money"},
+      {value:"first", label:"at first"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="visual-panel">
+            <div class="tag">Stronger clue</div>
+            <div class="pill-row">
+              <span class="chip">same amount</span>
+              <span class="chip">2 equal parts</span>
+            </div>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkSameLine(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "same"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>The ending clue is <strong>they had the same amount of money</strong>.</p><p>That means the ending has <strong>2 equal parts</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Look for the words that compare Kenneth's money and his sister's money <strong>in the end</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the ending clue.", `<p><strong>Same amount</strong> means both people have equal amounts in the end.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderTransferVisual(reverse=false){
+    return `
+      <div class="visual-panel">
+        <div class="people-row">
+          <div class="person">
+            <h4>Kenneth</h4>
+            <div class="bar"><div class="bar-fill" style="width:${reverse ? "56%" : "84%"}"></div></div>
+            <div class="money-tag">${reverse ? "after" : "before"}</div>
+          </div>
+          <div class="transfer-lane">
+            <div class="transfer-arrow">${reverse ? "←" : "→"}</div>
+            <div class="transfer-chip" style="${reverse ? "animation-direction:reverse;" : ""}">$140</div>
+          </div>
+          <div class="person">
+            <h4>Sister</h4>
+            <div class="bar"><div class="bar-fill gold" style="width:${reverse ? "56%" : "42%"}"></div></div>
+            <div class="money-tag">${reverse ? "after" : "before"}</div>
+          </div>
+        </div>
+        <div class="caption">${reverse ? "To go backwards, move the $140 back to Kenneth." : "The $140 moves from Kenneth to his sister. The total stays the same."}</div>
+      </div>
+    `;
+  }
+
+  function renderTotalStaysSame(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"total", label:"The total amount"},
+      {value:"kenneth", label:"Kenneth's amount"},
+      {value:"sister", label:"Sister's amount"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTransferVisual(false)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>20 marbles are shared between 2 cups. If 5 marbles move from Cup A to Cup B, there are still <strong>20 marbles in total</strong>.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkTotalStaysSame(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "total"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>The <strong>total amount</strong> stays the same.</p><p>The money only moved from one person to the other.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Kenneth's amount changes. His sister's amount changes. The <strong>whole total</strong> does not change.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Remember the invariant.", `<p>Moving money between the 2 people does <strong>not</strong> change the total.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderPickAfterModel(screen){
+    const local = getLocal(screen.id);
+    const cards = [
+      {value:"unequal", label:"Unequal parts", bars:`<div class="bar-stack"><div class="bar-piece long"></div><div class="bar-piece short"></div></div>`, note:"Not the ending"},
+      {value:"equal2", label:"2 equal parts", bars:`<div class="bar-stack"><div class="bar-piece equal"></div><div class="bar-piece equal"></div></div>`, note:"This matches same amount"},
+      {value:"equal3", label:"3 equal parts", bars:`<div class="bar-stack"><div class="bar-piece equal"></div><div class="bar-piece equal"></div><div class="bar-piece equal"></div></div>`, note:"Too many parts"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="model-choice">
+        ${cards.map(card => `
+          <button class="model-card ${local.selected===card.value ? "selected" : ""}" data-action="selectChoice" data-choice="${card.value}">
+            <div class="model-total">Total = $880</div>
+            ${card.bars}
+            <div class="bar-label"><strong>${card.label}</strong><br>${card.note}</div>
+          </button>
+        `).join("")}
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="summary-card">
+          <div class="tag">Stronger clue</div>
+          <p>The ending says <strong>same amount</strong>, so the model must show <strong>2 equal parts</strong>.</p>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true)}
+    `;
+  }
+
+  function checkPickAfterModel(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "equal2"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>The ending model has <strong>2 equal parts</strong> because Kenneth and his sister have the <strong>same amount</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Look for the model with <strong>2 equal parts</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the ending clue.", `<p><strong>Same amount</strong> means equal parts, and there are only <strong>2 people</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderChooseDivide(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"add", label:"Add", small:"Put amounts together"},
+      {value:"subtract", label:"Subtract", small:"Find a difference"},
+      {value:"divide", label:"Divide", small:"Share equally into 2 equal parts"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="visual-panel">
+        <div class="tag">Ending model</div>
+        <div class="equation">$880 split into 2 equal parts</div>
+        <div class="bar-stack">
+          <div class="bar-piece equal" style="width:100%"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="bar-piece equal" style="width:100%"></div>
+            <div class="bar-piece equal" style="width:100%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>12 shared equally between 2 children means <strong>12 ÷ 2 = 6</strong>.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkChooseDivide(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "divide"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>We <strong>divide</strong> because the total is split into <strong>2 equal parts</strong>.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>This is an <strong>equal sharing</strong> idea.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use equal sharing.", `<p>When 1 total is shared equally into 2 parts, we use <strong>division</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderFindAfterAmount(screen){
+    const local = getLocal(screen.id);
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="equation">880 ÷ 2 = ?</div>
+      <div class="input-wrap">
+        <input class="answer" data-input="answer" inputmode="numeric" value="${escapeHtml(local.input || "")}" aria-label="Type Kenneth's amount after the transfer" />
+        <button data-action="check">Check</button>
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="visual-panel">
+          <div class="tag">Stronger clue</div>
+          <div class="equation">440 + 440 = 880</div>
+          <p class="caption">Each equal part is $440.</p>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true, false)}
+    `;
+  }
+
+  function checkFindAfterAmount(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    const value = String(local.input).trim().replaceAll("$","").replaceAll(",","");
+    if(value === "440"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>Kenneth had <strong>$440 after the transfer</strong>.</p><p>His sister also had $440 after the transfer.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Find <strong>half of 880</strong>.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the equal parts.", `<p>The ending has 2 equal parts, so <strong>880 ÷ 2 = 440</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderWhatDoes440Mean(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"first", label:"Kenneth had $440 at first"},
+      {value:"after", label:"Kenneth had $440 after giving $140 away"},
+      {value:"together", label:"Kenneth and his sister had $440 together"},
+      {value:"sistergave", label:"Sister gave Kenneth $440"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="timeline">
+        <div class="time-card">
+          <h4>At first</h4>
+          <div class="bar"><div class="bar-fill" style="width:84%"></div></div>
+          <div class="caption">Kenneth had more before the transfer.</div>
+        </div>
+        <div class="transfer-lane" style="min-height:110px">
+          <div class="transfer-arrow">→</div>
+          <div class="money-tag">$140</div>
+        </div>
+        <div class="time-card">
+          <h4>After</h4>
+          <div class="bar"><div class="bar-fill" style="width:63%"></div></div>
+          <div class="equal-badge">$440</div>
+          <div class="caption">This is Kenneth's amount after the transfer.</div>
+        </div>
+      </div>
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="summary-card">
+            <div class="tag">Timeline clue</div>
+            <p>$440 belongs to the <strong>after</strong> part of the story.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkWhatDoes440Mean(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "after"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p><strong>$440</strong> is Kenneth's amount <strong>after</strong> he gave away $140.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Think about <strong>when</strong> the amounts became equal.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Track the time.", `<p>The equal amounts happen <strong>after the transfer</strong>, not at first.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderChooseAddBack(screen){
+    const local = getLocal(screen.id);
+    const options = [
+      {value:"add", label:"Add $140 back"},
+      {value:"subtract", label:"Subtract $140"},
+      {value:"divide", label:"Divide by $140"}
+    ];
+    return `
+      ${renderPromptBlock(screen)}
+      ${renderTransferVisual(true)}
+      <div class="content-area">
+        ${renderChoiceCards(options, local.selected)}
+        ${local.attempts >= 2 ? `
+          <div class="mini-example">
+            <h4>Parallel example</h4>
+            <p>After giving away 3 stickers, Mei has 10 stickers left.</p>
+            <p>To find how many she had before, do <strong>10 + 3 = 13</strong>.</p>
+          </div>` : ""}
+        ${renderFeedback(local)}
+        ${renderNav(true)}
+      </div>
+    `;
+  }
+
+  function checkChooseAddBack(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    if(local.selected === "add"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Yes.", `<p>To go backwards, we <strong>undo the giving</strong>.</p><p>So we <strong>add $140 back</strong> to Kenneth's after amount.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Kenneth had <strong>more</strong> money before he gave away $140.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Undo the transfer.", `<p>He gave away $140, so to go back to the start we must <strong>add back</strong> the $140.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderFinalAnswer(screen){
+    const local = getLocal(screen.id);
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="equation">440 + 140 = ?</div>
+      <div class="input-wrap">
+        <input class="answer" data-input="answer" inputmode="numeric" value="${escapeHtml(local.input || "")}" aria-label="Type Kenneth's amount at first" />
+        <button data-action="check">Check</button>
+      </div>
+      ${local.attempts >= 2 ? `
+        <div class="visual-panel">
+          <div class="tag">Worked line</div>
+          <div class="equation">440 + 140 = 580</div>
+        </div>` : ""}
+      ${renderFeedback(local)}
+      ${renderNav(true, false)}
+    `;
+  }
+
+  function checkFinalAnswer(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+    const value = String(local.input).trim().replaceAll("$","").replaceAll(",","");
+    if(value === "580"){
+      markSolved(screen.id);
+      setFeedback(screen.id, "success", "Correct.", `<p>Kenneth had <strong>$580 at first</strong>.</p><p>You found the ending amount first, then you worked backwards.</p>`);
+    } else {
+      local.attempts += 1;
+      if(local.attempts === 1){
+        setFeedback(screen.id, "error", "Try again.", `<p>Kenneth had more money <strong>before</strong> he gave $140 away.</p>`);
+      } else {
+        setFeedback(screen.id, "error", "Use the backward step.", `<p>Start from Kenneth's after amount: <strong>440 + 140 = 580</strong>.</p>`);
+      }
+    }
+    render();
+  }
+
+  function renderSystematicTable(screen){
+    return `
+      ${renderPromptBlock(screen)}
+      <div class="summary-card">
+        <div class="tag">Method summary</div>
+        <p><strong>1.</strong> Keep the total unchanged at <strong>$880</strong>.</p>
+        <p><strong>2.</strong> Use the ending clue: same amount → <strong>2 equal parts</strong>.</p>
+        <p><strong>3.</strong> Find the ending amount: <strong>880 ÷ 2 = 440</strong>.</p>
+        <p><strong>4.</strong> Work backwards for Kenneth: <strong>440 + 140 = 580</strong>.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="listing" aria-label="Systematic listing table">
+          <thead>
+            <tr>
+              <th>Stage</th>
+              <th>Kenneth</th>
+              <th>Sister</th>
+              <th>What we know</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>At first</strong></td>
+              <td>$580</td>
+              <td>$300</td>
+              <td>Total = $880</td>
+            </tr>
+            <tr>
+              <td><strong>After Kenneth gave $140</strong></td>
+              <td>$440</td>
+              <td>$440</td>
+              <td>Same amount, total unchanged</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="summary-card">
+        <div class="tag">Check the story</div>
+        <p>Kenneth: <strong>$580 - $140 = $440</strong></p>
+        <p>Sister: <strong>$300 + $140 = $440</strong></p>
+        <p>Total: <strong>$580 + $300 = $880</strong></p>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" data-action="toggleBlankTable">${state.showBlankTable ? "Hide blank copy" : "Show blank copy to draw"}</button>
+      </div>
+
+      ${state.showBlankTable ? `
+        <div class="table-wrap">
+          <table class="listing" aria-label="Blank correction table">
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Kenneth</th>
+                <th>Sister</th>
+                <th>What we know</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>At first</strong></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+              </tr>
+              <tr>
+                <td><strong>After Kenneth gave $140</strong></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+                <td class="blank-cell"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>` : ""}
+
+      <p class="footer-note">Copy the table into your corrections if it helps you organise the before-and-after story.</p>
+      ${renderNav(true)}
+    `;
+  }
+
+  function render(){
+    const screen = screens[state.screenIndex];
+    const local = getLocal(screen.id);
+
+    questionPanel.style.display = state.showQuestion ? "block" : "none";
+    document.querySelector('[data-action="toggleQuestion"]').textContent = state.showQuestion ? "Hide question" : "Show question";
+
+    stepLabel.textContent = `Step ${state.screenIndex + 1} of ${screens.length}`;
+    stepName.textContent = screen.title;
+    progressFill.style.width = `${((state.screenIndex + 1) / screens.length) * 100}%`;
+
+    screenEl.innerHTML = screen.render(screen, local);
+  }
+
+  function nextScreen(){
+    if(state.screenIndex < screens.length - 1){
+      state.screenIndex += 1;
+      render();
+      screenEl.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+
+  function prevScreen(){
+    if(state.screenIndex > 0){
+      state.screenIndex -= 1;
+      render();
+      screenEl.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-action]");
+    if(!button){ return; }
+    const action = button.dataset.action;
+
+    if(action === "toggleQuestion"){
+      state.showQuestion = !state.showQuestion;
+      render();
+      return;
+    }
+    if(action === "speakQuestion"){
+      speak(questionText);
+      return;
+    }
+    if(action === "speakScreen"){
+      const current = screens[state.screenIndex];
+      speak(current.title + ". " + current.speak);
+      return;
+    }
+    if(action === "selectChoice"){
+      selectChoice(button.dataset.choice);
+      return;
+    }
+    if(action === "check"){
+      const current = screens[state.screenIndex];
+      if(current.check){ current.check(); }
+      return;
+    }
+    if(action === "next"){
+      nextScreen();
+      return;
+    }
+    if(action === "back"){
+      prevScreen();
+      return;
+    }
+    if(action === "restart"){
+      state.screenIndex = 0;
+      state.showBlankTable = false;
+      state.screenState = {};
+      if("speechSynthesis" in window){ window.speechSynthesis.cancel(); }
+      render();
+      return;
+    }
+    if(action === "toggleBlankTable"){
+      state.showBlankTable = !state.showBlankTable;
+      render();
+      return;
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if(event.target.matches("[data-input='answer']")){
+      updateInput(event.target.value);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
