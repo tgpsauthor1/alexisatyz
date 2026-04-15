@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>water_change_in_state_1</title>
+  <style>
+    :root {
+      --bg: #f5f8fc;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --muted: #5d7286;
+      --line: #d7e3ef;
+      --accent: #1f6fb2;
+      --accent-2: #2a9bd8;
+      --accent-soft: #eaf4fc;
+      --good: #176b3a;
+      --good-bg: #e9f8ef;
+      --bad: #9f2f2f;
+      --bad-bg: #fdecec;
+      --shadow: 0 14px 34px rgba(20, 44, 68, 0.08);
+      --radius: 20px;
+      --tap: 58px;
+      --maxw: 1100px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, #f8fbff 0%, #f3f7fb 35%, #eef4fa 100%);
+      color: var(--ink);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .top-row {
+      max-width: var(--maxw);
+      margin: 0 auto 16px auto;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .top-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      min-height: 64px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .title-card {
+      justify-content: flex-start;
+      gap: 12px;
+    }
+
+    .title-card h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .title-card .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .demerit-card {
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .demerit-label {
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .demerit-icons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .ice-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      background: #edf7ff;
+      border: 1px solid #bfe0f6;
+    }
+
+    .ice-icon.spent {
+      background: #fff4f4;
+      border-color: #f2c1c1;
+    }
+
+    .audio-card {
+      justify-content: center;
+    }
+
+    .audio-toggle {
+      min-height: 46px;
+      border-radius: 999px;
+      border: 2px solid var(--accent);
+      background: #fff;
+      color: var(--accent);
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .audio-toggle.on {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .main-wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+    }
+
+    .screen-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .screen-title {
+      margin: 0 0 8px 0;
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    .instruction {
+      display: inline-block;
+      margin: 0 0 18px 0;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      color: var(--ink);
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1.35;
+      border: 1px solid #d4e8f7;
+    }
+
+    .support-line {
+      margin: 0 0 14px 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #fcfeff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.08rem;
+    }
+
+    .question-image {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      display: block;
+      background: #fff;
+    }
+
+    .typed-question {
+      line-height: 1.55;
+      font-size: 1.02rem;
+    }
+
+    .typed-question p {
+      margin: 0 0 10px 0;
+    }
+
+    .typed-question ol {
+      margin: 8px 0 0 1.25rem;
+      padding: 0;
+    }
+
+    .typed-question li {
+      margin: 0 0 8px 0;
+      padding-left: 6px;
+    }
+
+    .hl {
+      background: #fff3ad;
+      border-radius: 6px;
+      padding: 0 3px;
+      box-shadow: inset 0 -0.45em 0 rgba(255, 232, 114, 0.55);
+    }
+
+    .diagram-wrap {
+      background: linear-gradient(180deg, #fbfeff, #f3f9fd);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+    }
+
+    .diagram-svg {
+      width: 100%;
+      max-width: 760px;
+      height: auto;
+      display: block;
+    }
+
+    .choice-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .option-card, .chip-option, .choice-button {
+      width: 100%;
+      min-height: var(--tap);
+      border-radius: 16px;
+      border: 2px solid #c9dcec;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 1.02rem;
+      line-height: 1.35;
+      text-align: left;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+
+    .option-card:hover, .chip-option:hover, .choice-button:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent-2);
+    }
+
+    .option-card.selected, .chip-option.selected, .choice-button.selected {
+      border-color: var(--accent);
+      background: #edf7ff;
+      box-shadow: inset 0 0 0 1px rgba(31, 111, 178, 0.12);
+    }
+
+    .multi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .primary-btn, .secondary-btn, .ghost-btn {
+      min-height: var(--tap);
+      border-radius: 16px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .primary-btn:hover { background: #165c93; }
+
+    .secondary-btn {
+      background: #eaf4fc;
+      color: var(--accent);
+      border: 2px solid #cfe5f8;
+    }
+
+    .ghost-btn {
+      background: #fff;
+      color: var(--muted);
+      border: 2px solid var(--line);
+    }
+
+    .feedback {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-weight: 700;
+      line-height: 1.45;
+      border: 1px solid transparent;
+    }
+
+    .feedback.good {
+      background: var(--good-bg);
+      color: var(--good);
+      border-color: #bde6cb;
+    }
+
+    .feedback.bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+      border-color: #f5c2c2;
+    }
+
+    .question-panel {
+      margin-top: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      overflow: hidden;
+    }
+
+    .question-panel summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 16px 18px;
+      font-weight: 800;
+      font-size: 1rem;
+      background: #f0f7fc;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .question-panel summary::-webkit-details-marker { display: none; }
+
+    .question-panel-body {
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      min-height: 48px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 2px solid #cde1f1;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .anim-shell {
+      background: linear-gradient(180deg, #fbfeff, #f0f8fd);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .anim-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      background: linear-gradient(180deg, #f7fbff, #eef6fb);
+      border-radius: 16px;
+      border: 1px solid #dbeaf5;
+    }
+
+    .anim-caption {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--ink);
+    }
+
+    .hotspot-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .compare-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px 16px;
+      line-height: 1.35;
+    }
+
+    .compare-card strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+
+    .compare-card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .compare-card.room {
+      background: #f8fbff;
+    }
+
+    .compare-card.water, .compare-card.ice {
+      background: #fcfeff;
+    }
+
+    .reason-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      line-height: 1.45;
+    }
+
+    .sequence-area {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .sequence-slots {
+      display: grid;
+      gap: 10px;
+    }
+
+    .sequence-slot {
+      min-height: 58px;
+      border-radius: 16px;
+      border: 2px dashed #c5d9eb;
+      background: #f8fbfe;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.35;
+    }
+
+    .sequence-slot strong {
+      color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .sequence-bank {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .summary-card {
+      border-radius: 16px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: #f8fbfe;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 25, 40, 0.55);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      z-index: 50;
+    }
+
+    .overlay-card {
+      width: min(460px, 100%);
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px;
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 42px rgba(7, 23, 37, 0.18);
+      text-align: center;
+    }
+
+    .overlay-card h2 {
+      margin: 0 0 10px 0;
+    }
+
+    .overlay-card p {
+      margin: 0;
+      line-height: 1.5;
+      color: var(--muted);
+      font-size: 1.03rem;
+    }
+
+    @media (max-width: 930px) {
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+      .grid-2, .question-panel-body {
+        grid-template-columns: 1fr;
+      }
+      .hotspot-row, .multi-grid, .compare-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .app-shell { padding: 12px; }
+      .screen-card { padding: 16px; }
+      .instruction { font-size: 1.05rem; }
+      .screen-title { font-size: 1.28rem; }
+      .title-card h1 { font-size: 1.3rem; }
+      .option-card, .chip-option, .choice-button { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    const QUESTION_IMAGE = "data:image/png;base64,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";
+
+    const ORIGINAL_QUESTION = {
+      stem: "A glass containing a block of ice and some water was placed in a room. The room temperature was 25°C.",
+      prompt: "When the ice and the water were at 0°C, which one of the following statements is correct?",
+      options: [
+        { id: "1", text: "The ice would not melt as it remained at 0°C." },
+        { id: "2", text: "The ice would not melt as it did not gain heat." },
+        { id: "3", text: "The ice would melt as it gained heat from the water." },
+        { id: "4", text: "The ice would melt as it gained heat from the room." }
+      ]
+    };
+
+    const SCREEN_KEYS = [
+      "intro",
+      "facts",
+      "states",
+      "meltingAtZero",
+      "gainingHeat",
+      "heatSource",
+      "chain",
+      "ruleOut",
+      "originalRetry",
+      "transfer",
+      "complete"
+    ];
+
+    let state;
+    let animationFrameId = null;
+    let speakTimer = null;
+
+    function initialState() {
+      return {
+        screenIndex: 0,
+        demeritsTotal: 4,
+        demeritsLeft: 4,
+        readAloud: false,
+        questionPanelOpen: false,
+        screenData: {},
+        overlay: null,
+        finished: false
+      };
+    }
+
+    function resetState(keepAudio) {
+      const audio = keepAudio ? state?.readAloud : false;
+      state = initialState();
+      state.readAloud = audio;
+    }
+
+    resetState(false);
+
+    function currentKey() {
+      return SCREEN_KEYS[state.screenIndex];
+    }
+
+    function shuffle(array) {
+      const copy = array.slice();
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function uniqueBy(arr) {
+      return Array.from(new Set(arr));
+    }
+
+    function sameMembers(a, b) {
+      const aSorted = a.slice().sort().join("|");
+      const bSorted = b.slice().sort().join("|");
+      return aSorted === bSorted;
+    }
+
+    function getData(key, initFn) {
+      if (!state.screenData[key]) {
+        state.screenData[key] = initFn();
+      }
+      return state.screenData[key];
+    }
+
+    function getScreenData() {
+      const key = currentKey();
+      switch (key) {
+        case "facts":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "ice0", text: "Ice is at 0°C" },
+              { id: "water0", text: "Water is at 0°C" },
+              { id: "room25", text: "The room is 25°C" },
+              { id: "clearGlass", text: "The glass is clear" },
+              { id: "year2015", text: "The question came from 2015" }
+            ]),
+            selected: [],
+            solved: false,
+            feedback: null
+          }));
+        case "states":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "iceOnly", text: "Only ice" },
+              { id: "waterOnly", text: "Only water" },
+              { id: "both", text: "Ice and water together" },
+              { id: "steam", text: "Steam above the water" }
+            ]),
+            selected: null,
+            solved: false,
+            feedback: null
+          }));
+        case "meltingAtZero":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "noChange", text: "The ice cannot change because it is still 0°C." },
+              { id: "canMelt", text: "The ice can be melting while it is still 0°C." },
+              { id: "waterHeats", text: "The water must be heating the ice." },
+              { id: "roomNoMatter", text: "The room temperature does not matter." }
+            ]),
+            selected: null,
+            solved: false,
+            feedback: null
+          }));
+        case "gainingHeat":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "notGaining", text: "The ice is not gaining heat." },
+              { id: "gaining", text: "The ice is gaining heat." },
+              { id: "losing", text: "The ice is losing heat." },
+              { id: "noMove", text: "No heat moves at all." }
+            ]),
+            selected: null,
+            solved: false,
+            feedback: null
+          }));
+        case "heatSource":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "room", text: "The room" },
+              { id: "water", text: "The water" },
+              { id: "glass", text: "The glass only" }
+            ]),
+            selected: null,
+            solved: false,
+            feedback: null,
+            mode: "object"
+          }));
+        case "chain":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "heatRoom", text: "Heat enters from the room" },
+              { id: "iceMelts", text: "The ice melts" },
+              { id: "stayZero", text: "Ice and water stay at 0°C while some ice is still present" },
+              { id: "tooWarm", text: "The water temperature rises above 0°C while some ice is still present" }
+            ]),
+            selected: [],
+            solved: false,
+            feedback: null
+          }));
+        case "ruleOut":
+          return getData(key, () => ({
+            order: shuffle(ORIGINAL_QUESTION.options),
+            selected: [],
+            solved: false,
+            feedback: null
+          }));
+        case "originalRetry":
+          return getData(key, () => ({
+            order: shuffle(ORIGINAL_QUESTION.options),
+            selected: null,
+            solved: false,
+            feedback: null
+          }));
+        case "transfer":
+          return getData(key, () => ({
+            order: shuffle([
+              { id: "freeze", text: "The ice will not melt because it is still at 0°C." },
+              { id: "water0", text: "The ice will melt because it gains heat from the water at 0°C." },
+              { id: "room", text: "The ice will melt because it gains heat from the room." },
+              { id: "waterFreeze", text: "The water will freeze because ice is present." }
+            ]),
+            selected: null,
+            solved: false,
+            feedback: null
+          }));
+        case "complete":
+          return getData(key, () => ({
+            finished: false
+          }));
+        default:
+          return {};
+      }
+    }
+
+    function toggleReadAloud() {
+      state.readAloud = !state.readAloud;
+      if (!state.readAloud) {
+        window.speechSynthesis?.cancel();
+      }
+      render();
+    }
+
+    function speak(text) {
+      if (!state.readAloud || !("speechSynthesis" in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      utter.lang = "en-SG";
+      window.speechSynthesis.speak(utter);
+    }
+
+    function getScreenSpeakText() {
+      const key = currentKey();
+      const data = getScreenData();
+      const feedbackText = data.feedback ? " " + data.feedback.message : "";
+      switch (key) {
+        case "intro":
+          return "Read the question. Then tap Start. A glass containing a block of ice and some water was placed in a room. The room temperature was twenty five degrees Celsius. When the ice and the water were at zero degrees Celsius, which one of the following statements is correct?";
+        case "facts":
+          return "Tap all the facts that matter for the answer. Options: Ice is at zero degrees Celsius. Water is at zero degrees Celsius. The room is twenty five degrees Celsius. The glass is clear. The question came from two thousand fifteen." + feedbackText;
+        case "states":
+          return "Choose what you can see in the beaker. Options: Only ice. Only water. Ice and water together. Steam above the water." + feedbackText;
+        case "meltingAtZero":
+          return "Choose the best idea for this situation. Options: The ice cannot change because it is still zero degrees Celsius. The ice can be melting while it is still zero degrees Celsius. The water must be heating the ice. The room temperature does not matter." + feedbackText;
+        case "gainingHeat":
+          return "Choose what must be true while the ice is melting. Options: The ice is not gaining heat. The ice is gaining heat. The ice is losing heat. No heat moves at all." + feedbackText;
+        case "heatSource":
+          return "Watch the animation. Then tap the heat source. Compare the temperatures. The room is twenty five degrees Celsius. The water is zero degrees Celsius. The ice is zero degrees Celsius. Options: The room. The water. The glass only." + feedbackText;
+        case "chain":
+          return "Tap all the statements that can be true at the same time while some ice is still present. Options: Heat enters from the room. The ice melts. Ice and water stay at zero degrees Celsius while some ice is still present. The water temperature rises above zero degrees Celsius while some ice is still present." + feedbackText;
+        case "ruleOut":
+          return "Tap all the statements you can rule out." + feedbackText;
+        case "originalRetry":
+          return "Now answer the original question." + feedbackText;
+        case "transfer":
+          return "Try one more. A cup contains some ice and some water, both at zero degrees Celsius. The cup is left in a room at thirty degrees Celsius. Which statement is correct?" + feedbackText;
+        case "complete":
+          return "Done. You used three ideas correctly. Ice and water can both be at zero degrees Celsius during melting. Melting needs heat gain. The warmer room is the heat source.";
+        default:
+          return "";
+      }
+    }
+
+    function renderTopRow() {
+      const icons = Array.from({ length: state.demeritsTotal }, (_, i) => {
+        const alive = i < state.demeritsLeft;
+        return `<span class="ice-icon ${alive ? "" : "spent"}" aria-hidden="true">${alive ? "🧊" : "💧"}</span>`;
+      }).join("");
+
+      return `
+        <div class="top-row">
+          <div class="top-card title-card">
+            <div aria-hidden="true" style="font-size:1.55rem;">❄️</div>
+            <div>
+              <h1>Melting</h1>
+              <div class="subtitle">water_change_in_state_1.html</div>
+            </div>
+          </div>
+          <div class="top-card demerit-card" aria-label="Demerits">
+            <span class="demerit-label">Ice cubes left</span>
+            <div class="demerit-icons">${icons}</div>
+          </div>
+          <div class="top-card audio-card">
+            <button class="audio-toggle ${state.readAloud ? "on" : ""}" onclick="toggleReadAloud()">
+              🔈 Read aloud: ${state.readAloud ? "On" : "Off"}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuestionText(highlight) {
+      const wrap = (text) => highlight ? text
+        .replaceAll("ice", `<span class="hl">ice</span>`)
+        .replaceAll("water", `<span class="hl">water</span>`)
+        .replaceAll("0°C", `<span class="hl">0°C</span>`)
+        .replaceAll("25°C", `<span class="hl">25°C</span>`)
+        : text;
+
+      return `
+        <div class="typed-question">
+          <p><strong>1.</strong> ${wrap("A glass containing a block of ice and some water was placed in a room. The room temperature was 25°C.")}</p>
+          <p>${wrap("When the ice and the water were at 0°C, which one of the following statements is correct?")}</p>
+          <ol>
+            <li>${wrap("The ice would not melt as it remained at 0°C.")}</li>
+            <li>${wrap("The ice would not melt as it did not gain heat.")}</li>
+            <li>${wrap("The ice would melt as it gained heat from the water.")}</li>
+            <li>${wrap("The ice would melt as it gained heat from the room.")}</li>
+          </ol>
+        </div>
+      `;
+    }
+
+    function renderQuestionPanel() {
+      return `
+        <details class="question-panel" id="question-details" ${state.questionPanelOpen ? "open" : ""}>
+          <summary>Original question</summary>
+          <div class="question-panel-body">
+            <div class="panel">
+              <h3>Original screenshot</h3>
+              <img class="question-image" src="${QUESTION_IMAGE}" alt="Original melting question screenshot" />
+            </div>
+            <div class="panel">
+              <h3>Typed version</h3>
+              ${renderQuestionText(false)}
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderCleanDiagram() {
+      return `
+        <svg class="diagram-svg" viewBox="0 0 760 260" role="img" aria-label="Beaker with ice and water at zero degrees Celsius in a room at twenty five degrees Celsius.">
+          <defs>
+            <linearGradient id="bgGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#fbfeff"/>
+              <stop offset="100%" stop-color="#eef7fc"/>
+            </linearGradient>
+            <linearGradient id="waterGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#a9ddff"/>
+              <stop offset="100%" stop-color="#6bbbea"/>
+            </linearGradient>
+          </defs>
+
+          <rect x="0" y="0" width="760" height="260" rx="22" fill="url(#bgGrad)" />
+          <rect x="575" y="20" width="150" height="42" rx="21" fill="#fff" stroke="#b7d5e8" stroke-width="2" />
+          <text x="650" y="46" font-size="20" text-anchor="middle" fill="#17324d" font-weight="700">Room 25°C</text>
+
+          <path d="M270 48 L255 205 Q380 220 505 205 L490 48" fill="none" stroke="#2b4f6e" stroke-width="4" stroke-linecap="round"/>
+          <path d="M263 170 Q380 185 497 170 L497 206 Q379 222 263 206 Z" fill="url(#waterGrad)" opacity="0.94"/>
+          <path d="M320 123 L412 116 L443 157 L344 165 Z" fill="#f8feff" stroke="#3d6a86" stroke-width="3"/>
+          <path d="M340 132 L354 145 M377 126 L389 137 M405 142 L421 152" stroke="#9fc3d8" stroke-width="3" stroke-linecap="round"/>
+
+          <line x1="314" y1="138" x2="190" y2="138" stroke="#315974" stroke-width="2"/>
+          <rect x="44" y="117" width="138" height="40" rx="18" fill="#fff" stroke="#bdd7e8" stroke-width="2"/>
+          <text x="113" y="143" text-anchor="middle" font-size="20" fill="#17324d" font-weight="700">ice at 0°C</text>
+
+          <line x1="285" y1="176" x2="168" y2="176" stroke="#315974" stroke-width="2"/>
+          <rect x="35" y="156" width="145" height="40" rx="18" fill="#fff" stroke="#bdd7e8" stroke-width="2"/>
+          <text x="107" y="182" text-anchor="middle" font-size="20" fill="#17324d" font-weight="700">water at 0°C</text>
+        </svg>
+      `;
+    }
+
+    function renderFeedback(data) {
+      if (!data.feedback) return "";
+      return `<div class="feedback ${data.feedback.type}">${data.feedback.message}</div>`;
+    }
+
+    function maybeNextButton(data) {
+      if (!data.solved) return "";
+      const isLast = currentKey() === "complete";
+      if (isLast) return "";
+      return `<div class="button-row"><button class="primary-btn" onclick="nextScreen()">Next</button></div>`;
+    }
+
+    function renderIntro() {
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Read the question</h2>
+          <p class="instruction">Read the question. Then tap Start.</p>
+          <div class="grid-2">
+            <div class="panel">
+              <h3>Original screenshot</h3>
+              <img class="question-image" src="${QUESTION_IMAGE}" alt="Original melting question screenshot" />
+            </div>
+            <div class="panel">
+              <h3>Typed version with key words highlighted</h3>
+              ${renderQuestionText(true)}
+            </div>
+          </div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="nextScreen()">I have read it</button>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderFacts() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="chip-option ${data.selected.includes(opt.id) ? "selected" : ""}" onclick="toggleMulti('${opt.id}')">${opt.text}</button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Pick the facts that matter</h2>
+          <p class="instruction">Tap all the facts that matter for the answer.</p>
+          <div class="diagram-wrap">${renderCleanDiagram()}</div>
+          <div class="multi-grid">${options}</div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderSingleChoiceScreen(title, instruction, data, extraTop) {
+      const options = data.order.map(opt => `
+        <button class="option-card ${data.selected === opt.id ? "selected" : ""}" onclick="selectSingle('${opt.id}')">${opt.text}</button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">${title}</h2>
+          <p class="instruction">${instruction}</p>
+          ${extraTop || ""}
+          <div class="choice-grid">${options}</div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderStates() {
+      const data = getScreenData();
+      return renderSingleChoiceScreen(
+        "What does the diagram show?",
+        "Choose what you can see in the beaker.",
+        data,
+        `<div class="diagram-wrap">${renderCleanDiagram()}</div>`
+      );
+    }
+
+    function renderMeltingAtZero() {
+      const data = getScreenData();
+      return renderSingleChoiceScreen(
+        "What can be happening at 0°C?",
+        "Choose the best idea for this situation.",
+        data,
+        `<div class="diagram-wrap">${renderCleanDiagram()}</div>`
+      );
+    }
+
+    function renderGainingHeat() {
+      const data = getScreenData();
+      return renderSingleChoiceScreen(
+        "Is the ice gaining heat?",
+        "Choose what must be true while the ice is melting.",
+        data,
+        `<div class="diagram-wrap">${renderCleanDiagram()}</div>`
+      );
+    }
+
+    function renderHeatSource() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="choice-button ${data.selected === opt.id ? "selected" : ""}" onclick="selectSingle('${opt.id}')">${opt.text}</button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Animation: where does the heat come from?</h2>
+          <p class="instruction">Watch the animation. Then tap the heat source.</p>
+
+          <div class="tab-row">
+            <button class="tab-btn ${data.mode === "object" ? "active" : ""}" onclick="setAnimationMode('object')">Object view</button>
+            <button class="tab-btn ${data.mode === "particle" ? "active" : ""}" onclick="setAnimationMode('particle')">Particle view</button>
+          </div>
+
+          <div class="anim-shell">
+            <canvas id="anim-canvas" class="anim-canvas" width="760" height="330" aria-label="Animation showing melting and warming."></canvas>
+            <div id="anim-caption" class="anim-caption">Watch how heat enters from the warmer room.</div>
+          </div>
+
+          <p class="support-line">Compare the temperatures before you choose. The water in the cup is also at 0°C, so it is not warmer than the ice.</p>
+
+          <div class="compare-grid" aria-label="Temperature comparison">
+            <div class="compare-card room">
+              <div>Room air</div>
+              <strong>25°C</strong>
+              <span>warmer than the ice, so heat can enter from here</span>
+            </div>
+            <div class="compare-card water">
+              <div>Water in the cup</div>
+              <strong>0°C</strong>
+              <span>same temperature as the ice, so it is not the heat source here</span>
+            </div>
+            <div class="compare-card ice">
+              <div>Ice</div>
+              <strong>0°C</strong>
+              <span>melts when heat enters from a warmer source</span>
+            </div>
+          </div>
+
+          <div class="reason-note"><strong>Why not the water?</strong> In this question, the water and the ice are both at 0°C. The water is touching the ice, but it is not warmer than the ice. The warmer room is the source of heat.</div>
+
+          <div class="hotspot-row">${options}</div>
+
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderChain() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="chip-option ${data.selected.includes(opt.id) ? "selected" : ""}" onclick="toggleMulti('${opt.id}')">
+          ${opt.text}
+        </button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">What can be true at the same time?</h2>
+          <p class="instruction">Tap all the statements that can be true at the same time while some ice is still present.</p>
+          <p class="support-line">Choose every statement that can be true during melting. Leave out the one that cannot be true yet.</p>
+
+          <div class="choice-grid">${options}</div>
+
+          <div class="button-row">
+            <button class="ghost-btn" onclick="clearSequence()">Clear all</button>
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderRuleOut() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="chip-option ${data.selected.includes(opt.id) ? "selected" : ""}" onclick="toggleMulti('${opt.id}')">
+          <strong>(${opt.id})</strong> ${opt.text}
+        </button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Rule out the wrong options</h2>
+          <p class="instruction">Tap all the statements you can rule out.</p>
+          <div class="diagram-wrap">${renderCleanDiagram()}</div>
+          <div class="choice-grid">${options}</div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderOriginalRetry() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="option-card ${data.selected === opt.id ? "selected" : ""}" onclick="selectSingle('${opt.id}')">
+          <strong>(${opt.id})</strong> ${opt.text}
+        </button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Now answer the original question</h2>
+          <p class="instruction">Now answer the original question.</p>
+          <div class="diagram-wrap">${renderCleanDiagram()}</div>
+          <div class="choice-grid">${options}</div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+          ${renderQuestionPanel()}
+        </section>
+      `;
+    }
+
+    function renderTransfer() {
+      const data = getScreenData();
+      const options = data.order.map(opt => `
+        <button class="option-card ${data.selected === opt.id ? "selected" : ""}" onclick="selectSingle('${opt.id}')">
+          ${opt.text}
+        </button>
+      `).join("");
+
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Transfer check</h2>
+          <p class="instruction">Try one more.</p>
+          <div class="panel">
+            <div class="typed-question">
+              <p>A cup contains some ice and some water, both at 0°C. The cup is left in a room at 30°C. Which statement is correct?</p>
+            </div>
+          </div>
+          <div class="choice-grid">${options}</div>
+          <div class="button-row">
+            <button class="primary-btn" onclick="checkCurrent()">Check</button>
+          </div>
+          ${renderFeedback(data)}
+          ${maybeNextButton(data)}
+        </section>
+      `;
+    }
+
+    function renderComplete() {
+      const data = getScreenData();
+      return `
+        <section class="screen-card">
+          <h2 class="screen-title">Done</h2>
+          <p class="instruction">You used 3 ideas correctly.</p>
+          <div class="summary-grid">
+            <div class="summary-card">Ice and water can both be at 0°C during melting.</div>
+            <div class="summary-card">Melting needs heat gain.</div>
+            <div class="summary-card">The room is warmer than the ice. The water is also at 0°C, so it is not the heat source here.</div>
+          </div>
+          <div class="button-row">
+            ${data.finished
+              ? `<button class="primary-btn" onclick="restartApp()">Play again</button>`
+              : `<button class="primary-btn" onclick="finishLesson()">Finish</button>`}
+          </div>
+          ${data.finished ? `<div class="feedback good">Completed. You can play again to practise once more.</div>` : ``}
+        </section>
+      `;
+    }
+
+    function renderOverlay() {
+      if (!state.overlay) return "";
+      return `
+        <div class="overlay" aria-live="assertive">
+          <div class="overlay-card">
+            <h2>${state.overlay.title}</h2>
+            <p>${state.overlay.message}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCurrentScreen() {
+      switch (currentKey()) {
+        case "intro": return renderIntro();
+        case "facts": return renderFacts();
+        case "states": return renderStates();
+        case "meltingAtZero": return renderMeltingAtZero();
+        case "gainingHeat": return renderGainingHeat();
+        case "heatSource": return renderHeatSource();
+        case "chain": return renderChain();
+        case "ruleOut": return renderRuleOut();
+        case "originalRetry": return renderOriginalRetry();
+        case "transfer": return renderTransfer();
+        case "complete": return renderComplete();
+        default: return "";
+      }
+    }
+
+    function render() {
+      cancelAnimation();
+      const app = document.getElementById("app");
+      app.innerHTML = `${renderTopRow()}<div class="main-wrap">${renderCurrentScreen()}</div>${renderOverlay()}`;
+
+      const details = document.getElementById("question-details");
+      if (details) {
+        details.addEventListener("toggle", (event) => {
+          state.questionPanelOpen = event.target.open;
+        });
+      }
+
+      if (currentKey() === "heatSource") {
+        startAnimation();
+      }
+
+      if (state.readAloud) {
+        window.clearTimeout(speakTimer);
+        speakTimer = window.setTimeout(() => {
+          speak(getScreenSpeakText());
+        }, 140);
+      }
+    }
+
+    function nextScreen() {
+      if (state.screenIndex < SCREEN_KEYS.length - 1) {
+        state.screenIndex += 1;
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function restartApp() {
+      cancelAnimation();
+      window.speechSynthesis?.cancel();
+      const keepAudio = state.readAloud;
+      resetState(true);
+      state.readAloud = keepAudio;
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function finishLesson() {
+      const data = getScreenData();
+      data.finished = true;
+      render();
+    }
+
+    function selectSingle(id) {
+      const data = getScreenData();
+      data.selected = id;
+      render();
+    }
+
+    function toggleMulti(id) {
+      const data = getScreenData();
+      if (data.selected.includes(id)) {
+        data.selected = data.selected.filter(item => item !== id);
+      } else {
+        data.selected = uniqueBy([...data.selected, id]);
+      }
+      render();
+    }
+
+    function toggleSequenceItem(id) {
+      const data = getScreenData();
+      if (data.selected.includes(id)) {
+        data.selected = data.selected.filter(item => item !== id);
+      } else if (data.selected.length < 4) {
+        data.selected = [...data.selected, id];
+      }
+      render();
+    }
+
+    function clearSequence() {
+      const data = getScreenData();
+      data.selected = [];
+      data.feedback = null;
+      render();
+    }
+
+    function setAnimationMode(mode) {
+      const data = getScreenData();
+      data.mode = mode;
+      render();
+    }
+
+    function setFeedback(type, message) {
+      const data = getScreenData();
+      data.feedback = { type, message };
+    }
+
+    function applyDemeritIfNeeded() {
+      const penaltyScreens = ["facts", "states", "meltingAtZero", "gainingHeat", "heatSource", "chain", "ruleOut", "originalRetry"];
+      if (!penaltyScreens.includes(currentKey())) return;
+
+      state.demeritsLeft -= 1;
+      if (state.demeritsLeft <= 0) {
+        state.demeritsLeft = 0;
+        state.overlay = {
+          title: "All the ice cubes melted",
+          message: "Restarting the activity..."
+        };
+        render();
+        window.setTimeout(() => {
+          state.overlay = null;
+          restartApp();
+        }, 1200);
+      }
+    }
+
+    function checkCurrent() {
+      const key = currentKey();
+      const data = getScreenData();
+
+      if (key === "facts") {
+        const correct = ["ice0", "water0", "room25"];
+        if (sameMembers(data.selected, correct)) {
+          data.solved = true;
+          setFeedback("good", "Yes. These temperature facts matter.");
+        } else {
+          setFeedback("bad", "Pick the temperature facts. Ignore the exam year and the glass.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "states") {
+        if (data.selected === "both") {
+          data.solved = true;
+          setFeedback("good", "Yes. Both solid and liquid are present.");
+        } else {
+          setFeedback("bad", "Look again. The beaker shows two states.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "meltingAtZero") {
+        if (data.selected === "canMelt") {
+          data.solved = true;
+          setFeedback("good", "Yes. A substance can melt at its melting point.");
+        } else {
+          setFeedback("bad", "At melting point, change of state can happen even if the temperature stays the same.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "gainingHeat") {
+        if (data.selected === "gaining") {
+          data.solved = true;
+          setFeedback("good", "Yes. Melting needs heat gain.");
+        } else {
+          setFeedback("bad", "Melting does not happen without heat gain.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "heatSource") {
+        if (data.selected === "room") {
+          data.solved = true;
+          setFeedback("good", "Yes. The room is warmer than the ice. The water is also at 0°C, so it is not warmer than the ice and is not the heat source here.");
+        } else {
+          setFeedback("bad", "The water is also at 0°C, just like the ice. To be the heat source, it must be warmer.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "chain") {
+        const correct = ["heatRoom", "iceMelts", "stayZero"];
+        if (sameMembers(data.selected, correct)) {
+          data.solved = true;
+          setFeedback("good", "Yes. These three things can happen at the same time while some ice is still present.");
+        } else {
+          setFeedback("bad", "While some ice is still present, the temperature stays at 0°C. The water rises above 0°C only after all the ice has melted.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "ruleOut") {
+        const correct = ["1", "2", "3"];
+        if (sameMembers(data.selected, correct)) {
+          data.solved = true;
+          setFeedback("good", "Yes. Only one statement is left.");
+        } else {
+          setFeedback("bad", "Check each one using the diagram: 0°C during melting, heat gain, and the warmer room.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "originalRetry") {
+        if (data.selected === "4") {
+          data.solved = true;
+          setFeedback("good", "Correct. The ice melts because it gains heat from the warmer room.");
+        } else {
+          setFeedback("bad", "Use all three clues: ice and water are both 0°C, melting needs heat gain, and the room is warmer.");
+          applyDemeritIfNeeded();
+        }
+        render();
+        return;
+      }
+
+      if (key === "transfer") {
+        if (data.selected === "room") {
+          data.solved = true;
+          setFeedback("good", "Yes. Same idea, new numbers.");
+        } else {
+          setFeedback("bad", "Look for the warmer place. That is the heat source.");
+        }
+        render();
+      }
+    }
+
+    function cancelAnimation() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, progress, color) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      const px = x1 + (x2 - x1) * progress;
+      const py = y1 + (y2 - y1) * progress;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px - 13 * Math.cos(angle - 0.45), py - 13 * Math.sin(angle - 0.45));
+      ctx.moveTo(px, py);
+      ctx.lineTo(px - 13 * Math.cos(angle + 0.45), py - 13 * Math.sin(angle + 0.45));
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function roundedRect(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      if (fill) {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    function startAnimation() {
+      const canvas = document.getElementById("anim-canvas");
+      const caption = document.getElementById("anim-caption");
+      if (!canvas || !caption) return;
+      const ctx = canvas.getContext("2d");
+      const data = getScreenData();
+
+      function drawFrame(ms) {
+        const t = (ms % 12000) / 12000;
+        const meltPortion = Math.min(t / 0.65, 1);
+        const warmPortion = t < 0.65 ? 0 : (t - 0.65) / 0.35;
+        const waterTemp = t < 0.65 ? 0 : Math.round(25 * warmPortion);
+        const arrowProgress = (ms % 1600) / 1600;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        sky.addColorStop(0, "#f9fcff");
+        sky.addColorStop(1, "#eff7fc");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (data.mode === "object") {
+          drawObjectView(ctx, meltPortion, warmPortion, waterTemp, arrowProgress);
+          caption.textContent = t < 0.65
+            ? "During melting: heat enters from the warmer room. The water is also at 0°C, so it is not warmer than the ice."
+            : "After all the ice melts: the liquid water warms up until it reaches room temperature, 25°C.";
+        } else {
+          drawParticleView(ctx, meltPortion, warmPortion, waterTemp, arrowProgress, ms);
+          caption.textContent = t < 0.65
+            ? "Particle view: the solid particles break away into liquid particles while the temperature stays at 0°C. The water is not warmer than the ice."
+            : "After the last solid particle arrangement disappears, the liquid particles move faster as the water warms up.";
+        }
+
+        animationFrameId = requestAnimationFrame(drawFrame);
+      }
+
+      animationFrameId = requestAnimationFrame(drawFrame);
+    }
+
+    function drawObjectView(ctx, meltPortion, warmPortion, waterTemp, arrowProgress) {
+      const beakerX = 255;
+      const beakerY = 48;
+      const beakerW = 250;
+      const beakerH = 205;
+      const baseY = beakerY + beakerH;
+
+      roundedRect(ctx, 592, 18, 140, 42, 20, "#ffffff", "#bfd8ea");
+      ctx.fillStyle = "#17324d";
+      ctx.font = "700 20px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("Room 25°C", 662, 45);
+
+      ctx.strokeStyle = "#294d68";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(beakerX + 18, beakerY);
+      ctx.lineTo(beakerX, baseY);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, baseY + 16, beakerX + beakerW, baseY);
+      ctx.lineTo(beakerX + beakerW - 18, beakerY);
+      ctx.stroke();
+
+      const waterTop = 168 - 18 * meltPortion;
+      const waterGrad = ctx.createLinearGradient(0, waterTop, 0, baseY);
+      waterGrad.addColorStop(0, "#a9ddff");
+      waterGrad.addColorStop(1, "#69bbea");
+      ctx.fillStyle = waterGrad;
+      ctx.beginPath();
+      ctx.moveTo(beakerX + 10, waterTop);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, waterTop + 14, beakerX + beakerW - 10, waterTop);
+      ctx.lineTo(beakerX + beakerW - 6, baseY - 2);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, baseY + 14, beakerX + 6, baseY - 2);
+      ctx.closePath();
+      ctx.fill();
+
+      const iceHeight = Math.max(0, 72 * (1 - meltPortion));
+      const iceWidth = Math.max(0, 118 * (1 - meltPortion * 0.75));
+      const iceX = 330;
+      const iceY = 115 + (72 - iceHeight) * 0.4;
+      if (iceHeight > 1) {
+        ctx.fillStyle = "#f9feff";
+        ctx.strokeStyle = "#4d7895";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(iceX, iceY + 10);
+        ctx.lineTo(iceX + iceWidth * 0.78, iceY);
+        ctx.lineTo(iceX + iceWidth, iceY + iceHeight * 0.5);
+        ctx.lineTo(iceX + iceWidth * 0.22, iceY + iceHeight);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.strokeStyle = "#9fc3d8";
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(iceX + 18, iceY + 16);
+        ctx.lineTo(iceX + 34, iceY + 28);
+        ctx.moveTo(iceX + 42, iceY + 10);
+        ctx.lineTo(iceX + 54, iceY + 22);
+        ctx.moveTo(iceX + 74, iceY + 22);
+        ctx.lineTo(iceX + 88, iceY + 34);
+        ctx.stroke();
+      }
+
+      drawArrow(ctx, 120, 92, 250, 125, arrowProgress, "#2a9bd8");
+      drawArrow(ctx, 120, 150, 255, 167, arrowProgress, "#2a9bd8");
+      drawArrow(ctx, 635, 105, 510, 130, arrowProgress, "#2a9bd8");
+
+      roundedRect(ctx, 40, 108, 150, 40, 18, "#ffffff", "#bdd7e8");
+      roundedRect(ctx, 40, 152, 160, 40, 18, "#ffffff", "#bdd7e8");
+      ctx.fillStyle = "#17324d";
+      ctx.font = "700 19px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("ice at 0°C", 115, 134);
+      ctx.fillText("water at 0°C", 120, 178);
+
+      ctx.strokeStyle = "#2f5872";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(190, 128);
+      ctx.lineTo(iceWidth > 0 ? iceX - 4 : beakerX + beakerW / 2 - 10, 128);
+      ctx.moveTo(200, 174);
+      ctx.lineTo(beakerX + 24, 174);
+      ctx.stroke();
+
+      // Thermometer/timeline
+      roundedRect(ctx, 570, 92, 42, 148, 18, "#ffffff", "#c7ddec");
+      ctx.fillStyle = "#dfeef9";
+      roundedRect(ctx, 582, 106, 18, 112, 9, "#eff7fc", null);
+      const fluidHeight = 24 + 88 * (waterTemp / 25);
+      ctx.fillStyle = "#f15b5b";
+      roundedRect(ctx, 582, 106 + 112 - fluidHeight, 18, fluidHeight, 9, "#f15b5b", null);
+      ctx.beginPath();
+      ctx.arc(591, 228, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#17324d";
+      ctx.font = "700 16px Trebuchet MS";
+      ctx.fillText(`${waterTemp}°C`, 650, 165);
+
+      roundedRect(ctx, 38, 270, 684, 26, 13, "#ffffff", "#d3e5f2");
+      ctx.fillStyle = "#cfe7f7";
+      roundedRect(ctx, 42, 274, 676, 18, 9, "#eef7fd", null);
+      const barWidth = 676 * (meltPortion < 1 ? meltPortion * 0.65 : 0.65 + warmPortion * 0.35);
+      ctx.fillStyle = "#2a9bd8";
+      roundedRect(ctx, 42, 274, Math.max(16, barWidth), 18, 9, "#2a9bd8", null);
+      ctx.fillStyle = "#17324d";
+      ctx.font = "700 14px Trebuchet MS";
+      ctx.textAlign = "left";
+      ctx.fillText("melting at 0°C", 42, 316);
+      ctx.textAlign = "right";
+      ctx.fillText("warming to 25°C", 718, 316);
+    }
+
+    function drawParticleView(ctx, meltPortion, warmPortion, waterTemp, arrowProgress, ms) {
+      const beakerX = 220;
+      const beakerY = 48;
+      const beakerW = 290;
+      const beakerH = 205;
+      const baseY = beakerY + beakerH;
+
+      roundedRect(ctx, 592, 18, 140, 42, 20, "#ffffff", "#bfd8ea");
+      ctx.fillStyle = "#17324d";
+      ctx.font = "700 20px Trebuchet MS";
+      ctx.textAlign = "center";
+      ctx.fillText("Room 25°C", 662, 45);
+
+      ctx.strokeStyle = "#294d68";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(beakerX + 18, beakerY);
+      ctx.lineTo(beakerX, baseY);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, baseY + 16, beakerX + beakerW, baseY);
+      ctx.lineTo(beakerX + beakerW - 18, beakerY);
+      ctx.stroke();
+
+      const waterTop = 160 - 18 * meltPortion;
+      ctx.fillStyle = "#bfe6ff";
+      ctx.beginPath();
+      ctx.moveTo(beakerX + 10, waterTop);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, waterTop + 14, beakerX + beakerW - 10, waterTop);
+      ctx.lineTo(beakerX + beakerW - 6, baseY - 2);
+      ctx.quadraticCurveTo(beakerX + beakerW / 2, baseY + 14, beakerX + 6, baseY - 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // Solid particles block
+      const solidRows = 4;
+      const solidCols = 4;
+      const totalSolid = solidRows * solidCols;
+      const remainingSolid = Math.round(totalSolid * (1 - meltPortion));
+      let count = 0;
+      for (let r = 0; r < solidRows; r++) {
+        for (let c = 0; c < solidCols; c++) {
+          if (count >= remainingSolid) break;
+          const x = 300 + c * 26;
+          const y = 105 + r * 24;
+          ctx.fillStyle = "#f8fdff";
+          ctx.strokeStyle = "#4a7f9c";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, 9, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          count++;
+        }
+      }
+
+      // Liquid particles
+      const liquidCount = 16;
+      const speedBoost = 1 + warmPortion * 1.8;
+      for (let i = 0; i < liquidCount; i++) {
+        const baseX = 270 + (i % 8) * 28;
+        const baseY = 168 + Math.floor(i / 8) * 32;
+        const wiggleX = Math.sin(ms / (320 - i * 4) + i) * (6 + 6 * speedBoost);
+        const wiggleY = Math.cos(ms / (280 - i * 3) + i * 1.5) * (4 + 4 * speedBoost);
+        ctx.fillStyle = "#2a9bd8";
+        ctx.beginPath();
+        ctx.arc(baseX + wiggleX, baseY + wiggleY, 8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      drawArrow(ctx, 120, 94, 220, 126, arrowProgress, "#2a9bd8");
+      drawArrow(ctx, 635, 105, 510, 130, arrowProgress, "#2a9bd8");
+
+      roundedRect(ctx, 32, 102, 150, 40, 18, "#ffffff", "#bdd7e8");
+      roundedRect(ctx, 32, 150, 170, 40, 18, "#ffffff", "#bdd7e8");
+      ctx.fillStyle = "#17324d";
+      ctx.textAlign = "center";
+      ctx.font = "700 18px Trebuchet MS";
+      ctx.fillText("solid particles", 107, 128);
+      ctx.fillText("liquid particles", 117, 176);
+
+      roundedRect(ctx, 560, 86, 150, 70, 18, "#ffffff", "#bdd7e8");
+      ctx.fillStyle = "#17324d";
+      ctx.textAlign = "left";
+      ctx.font = "700 16px Trebuchet MS";
+      ctx.fillText("During melting:", 575, 110);
+      ctx.font = "16px Trebuchet MS";
+      ctx.fillText("Both stay at 0°C.", 575, 132);
+      ctx.fillText(`Water later warms to ${waterTemp}°C.`, 575, 152);
+
+      roundedRect(ctx, 38, 270, 684, 26, 13, "#ffffff", "#d3e5f2");
+      ctx.fillStyle = "#2a9bd8";
+      const progressWidth = 676 * (meltPortion < 1 ? meltPortion * 0.65 : 0.65 + warmPortion * 0.35);
+      roundedRect(ctx, 42, 274, Math.max(16, progressWidth), 18, 9, "#2a9bd8", null);
+      ctx.fillStyle = "#17324d";
+      ctx.textAlign = "left";
+      ctx.font = "700 14px Trebuchet MS";
+      ctx.fillText("solid + liquid at 0°C", 42, 316);
+      ctx.textAlign = "right";
+      ctx.fillText("liquid warms to 25°C", 718, 316);
+    }
+
+    render();
+  </script>
+</body>
+</html>

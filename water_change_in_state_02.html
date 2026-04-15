@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Change in State 02</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --panel: #ffffff;
+      --ink: #17324d;
+      --sub: #52677d;
+      --line: #d7e2ef;
+      --accent: #2f80ed;
+      --accent-2: #1f5fb9;
+      --warm: #ffb84d;
+      --ok: #1f8f63;
+      --bad: #c44536;
+      --soft-ok: #e9f8f1;
+      --soft-bad: #fff0ed;
+      --soft-accent: #eef5ff;
+      --shadow: 0 14px 32px rgba(23, 50, 77, 0.12);
+      --radius: 18px;
+      --chip: #dff0ff;
+      --ice: #d7efff;
+      --highlight: #fff3a3;
+      --focus: #1f5fb9;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Arial", "Helvetica Neue", Helvetica, sans-serif;
+      background: linear-gradient(180deg, #eaf3ff 0%, #f8fbff 100%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    button, .choice, .slot, .toggle-btn {
+      font: inherit;
+    }
+    button:focus-visible, .choice:focus-visible, .slot:focus-visible, .toggle-btn:focus-visible, summary:focus-visible {
+      outline: 4px solid rgba(31,95,185,0.28);
+      outline-offset: 3px;
+    }
+    .app {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 0 16px 28px;
+    }
+    .topbar {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: stretch;
+    }
+    .topcard {
+      background: var(--panel);
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+    .demerit-card {
+      flex: 1 1 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .demerit-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .demerit-label {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .lives {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .life {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      background: var(--ice);
+      border: 2px solid #a9d8ff;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+    .life.lost {
+      background: #eef1f5;
+      border-color: #d4dbe4;
+      opacity: 0.45;
+      transform: scale(0.92);
+    }
+    .small-note {
+      font-size: 0.95rem;
+      color: var(--sub);
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .toggle-btn {
+      min-height: 48px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 2px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+    .toggle-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .main-card {
+      margin-top: 14px;
+      background: var(--panel);
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .screen-wrap {
+      padding: 22px 22px 16px;
+    }
+    .screen-tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--soft-accent);
+      color: var(--accent-2);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+    .instruction {
+      font-size: clamp(1.45rem, 2.6vw, 2rem);
+      line-height: 1.2;
+      font-weight: 800;
+      margin: 0 0 14px;
+      color: #0d2940;
+    }
+    .support-text {
+      font-size: 1rem;
+      color: var(--sub);
+      margin: 0 0 12px;
+    }
+    .stage {
+      min-height: 430px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .grid-two {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.15fr 0.95fr;
+      align-items: start;
+    }
+    .panel {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 16px;
+    }
+    .panel.soft {
+      background: #fbfdff;
+    }
+    .question-text {
+      font-size: 1.02rem;
+      line-height: 1.55;
+    }
+    .question-text mark {
+      background: var(--highlight);
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+    .question-image {
+      width: 100%;
+      border-radius: 14px;
+      border: 2px solid var(--line);
+      display: block;
+      background: #fff;
+    }
+    .redraw {
+      display: grid;
+      gap: 14px;
+    }
+    table.clean {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+    }
+    table.clean th, table.clean td {
+      border: 2px solid #9ab8d6;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    table.clean th {
+      background: #e8f2ff;
+    }
+    .mini-caption {
+      font-size: 0.95rem;
+      color: var(--sub);
+      margin: 0;
+    }
+    .state-diagram {
+      border: 2px solid #9ab8d6;
+      border-radius: 16px;
+      padding: 12px;
+      background: #f9fcff;
+    }
+    .line-visual {
+      position: relative;
+      height: 98px;
+      margin-top: 6px;
+    }
+    .line-main {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      top: 38px;
+      height: 6px;
+      background: linear-gradient(90deg, #b9d6ff 0%, #6ca8ff 100%);
+      border-radius: 999px;
+    }
+    .marker {
+      position: absolute;
+      top: 18px;
+      width: 4px;
+      height: 48px;
+      background: #f3a31b;
+      border-radius: 999px;
+    }
+    .marker.freeze {
+      left: 44%;
+    }
+    .marker.boil {
+      left: 80%;
+      background: #7f8fa6;
+    }
+    .zone-labels, .state-labels {
+      position: absolute;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.94rem;
+      color: var(--sub);
+      font-weight: 700;
+    }
+    .zone-labels {
+      top: 0;
+    }
+    .state-labels {
+      top: 62px;
+      color: var(--ink);
+    }
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+    .choices.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .choice {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 2px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      min-height: 62px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      font-weight: 700;
+    }
+    .choice:hover {
+      transform: translateY(-1px);
+    }
+    .choice.selected {
+      border-color: var(--accent);
+      background: var(--soft-accent);
+    }
+    .choice.correct {
+      border-color: var(--ok);
+      background: var(--soft-ok);
+    }
+    .choice.wrong {
+      border-color: var(--bad);
+      background: var(--soft-bad);
+    }
+    .feedback {
+      min-height: 52px;
+      border-radius: 16px;
+      border: 2px solid var(--line);
+      padding: 12px 14px;
+      background: #fbfdff;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+    .feedback.ok {
+      border-color: #b9ead5;
+      background: var(--soft-ok);
+      color: #0f6d49;
+    }
+    .feedback.bad {
+      border-color: #f3c2ba;
+      background: var(--soft-bad);
+      color: #9d3228;
+    }
+    .nav {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      min-height: 52px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .btn.secondary {
+      background: #fff;
+      color: var(--ink);
+      border: 2px solid var(--line);
+      box-shadow: none;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .chip-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 86px;
+      min-height: 56px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: var(--chip);
+      color: var(--accent-2);
+      border: 2px solid #a9d8ff;
+      font-weight: 800;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.04);
+    }
+    .slot-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .slot {
+      min-height: 88px;
+      border-radius: 18px;
+      border: 2px dashed #9ab8d6;
+      background: #fcfeff;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      color: var(--ink);
+      font-weight: 800;
+      text-align: center;
+    }
+    .slot small {
+      color: var(--sub);
+      font-weight: 700;
+    }
+    .slot.correct {
+      border-style: solid;
+      border-color: var(--ok);
+      background: var(--soft-ok);
+    }
+    .slot.wrong {
+      border-style: solid;
+      border-color: var(--bad);
+      background: var(--soft-bad);
+    }
+    .placed-chip {
+      display: inline-flex;
+      align-self: center;
+      margin-top: 4px;
+    }
+    details.panel-toggle {
+      margin-top: 8px;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+    }
+    details.panel-toggle[open] {
+      box-shadow: var(--shadow);
+    }
+    details.panel-toggle summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 800;
+      color: var(--ink);
+      background: #f9fbff;
+      user-select: none;
+    }
+    details.panel-toggle summary::-webkit-details-marker {
+      display: none;
+    }
+    .toggle-content {
+      padding: 14px 16px 16px;
+      border-top: 2px solid var(--line);
+      display: grid;
+      gap: 14px;
+    }
+    .source-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1.15fr 0.95fr;
+      align-items: start;
+    }
+    .popup-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .popup-card {
+      border: 2px solid #cfe3ff;
+      background: #f5faff;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+    .final-list {
+      margin: 0;
+      padding-left: 22px;
+      line-height: 1.65;
+      font-size: 1rem;
+    }
+    .option-label {
+      display: inline-flex;
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      align-items: center;
+      justify-content: center;
+      background: #edf4ff;
+      color: var(--accent-2);
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .hint {
+      border-left: 5px solid #a9d8ff;
+      padding: 10px 12px;
+      background: #f7fbff;
+      border-radius: 12px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    @media (max-width: 860px) {
+      .grid-two, .source-grid {
+        grid-template-columns: 1fr;
+      }
+      .choices.cols-2, .slot-grid {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        align-items: stretch;
+      }
+      .toolbar {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="topcard demerit-card" aria-live="polite">
+        <div class="demerit-row">
+          <div class="demerit-label">Ice cracks left</div>
+          <div class="lives" id="livesRow"></div>
+        </div>
+        <div class="small-note" id="demeritNote">Wrong checks in the teaching part will crack one ice circle. If all the ice cracks, the activity restarts.</div>
+      </div>
+      <div class="toolbar">
+        <button id="readAloudToggle" class="toggle-btn" type="button" aria-pressed="false">🔈 Read-aloud: Off</button>
+      </div>
+    </div>
+
+    <main class="main-card" id="appMain">
+      <div class="screen-wrap">
+        <div id="screenRoot" class="stage"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const originalImage = "data:image/png;base64,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";
+
+    const cleanTableRows = [
+      ["A", "5"],
+      ["B", "30"],
+      ["C", "120"]
+    ];
+
+    const originalOptions = [
+      { key: "1", text: "A is a solid at 3°C.", correct: true },
+      { key: "2", text: "A and B are both liquids at 28°C.", correct: false },
+      { key: "3", text: "B and C are both solids at 130°C.", correct: false },
+      { key: "4", text: "C can be a liquid or a gas at 120°C.", correct: false }
+    ];
+
+    const transferOptions = [
+      { text: "D is a solid at 15°C.", correct: true },
+      { text: "D is a gas at 15°C.", correct: false },
+      { text: "D is a gas at 20°C.", correct: false },
+      { text: "D is a liquid only at 20°C.", correct: false }
+    ];
+
+    const screenTitles = [
+      "Screen 1 of 10",
+      "Screen 2 of 10",
+      "Screen 3 of 10",
+      "Screen 4 of 10",
+      "Screen 5 of 10",
+      "Screen 6 of 10",
+      "Screen 7 of 10",
+      "Screen 8 of 10",
+      "Screen 9 of 10",
+      "Screen 10 of 10"
+    ];
+
+    const screenState = {
+      current: 0,
+      readAloudOn: false,
+      questionOpen: false,
+      sourceOpen: false,
+      popupOpen: false,
+      livesTotal: 0,
+      livesLeft: 0,
+      lockedNext: true,
+      feedback: null,
+      selected: null,
+      questionReady: false,
+      randomOrder: {},
+      penalisedScreens: [1,2,3,4,5,6],
+    };
+
+    const screenRoot = document.getElementById("screenRoot");
+    const livesRow = document.getElementById("livesRow");
+    const readAloudToggle = document.getElementById("readAloudToggle");
+
+    function shuffle(items) {
+      const arr = [...items];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function setupLives() {
+      const half = Math.ceil(screenState.penalisedScreens.length / 2);
+      screenState.livesTotal = half;
+      screenState.livesLeft = half;
+    }
+
+    function resetForRestart() {
+      window.speechSynthesis?.cancel?.();
+      screenState.current = 0;
+      screenState.questionOpen = false;
+      screenState.sourceOpen = false;
+      screenState.popupOpen = false;
+      screenState.lockedNext = true;
+      screenState.feedback = null;
+      screenState.selected = null;
+      screenState.questionReady = false;
+      screenState.randomOrder = {};
+      setupLives();
+      render();
+    }
+
+    setupLives();
+
+    function getQuestionHighlights() {
+      return `
+        <p class="question-text">
+          The table below shows the <mark>freezing points</mark> of three substances, A, B and C.
+          Based on the information given above, <mark>which one of the following is correct?</mark>
+        </p>
+      `;
+    }
+
+    function drawCleanTable() {
+      return `
+        <table class="clean" aria-label="Freezing points table">
+          <thead>
+            <tr><th>Substance</th><th>Freezing point (°C)</th></tr>
+          </thead>
+          <tbody>
+            ${cleanTableRows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function drawStateDiagram(extraNote = true) {
+      return `
+        <div class="state-diagram" aria-label="Clean state diagram">
+          <p class="mini-caption">Use the freezing point as a boundary.</p>
+          <div class="line-visual">
+            <div class="line-main"></div>
+            <div class="marker freeze" aria-hidden="true"></div>
+            <div class="marker boil" aria-hidden="true"></div>
+            <div class="zone-labels">
+              <span>Before</span>
+              <span>At freezing point</span>
+              <span>After</span>
+            </div>
+            <div class="state-labels">
+              <span>Solid</span>
+              <span>Solid + liquid</span>
+              <span>Boiling point not given</span>
+            </div>
+          </div>
+          ${extraNote ? `<p class="mini-caption">This question gives freezing points only, so do not jump straight to gas.</p>` : ""}
+        </div>
+      `;
+    }
+
+    function questionPanelMarkup() {
+      return `
+        <details class="panel-toggle" ${screenState.questionOpen ? "open" : ""} id="questionPanel">
+          <summary>Show the question again</summary>
+          <div class="toggle-content">
+            <div class="panel">
+              ${getQuestionHighlights()}
+              <img class="question-image" src="${originalImage}" alt="Original freezing point question" />
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function sourcePanelMarkup() {
+      return `
+        <details class="panel-toggle" ${screenState.sourceOpen ? "open" : ""} id="sourcePanel">
+          <summary>Show the source visual and clean redraw</summary>
+          <div class="toggle-content">
+            <div class="source-grid">
+              <div class="panel">
+                <p class="mini-caption">Original screenshot</p>
+                <img class="question-image" src="${originalImage}" alt="Original freezing point question screenshot" />
+              </div>
+              <div class="panel soft redraw">
+                <p class="mini-caption">Clean redraw</p>
+                ${drawCleanTable()}
+                ${drawStateDiagram(true)}
+              </div>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function updateTogglesPersistence() {
+      const q = document.getElementById("questionPanel");
+      if (q) {
+        q.addEventListener("toggle", () => {
+          screenState.questionOpen = q.open;
+        });
+      }
+      const s = document.getElementById("sourcePanel");
+      if (s) {
+        s.addEventListener("toggle", () => {
+          screenState.sourceOpen = s.open;
+        });
+      }
+    }
+
+    function speakScreen() {
+      if (!screenState.readAloudOn || !("speechSynthesis" in window)) return;
+      const bits = [];
+      const title = screenRoot.querySelector(".screen-tag")?.textContent?.trim();
+      const instruction = screenRoot.querySelector(".instruction")?.textContent?.trim();
+      if (title) bits.push(title);
+      if (instruction) bits.push(instruction);
+      screenRoot.querySelectorAll(".support-text, .mini-caption, .choice, .slot, .hint, .feedback, summary, .question-text").forEach(el => {
+        const t = el.textContent.trim();
+        if (t) bits.push(t);
+      });
+      const utter = new SpeechSynthesisUtterance(bits.join(". "));
+      utter.rate = 0.95;
+      utter.pitch = 1;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    }
+
+    function loseLifeIfNeeded() {
+      if (!screenState.penalisedScreens.includes(screenState.current)) return false;
+      screenState.livesLeft -= 1;
+      if (screenState.livesLeft <= 0) {
+        alert("All the ice cracked. The whole interactive will restart.");
+        resetForRestart();
+        return true;
+      }
+      return false;
+    }
+
+    function ensureOrder(key, items) {
+      if (!screenState.randomOrder[key]) {
+        screenState.randomOrder[key] = shuffle(items);
+      }
+      return screenState.randomOrder[key];
+    }
+
+    function nextScreen() {
+      if (screenState.current < 9) {
+        screenState.current += 1;
+        screenState.selected = null;
+        screenState.feedback = null;
+        render();
+      }
+    }
+
+    function prevScreen() {
+      if (screenState.current > 0) {
+        screenState.current -= 1;
+        screenState.selected = null;
+        screenState.feedback = null;
+        render();
+      }
+    }
+
+    function choiceClass(value) {
+      const selected = screenState.selected === value;
+      return selected ? "choice selected" : "choice";
+    }
+
+    function renderFeedback() {
+      if (!screenState.feedback) {
+        return `<div class="feedback" aria-live="polite">Feedback will appear here.</div>`;
+      }
+      const cls = screenState.feedback.type === "ok" ? "feedback ok" : "feedback bad";
+      return `<div class="${cls}" aria-live="polite">${screenState.feedback.message}</div>`;
+    }
+
+    function renderBottomNav(showBack = true, nextText = "Next") {
+      const nextEnabled = screenState.lockedNext;
+      return `
+        <div class="nav">
+          <button class="btn secondary" type="button" id="backBtn" ${showBack ? "" : "style='visibility:hidden'"}>Back</button>
+          <button class="btn" type="button" id="nextBtn" ${nextEnabled ? "" : "disabled"}>${nextText}</button>
+        </div>
+      `;
+    }
+
+    function renderScreen0() {
+      return `
+        <div class="screen-tag">${screenTitles[0]}</div>
+        <h1 class="instruction">Read the question. Then tap “I’m ready.”</h1>
+        <div class="stage">
+          <div class="grid-two">
+            <div class="panel">
+              ${getQuestionHighlights()}
+              <img class="question-image" src="${originalImage}" alt="Original freezing point question" />
+            </div>
+            <div class="panel soft redraw">
+              <p class="mini-caption">Clean redraw</p>
+              ${drawCleanTable()}
+              ${drawStateDiagram(true)}
+            </div>
+          </div>
+          <div class="hint">Look for the type of point shown in the table. You will use it as a boundary.</div>
+          <div class="nav">
+            <button class="btn secondary" type="button" style="visibility:hidden">Back</button>
+            <button class="btn" type="button" id="readyBtn">I’m ready</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderScreen1() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen1", [
+        { value: "boiling points", label: "boiling points" },
+        { value: "freezing points", label: "freezing points" },
+        { value: "colours", label: "colours of the substances" },
+        { value: "sizes", label: "sizes of the substances" }
+      ]);
+      return `
+        <div class="screen-tag">${screenTitles[1]}</div>
+        <h1 class="instruction">Tap the information the table gives.</h1>
+        <p class="support-text">Choose the clue you must use first.</p>
+        <div class="stage">
+          <div class="choices cols-2">
+            ${options.map(opt => `<button class="${choiceClass(opt.value)}" type="button" data-value="${opt.value}">${opt.label}</button>`).join("")}
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen2() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen2", [
+        { value: "solid", label: "Below the freezing point → solid" },
+        { value: "gas", label: "Below the freezing point → gas" },
+        { value: "atgas", label: "At the freezing point → gas only" },
+        { value: "abovesolid", label: "Above the freezing point → solid only" }
+      ]);
+      return `
+        <div class="screen-tag">${screenTitles[2]}</div>
+        <h1 class="instruction">Choose the true sentence.</h1>
+        <div class="stage">
+          <div class="panel soft">
+            ${drawStateDiagram(false)}
+          </div>
+          <div class="choices">
+            ${options.map(opt => `<button class="${choiceClass(opt.value)}" type="button" data-value="${opt.value}">${opt.label}</button>`).join("")}
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen3() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      return `
+        <div class="screen-tag">${screenTitles[3]}</div>
+        <h1 class="instruction">Tap the freezing point of substance A.</h1>
+        <p class="support-text">Find A in the table first.</p>
+        <div class="stage">
+          <div class="panel soft">
+            ${drawCleanTable()}
+          </div>
+          <div class="choices cols-2">
+            <button class="${choiceClass('5')}" type="button" data-value="5">5°C</button>
+            <button class="${choiceClass('30')}" type="button" data-value="30">30°C</button>
+            <button class="${choiceClass('120')}" type="button" data-value="120">120°C</button>
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen4() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const chosen = screenState.selected;
+      return `
+        <div class="screen-tag">${screenTitles[4]}</div>
+        <h1 class="instruction">Place 3°C in the correct spot.</h1>
+        <p class="support-text">Compare 3°C with A’s freezing point of 5°C.</p>
+        <div class="stage">
+          <div class="panel soft">
+            <div class="chip-row">
+              <span class="chip" aria-hidden="true">3°C</span>
+              <span class="small-note">Tap the correct box below.</span>
+            </div>
+          </div>
+          <div class="slot-grid">
+            <button class="slot ${chosen === 'before' && screenState.feedback?.type === 'ok' ? 'correct' : ''} ${chosen === 'before' && screenState.feedback?.type === 'bad' ? 'wrong' : ''}" type="button" data-value="before">
+              <span>Before 5°C</span>
+              <small>smaller than 5</small>
+              ${chosen === 'before' ? '<span class="chip placed-chip">3°C</span>' : ''}
+            </button>
+            <button class="slot ${chosen === 'at' && screenState.feedback?.type === 'bad' ? 'wrong' : ''}" type="button" data-value="at">
+              <span>At 5°C</span>
+              <small>exactly equal to 5</small>
+              ${chosen === 'at' ? '<span class="chip placed-chip">3°C</span>' : ''}
+            </button>
+            <button class="slot ${chosen === 'after' && screenState.feedback?.type === 'bad' ? 'wrong' : ''}" type="button" data-value="after">
+              <span>After 5°C</span>
+              <small>bigger than 5</small>
+              ${chosen === 'after' ? '<span class="chip placed-chip">3°C</span>' : ''}
+            </button>
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen5() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen5", [
+        { value: "solid", label: "🧊 Solid" },
+        { value: "liquid", label: "💧 Liquid" },
+        { value: "gas", label: "☁️ Gas" },
+        { value: "both", label: "🧊💧 Solid and liquid" }
+      ]);
+      return `
+        <div class="screen-tag">${screenTitles[5]}</div>
+        <h1 class="instruction">Now choose the state of A at 3°C.</h1>
+        <p class="support-text">Use your last step: 3°C was before 5°C.</p>
+        <div class="stage">
+          <div class="panel soft">
+            <div class="hint">Before the freezing point → solid.</div>
+          </div>
+          <div class="choices cols-2">
+            ${options.map(opt => `<button class="${choiceClass(opt.value)}" type="button" data-value="${opt.value}">${opt.label}</button>`).join("")}
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen6() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen6", [
+        { value: "mustgas", label: "Above the freezing point, the substance must be a gas." },
+        { value: "needmore", label: "Above the freezing point, the substance is no longer solid, but we still need more information to decide if it is gas." }
+      ]);
+      return `
+        <div class="screen-tag">${screenTitles[6]}</div>
+        <h1 class="instruction">Choose the safer science statement.</h1>
+        <p class="support-text">This helps you avoid a common mistake in the final question.</p>
+        <div class="stage">
+          <div class="choices">
+            ${options.map(opt => `<button class="${choiceClass(opt.value)}" type="button" data-value="${opt.value}">${opt.label}</button>`).join("")}
+          </div>
+          <div class="popup-wrap">
+            <button class="btn secondary" type="button" id="whyGasBtn">Why not gas?</button>
+          </div>
+          ${screenState.popupOpen ? `<div class="popup-card">The question gives freezing points only. To be sure it is a gas, you would also need the boiling point.</div>` : ""}
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen7() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen7", originalOptions);
+      return `
+        <div class="screen-tag">${screenTitles[7]}</div>
+        <h1 class="instruction">Choose the correct option for the original question.</h1>
+        <p class="support-text">Use the table and the freezing-point boundary.</p>
+        <div class="stage">
+          <div class="choices">
+            ${options.map(opt => `
+              <button class="${choiceClass(opt.key)} ${screenState.feedback?.type === 'ok' && screenState.selected === opt.key ? 'correct' : ''} ${screenState.feedback?.type === 'bad' && screenState.selected === opt.key ? 'wrong' : ''}"
+                type="button" data-value="${opt.key}">
+                <span class="option-label">${opt.key}</span>
+                <span>${opt.text}</span>
+              </button>
+            `).join("")}
+          </div>
+          ${renderFeedback()}
+          ${sourcePanelMarkup()}
+          ${questionPanelMarkup()}
+          ${renderBottomNav(true)}
+        </div>
+      `;
+    }
+
+    function renderScreen8() {
+      screenState.lockedNext = screenState.feedback?.type === "ok";
+      const options = ensureOrder("screen8", transferOptions);
+      return `
+        <div class="screen-tag">${screenTitles[8]}</div>
+        <h1 class="instruction">Choose the true statement.</h1>
+        <p class="support-text">A substance D has a freezing point of 20°C.</p>
+        <div class="stage">
+          <div class="panel soft">
+            <div class="hint">Start by comparing the temperature with the freezing point.</div>
+          </div>
+          <div class="choices">
+            ${options.map(opt => `
+              <button class="${choiceClass(opt.text)} ${screenState.feedback?.type === 'ok' && screenState.selected === opt.text ? 'correct' : ''} ${screenState.feedback?.type === 'bad' && screenState.selected === opt.text ? 'wrong' : ''}"
+                type="button" data-value="${opt.text}">
+                ${opt.text}
+              </button>
+            `).join("")}
+          </div>
+          ${renderFeedback()}
+          ${renderBottomNav(true, "Finish")}
+        </div>
+      `;
+    }
+
+    function renderScreen9() {
+      screenState.lockedNext = false;
+      return `
+        <div class="screen-tag">${screenTitles[9]}</div>
+        <h1 class="instruction">You’re done.</h1>
+        <div class="stage">
+          <div class="panel soft">
+            <p class="support-text" style="margin-top:0;">Remember these three ideas:</p>
+            <ul class="final-list">
+              <li>Below the freezing point → solid.</li>
+              <li>At the freezing point → solid and liquid can both be present.</li>
+              <li>Do not claim gas unless the boiling point is also known.</li>
+            </ul>
+          </div>
+          <div class="nav">
+            <button class="btn secondary" type="button" id="restartBtn">Restart</button>
+            <button class="btn" type="button" id="finishBtn">Close read-aloud and stay here</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      livesRow.innerHTML = Array.from({ length: screenState.livesTotal }, (_, i) => {
+        const alive = i < screenState.livesLeft;
+        return `<span class="life ${alive ? "" : "lost"}" aria-hidden="true">${alive ? "❄️" : "○"}</span>`;
+      }).join("");
+
+      readAloudToggle.classList.toggle("active", screenState.readAloudOn);
+      readAloudToggle.textContent = screenState.readAloudOn ? "🔈 Read-aloud: On" : "🔈 Read-aloud: Off";
+      readAloudToggle.setAttribute("aria-pressed", String(screenState.readAloudOn));
+
+      let html = "";
+      switch (screenState.current) {
+        case 0: html = renderScreen0(); break;
+        case 1: html = renderScreen1(); break;
+        case 2: html = renderScreen2(); break;
+        case 3: html = renderScreen3(); break;
+        case 4: html = renderScreen4(); break;
+        case 5: html = renderScreen5(); break;
+        case 6: html = renderScreen6(); break;
+        case 7: html = renderScreen7(); break;
+        case 8: html = renderScreen8(); break;
+        case 9: html = renderScreen9(); break;
+      }
+      screenRoot.innerHTML = html;
+      attachHandlers();
+      updateTogglesPersistence();
+      if (screenState.readAloudOn) {
+        setTimeout(speakScreen, 80);
+      }
+    }
+
+    function attachChoiceHandlers(selector, onChoose) {
+      document.querySelectorAll(selector).forEach(btn => {
+        btn.addEventListener("click", () => {
+          onChoose(btn.dataset.value);
+        });
+      });
+    }
+
+    function attachHandlers() {
+      document.getElementById("backBtn")?.addEventListener("click", prevScreen);
+      document.getElementById("nextBtn")?.addEventListener("click", nextScreen);
+
+      document.getElementById("readyBtn")?.addEventListener("click", () => {
+        screenState.questionReady = true;
+        nextScreen();
+      });
+
+      if (screenState.current === 1) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "freezing points") {
+            screenState.feedback = { type: "ok", message: "Yes. The table gives freezing points." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "Look at the heading of the right column." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 2) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "solid") {
+            screenState.feedback = { type: "ok", message: "Yes. Below the freezing point, the substance is solid." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "Think about what happens before the substance starts melting." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 3) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "5") {
+            screenState.feedback = { type: "ok", message: "Yes. A freezes at 5°C." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "Look at row A." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 4) {
+        attachChoiceHandlers(".slot", value => {
+          screenState.selected = value;
+          if (value === "before") {
+            screenState.feedback = { type: "ok", message: "Yes. 3°C is before 5°C." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "Compare the two numbers. Is 3 smaller or bigger than 5?" };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 5) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "solid") {
+            screenState.feedback = { type: "ok", message: "Yes. Before the freezing point means solid." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "Use your last step. 3°C was before 5°C." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 6) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "needmore") {
+            screenState.feedback = { type: "ok", message: "Yes. We would need the boiling point to be sure about gas." };
+          } else {
+            if (loseLifeIfNeeded()) return;
+            screenState.feedback = { type: "bad", message: "The question gives freezing points, not boiling points." };
+          }
+          render();
+        });
+        document.getElementById("whyGasBtn")?.addEventListener("click", () => {
+          screenState.popupOpen = !screenState.popupOpen;
+          render();
+        });
+      }
+
+      if (screenState.current === 7) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          if (value === "1") {
+            screenState.feedback = { type: "ok", message: "Yes. A is solid at 3°C because 3°C is below A’s freezing point of 5°C." };
+          } else {
+            const map = {
+              "2": "Check B at 28°C. Is 28°C below or above 30°C?",
+              "3": "130°C is above the freezing points of both B and C, so they are not both solids.",
+              "4": "At 120°C, C is at its freezing point, so ‘gas’ is not supported."
+            };
+            screenState.feedback = { type: "bad", message: map[value] || "Try again." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 8) {
+        attachChoiceHandlers(".choice", value => {
+          screenState.selected = value;
+          const correct = transferOptions.find(opt => opt.text === value)?.correct;
+          if (correct) {
+            screenState.feedback = { type: "ok", message: "Yes. 15°C is below 20°C, so D is solid." };
+          } else {
+            screenState.feedback = { type: "bad", message: "Compare the temperature with the freezing point first." };
+          }
+          render();
+        });
+      }
+
+      if (screenState.current === 9) {
+        document.getElementById("restartBtn")?.addEventListener("click", resetForRestart);
+        document.getElementById("finishBtn")?.addEventListener("click", () => {
+          window.speechSynthesis?.cancel?.();
+          screenState.readAloudOn = false;
+          render();
+        });
+      }
+    }
+
+    readAloudToggle.addEventListener("click", () => {
+      screenState.readAloudOn = !screenState.readAloudOn;
+      if (!screenState.readAloudOn) {
+        window.speechSynthesis?.cancel?.();
+      }
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
