@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Muffin Mystery Interactive v3</title>
+<style>
+  :root{
+    --bg:#eef5ff;
+    --card:#ffffff;
+    --ink:#1f2747;
+    --muted:#5a6387;
+    --line:#d8e1fb;
+    --blue:#4f7cff;
+    --blue2:#7ea0ff;
+    --gold:#ffd44d;
+    --gold2:#ffef9c;
+    --peach:#ffb36b;
+    --good:#178552;
+    --good-bg:#e8fff2;
+    --bad:#c94141;
+    --bad-bg:#fff0f0;
+    --shadow:0 14px 36px rgba(31,39,71,.12);
+    --radius:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:linear-gradient(180deg,#eef5ff 0%,#f8fbff 55%,#eef5ff 100%);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+  body{min-height:100vh}
+  button,input{font:inherit}
+  .app{max-width:980px;margin:0 auto;padding:14px 14px 26px}
+  .topbar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px
+  }
+  .logo{
+    width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,var(--blue),#8d78ff);
+    display:grid;place-items:center;box-shadow:var(--shadow);font-size:28px;color:#fff
+  }
+  .brand h1{margin:0;font-size:1.35rem}
+  .brand p{margin:.15rem 0 0;color:var(--muted);font-size:0.98rem}
+  .top-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .chip{
+    background:rgba(255,255,255,.9);border:2px solid var(--line);border-radius:999px;padding:10px 14px;font-weight:700
+  }
+  .button,.ghost{
+    border:none;border-radius:18px;padding:14px 18px;font-weight:700;cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease
+  }
+  .button{background:linear-gradient(135deg,var(--blue),#6f93ff);color:#fff;box-shadow:0 10px 24px rgba(79,124,255,.28)}
+  .ghost{background:#fff;border:2px solid var(--line);color:var(--ink)}
+  .button:hover,.ghost:hover{transform:translateY(-1px)}
+  .button:active,.ghost:active{transform:translateY(1px)}
+  .button[disabled],.ghost[disabled]{opacity:.55;cursor:not-allowed;transform:none}
+  .panel{
+    background:var(--card);border:2px solid rgba(216,225,251,.9);border-radius:var(--radius);box-shadow:var(--shadow)
+  }
+  .main{overflow:hidden}
+  .progress-wrap{padding:14px 16px;border-bottom:2px solid #edf2ff;background:#fbfdff}
+  .progress-row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .progress-row strong{font-size:1rem}
+  .progress-bar{height:14px;background:#e6edff;border-radius:999px;overflow:hidden;margin-top:10px}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ffbd4a,var(--blue));border-radius:999px;transition:width .35s ease}
+  .screen{padding:18px 16px 18px}
+  .title-row{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+  .step-tag{
+    display:inline-block;background:#eef3ff;color:#3854c2;border-radius:999px;padding:7px 12px;font-weight:700
+  }
+  h2{margin:.35rem 0 .4rem;font-size:1.65rem;line-height:1.18}
+  .instruction{
+    margin:0;
+    font-size:1.15rem;
+    line-height:1.5;
+    max-width:46rem;
+  }
+  .helper{
+    margin:.6rem 0 0;
+    color:var(--muted);
+    font-size:1.02rem;
+    line-height:1.45;
+    max-width:46rem;
+  }
+  .focus{
+    margin-top:14px;background:linear-gradient(180deg,var(--gold2),#fff6c8);border:3px solid #f4cf43;border-radius:22px;padding:14px 16px;
+    box-shadow:0 8px 22px rgba(244,207,67,.22);animation:focusPulse 2.2s ease-in-out infinite
+  }
+  .focus .focus-label{font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#6c5b11}
+  .focus .focus-text{margin-top:6px;font-size:1.6rem;font-weight:800;line-height:1.22}
+  @keyframes focusPulse{
+    0%,100%{transform:scale(1)}
+    50%{transform:scale(1.01)}
+  }
+
+  .work{margin-top:16px;background:#f8fbff;border:2px solid #e8efff;border-radius:22px;padding:16px}
+  .work-grid{display:grid;gap:16px}
+  .center{display:flex;justify-content:center;align-items:center}
+  .equation{
+    font-size:1.25rem;font-weight:800;background:#fff;border:2px solid var(--line);padding:12px 14px;border-radius:18px;display:inline-flex;gap:10px;flex-wrap:wrap;align-items:center
+  }
+  .equation .n{color:#3755c6}
+
+  .answer-area{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:8px}
+  .field{
+    background:#fff;border:3px solid #c9d7ff;border-radius:18px;padding:12px 14px;min-width:120px
+  }
+  .field label{display:block;font-size:.92rem;font-weight:700;color:var(--muted);margin-bottom:6px}
+  .field input{
+    width:100%;border:none;outline:none;font-size:1.45rem;font-weight:800;color:var(--ink);background:transparent
+  }
+  .field.small{min-width:92px}
+  .field.wide{min-width:160px}
+  .feedback{
+    min-height:28px;margin-top:12px;font-size:1.02rem;font-weight:700;line-height:1.45
+  }
+  .feedback.good{color:var(--good)}
+  .feedback.bad{color:var(--bad)}
+  .next-wrap{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+
+  .visual-stack{display:grid;gap:14px}
+  .visual-note{
+    background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 14px;font-size:1.05rem;line-height:1.45
+  }
+  .big-number{
+    min-width:130px;display:grid;place-items:center;background:#fff;border:3px solid var(--blue2);border-radius:20px;padding:14px;
+    font-size:2.1rem;font-weight:900;color:#3352d2;box-shadow:0 10px 20px rgba(79,124,255,.12)
+  }
+
+  .box-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+  .muffin-box{
+    background:#fff;border:3px solid #91aaf9;border-radius:20px;padding:12px;min-width:156px;
+    box-shadow:0 10px 20px rgba(79,124,255,.10)
+  }
+  .muffin-box.missing{border-style:dashed;background:#fffbf4}
+  .box-title{font-size:.96rem;font-weight:800;margin-bottom:8px;color:#3755c6}
+  .muffin-grid{
+    display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;justify-items:center
+  }
+  .muffin-grid.four{grid-template-columns:repeat(2,1fr)}
+  .muffin{
+    width:32px;height:30px;position:relative;animation:popIn .4s ease both
+  }
+  .muffin::before{
+    content:"";position:absolute;left:3px;right:3px;top:0;height:16px;background:linear-gradient(180deg,#ffcb6d,#ff9d5b);
+    border-radius:14px 14px 10px 10px;border:2px solid #d27c39
+  }
+  .muffin::after{
+    content:"";position:absolute;left:7px;right:7px;bottom:0;height:15px;background:linear-gradient(180deg,#f8d1a8,#eaa66a);
+    border-radius:0 0 7px 7px;border:2px solid #c98a53;border-top:none
+  }
+  .muffin.loose{transform:rotate(-6deg)}
+  .muffin.missing::before,.muffin.missing::after{
+    background:transparent;border-style:dashed;border-color:#d7ae55
+  }
+  .muffin.missing{animation:missingPulse 1.4s ease-in-out infinite}
+  @keyframes popIn{
+    from{opacity:0;transform:translateY(8px) scale(.75)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+  }
+  @keyframes missingPulse{
+    0%,100%{transform:scale(1);opacity:.8}
+    50%{transform:scale(1.08);opacity:1}
+  }
+  .loose-wrap{
+    display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 14px;background:#fff;border:3px solid #ffc48e;border-radius:20px;
+    box-shadow:0 10px 20px rgba(255,179,107,.18)
+  }
+  .loose-label{font-weight:800;color:#a35d1f}
+  .minus-card{
+    display:inline-flex;align-items:center;gap:10px;background:#fff3ea;border:3px solid #ffbf89;color:#a14f11;border-radius:18px;padding:12px 14px;font-weight:800;font-size:1.08rem
+  }
+  .plus-card{
+    display:inline-flex;align-items:center;gap:10px;background:#eef4ff;border:3px solid #b2c6ff;color:#2e4fc6;border-radius:18px;padding:12px 14px;font-weight:800;font-size:1.08rem
+  }
+
+  .list-preview{display:flex;flex-wrap:wrap;gap:10px}
+  .num-chip{
+    background:#fff;border:3px solid #d6e0ff;border-radius:999px;padding:10px 14px;font-weight:800;font-size:1.15rem;min-width:62px;text-align:center;
+    animation:popIn .25s ease both
+  }
+  .num-chip.good{border-color:#93ddb8;background:#effff5;color:#176f46}
+  .num-chip.bad{border-color:#ffc7c7;background:#fff4f4;color:#aa3838}
+  .placeholder-chip{background:#edf2ff;color:#7f8bb9}
+
+  .numberline{
+    background:#fff;border:3px solid #cfe0ff;border-radius:20px;padding:14px
+  }
+  .ticks{display:grid;grid-template-columns:repeat(var(--count), minmax(0,1fr));gap:4px}
+  .tick{
+    display:grid;justify-items:center;gap:6px;font-size:.95rem;font-weight:700;color:#67718f
+  }
+  .tick-mark{width:4px;height:16px;background:#b7c4ea;border-radius:999px}
+  .tick .range-pill{
+    min-width:42px;text-align:center;border-radius:999px;padding:5px 6px
+  }
+  .tick.in .range-pill{background:#eefbed;color:#196f42}
+  .tick.out .range-pill{background:#fff0f0;color:#b83f3f}
+  .tick.boundary .range-pill{background:#fff8da;color:#7e6410;border:2px solid #f0cf51}
+
+  .side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .compare-card{background:#fff;border:3px solid #d8e2ff;border-radius:22px;padding:14px}
+  .compare-card h3{margin:0 0 10px;font-size:1.08rem}
+  .compare-card .list-preview{min-height:44px}
+
+  .question-panel{
+    margin-top:16px;background:#ffffff;border:2px solid #d9e4ff;border-radius:22px;padding:16px
+  }
+  .question-panel h3{margin:0 0 10px;font-size:1.05rem}
+  .question-text{font-size:1.08rem;line-height:1.7}
+  .q-highlight{
+    border-radius:12px;padding:2px 6px;font-weight:800
+  }
+  .q-highlight.range{background:#fff2a8}
+  .q-highlight.six{background:#dfe8ff}
+  .q-highlight.four{background:#ffe7d1}
+  .q-highlight.all{background:#dff7e9}
+
+
+  .question-preview{
+    margin-top:16px;
+    background:linear-gradient(180deg,#ffffff,#f8fbff);
+    border:3px solid #d7e3ff;
+    border-radius:24px;
+    padding:18px;
+    box-shadow:0 10px 24px rgba(31,39,71,.08);
+  }
+  .question-preview .qp-label{
+    font-size:.92rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:#4560c7;
+    margin-bottom:10px;
+  }
+  .question-preview .qp-text{
+    font-size:1.28rem;
+    line-height:1.8;
+    font-weight:700;
+  }
+  .question-preview .qp-text .q-highlight{
+    display:inline-block;
+    margin:2px 2px;
+    padding:4px 8px;
+  }
+
+  .overlay{
+    position:fixed;inset:0;background:rgba(24,33,68,.44);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;padding:16px;z-index:1000
+  }
+  .overlay.show{display:flex}
+  .modal{
+    width:min(900px,100%);max-height:min(92vh,900px);overflow:auto;background:#fff;border:3px solid #dce6ff;border-radius:28px;box-shadow:0 30px 60px rgba(24,33,68,.22)
+  }
+  .modal-head{
+    padding:16px 18px;border-bottom:2px solid #eef3ff;background:linear-gradient(180deg,#fbfdff,#f7faff)
+  }
+  .modal-head h3{margin:0;font-size:1.45rem}
+  .modal-head p{margin:.4rem 0 0;color:var(--muted);font-size:1rem;line-height:1.45}
+  .streak-bar{
+    margin-top:12px;background:#eef3ff;border-radius:999px;padding:6px;display:flex;gap:6px
+  }
+  .streak-dot{
+    flex:1;height:16px;border-radius:999px;background:#d7e1ff;transition:background .18s ease
+  }
+  .streak-dot.on{background:linear-gradient(90deg,var(--gold),#ffc44b)}
+  .modal-body{padding:18px}
+  .explain{
+    margin-top:14px;border-radius:20px;background:#f7fbff;border:2px solid #dce8ff;padding:14px;display:none
+  }
+  .explain.show{display:block}
+  .explain h4{margin:0 0 8px;font-size:1.06rem}
+  .explain-step{
+    margin-top:8px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px;animation:popIn .32s ease both
+  }
+  .explain-step strong{color:#3152ce}
+  .practice-footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .tiny{font-size:.95rem;color:var(--muted)}
+
+  .sparkle{display:inline-block;animation:wiggle 1.2s ease-in-out infinite}
+  @keyframes wiggle{
+    0%,100%{transform:rotate(0)}
+    25%{transform:rotate(-8deg)}
+    75%{transform:rotate(8deg)}
+  }
+
+  @media (max-width: 780px){
+    .side-by-side{grid-template-columns:1fr}
+    h2{font-size:1.45rem}
+    .focus .focus-text{font-size:1.35rem}
+    .instruction{font-size:1.06rem}
+    .muffin-box{min-width:138px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">🧁</div>
+      <div>
+        <h1>Muffin Mystery</h1>
+        <p>One small thinking step at a time.</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="ghost" id="readBtn" type="button">🔊 Read this screen</button>
+      <div class="chip" id="stepChip">Step 1 of 10</div>
+    </div>
+  </div>
+
+  <section class="panel main">
+    <div class="progress-wrap">
+      <div class="progress-row">
+        <strong id="progressTitle">Let’s solve the question carefully.</strong>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="screen" id="screen"></div>
+  </section>
+
+  <section class="question-panel">
+    <h3>The question</h3>
+    <div class="question-text" id="questionText"></div>
+  </section>
+</div>
+
+<div class="overlay" id="practiceOverlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Let’s practise this idea first.</h3>
+      <p id="practiceIntro">Get 3 correct in a row to come back to the question.</p>
+      <div class="streak-bar">
+        <div class="streak-dot" id="streak0"></div>
+        <div class="streak-dot" id="streak1"></div>
+        <div class="streak-dot" id="streak2"></div>
+      </div>
+    </div>
+    <div class="modal-body" id="practiceBody"></div>
+  </div>
+</div>
+
+<script>
+const screenEl = document.getElementById('screen');
+const questionEl = document.getElementById('questionText');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const progressTitle = document.getElementById('progressTitle');
+const stepChip = document.getElementById('stepChip');
+const readBtn = document.getElementById('readBtn');
+const overlay = document.getElementById('practiceOverlay');
+const practiceBody = document.getElementById('practiceBody');
+
+const totalSteps = 10;
+
+const state = {
+  step: 0,
+  rangeSmall: '',
+  rangeLarge: '',
+  rangeDone: false,
+  sixIntro: '',
+  sixList: [],
+  sixIndex: 1,
+  sixKeep: ['', '', ''],
+  fourIntro: '',
+  fourList: [],
+  fourIndex: 1,
+  fourKeep: ['', '', '', '', ''],
+  common: '',
+  lastFeedback: '',
+};
+
+const correctData = {
+  range: { small: 10, large: 30 },
+  sixIntro: 13,
+  sixList: [7, 13, 19, 25, 31],
+  sixKeep: [13, 19, 25],
+  fourIntro: 7,
+  fourList: [3, 7, 11, 15, 19, 23, 27, 31],
+  fourKeep: [11, 15, 19, 23, 27],
+  common: 19
+};
+
+const practice = {
+  active: false,
+  type: '',
+  streak: 0,
+  item: null,
+  answer: '',
+  feedback: '',
+  showExplain: false
+};
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+
+function isNum(v){ return /^-?\d+$/.test(String(v).trim()); }
+function num(v){ return Number(String(v).trim()); }
+
+function shuffle(arr){
+  const copy = [...arr];
+  for(let i = copy.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function muffinMarkup(delay = 0, missing = false, loose = false){
+  const cls = ['muffin'];
+  if(missing) cls.push('missing');
+  if(loose) cls.push('loose');
+  return `<div class="${cls.join(' ')}" style="animation-delay:${delay}s"></div>`;
+}
+
+function renderBoxVisual(size, count, mode){
+  const isFour = size === 4;
+  let html = `<div class="box-row">`;
+  if(mode === 'plus'){
+    for(let i = 0; i < count; i++){
+      html += `<div class="muffin-box">
+        <div class="box-title">Box ${i + 1}</div>
+        <div class="muffin-grid ${isFour ? 'four' : ''}">
+          ${Array.from({length:size}, (_, idx) => muffinMarkup(idx * 0.05)).join('')}
+        </div>
+      </div>`;
+    }
+    html += `<div class="loose-wrap">
+      <div class="loose-label">1 muffin left</div>
+      ${muffinMarkup(0.18, false, true)}
+    </div>`;
+  } else if(mode === 'minus'){
+    for(let i = 0; i < count; i++){
+      const missingSpot = (i === count - 1);
+      html += `<div class="muffin-box ${missingSpot ? 'missing' : ''}">
+        <div class="box-title">Box ${i + 1}</div>
+        <div class="muffin-grid ${isFour ? 'four' : ''}">
+          ${Array.from({length:size}, (_, idx) => {
+            const missing = missingSpot && idx === size - 1;
+            return muffinMarkup(idx * 0.05, missing, false);
+          }).join('')}
+        </div>
+      </div>`;
+    }
+    html += `<div class="minus-card">1 muffin is missing</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderNumberLine(start, end, currentMode = 'inclusive'){
+  const numbers = [];
+  for(let n = start - 1; n <= end + 1; n++){ numbers.push(n); }
+  return `
+    <div class="numberline">
+      <div class="ticks" style="--count:${numbers.length}">
+        ${numbers.map(n => {
+          let cls = 'out';
+          if(n === start || n === end) cls = 'boundary';
+          if(currentMode === 'inclusive' && n >= start && n <= end) cls = n === start || n === end ? 'boundary' : 'in';
+          return `<div class="tick ${cls}">
+            <div class="tick-mark"></div>
+            <div class="range-pill">${n}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function setQuestionHighlight(key){
+  const range = key === 'range' ? 'q-highlight range' : '';
+  const six = key === 'six' ? 'q-highlight six' : '';
+  const four = key === 'four' ? 'q-highlight four' : '';
+  const all = key === 'all' ? 'q-highlight all' : '';
+  questionEl.innerHTML = `
+    Mia baked <span class="${range || (key === 'all' ? all : '')}">10 to 30 muffins</span>.
+    When she packed them into <span class="${six || (key === 'all' ? all : '')}">boxes of 6, she had 1 muffin left</span>.
+    When she packed them into <span class="${four || (key === 'all' ? all : '')}">boxes of 4, she was short of 1 muffin</span>.
+    How many muffins did Mia bake?
+  `;
+}
+
+function setProgress(title){
+  const percent = Math.round((state.step / (totalSteps - 1)) * 100);
+  progressTitle.textContent = title;
+  progressFill.style.width = percent + '%';
+  progressText.textContent = percent + '%';
+  stepChip.textContent = `Step ${state.step + 1} of ${totalSteps}`;
+}
+
+function readScreen(){
+  let text = '';
+  if(practice.active){
+    text = getPracticeReadText();
+  } else {
+    text = getMainReadText();
+  }
+  if(!('speechSynthesis' in window)){ return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  u.pitch = 1;
+  window.speechSynthesis.speak(u);
+}
+readBtn.addEventListener('click', readScreen);
+
+function getMainReadText(){
+  const commonQuestion = 'Question. Mia baked 10 to 30 muffins. When she packed them into boxes of 6, she had 1 muffin left. When she packed them into boxes of 4, she was short of 1 muffin. How many muffins did Mia bake? ';
+  switch(state.step){
+    case 0:
+      return 'Welcome to Muffin Mystery. Read the full question first. The important clue words are highlighted. There are 3 clues. Then press start to solve clue 1. ' + commonQuestion;
+    case 1:
+      return 'Look at this part of the question. 10 to 30 muffins. Type the smallest possible number and the greatest possible number. 10 and 30 are both allowed. ' + commonQuestion;
+    case 2:
+      return 'Find the total muffins. 2 boxes of 6 and 1 muffin left. Count the muffins in the boxes. Then count the 1 extra muffin. ' + commonQuestion;
+    case 3:
+      return `Build the list one total at a time. ${state.sixIndex} boxes of 6 and 1 muffin left. Type the total muffins. ` + commonQuestion;
+    case 4:
+      return 'Now keep only the numbers from 10 to 30. Type the numbers that fit the range, from smallest to greatest. ' + commonQuestion;
+    case 5:
+      return 'Find the total muffins. 2 boxes of 4, short of 1 muffin. One muffin is missing from the boxes. Type the total muffins you really have. ' + commonQuestion;
+    case 6:
+      return `Build the list one total at a time. ${state.fourIndex} boxes of 4, short of 1 muffin. Type the total muffins. ` + commonQuestion;
+    case 7:
+      return 'Now keep only the numbers from 10 to 30. Type the numbers that fit the range, from smallest to greatest. ' + commonQuestion;
+    case 8:
+      return 'Look at both lists. Type the number that appears in both lists. ' + commonQuestion;
+    case 9:
+      return 'Well done. The answer is 19 muffins. You can now go to the next question.';
+    default:
+      return commonQuestion;
+  }
+}
+
+function getPracticeReadText(){
+  if(!practice.item) return 'Practice screen';
+  if(practice.type === 'range'){
+    return `Practice. Type the smallest possible number and the greatest possible number. ${practice.item.start} to ${practice.item.end}.`;
+  }
+  if(practice.type === 'leftPlus'){
+    return `Practice. Find the total muffins. ${practice.item.count} boxes of ${practice.item.size} and 1 muffin left.`;
+  }
+  if(practice.type === 'shortMinus'){
+    return `Practice. Find the total muffins. ${practice.item.count} boxes of ${practice.item.size}, short of 1 muffin.`;
+  }
+  if(practice.type === 'compare'){
+    return 'Practice. Look at both lists. Type the number that appears in both lists.';
+  }
+  return 'Practice';
+}
+
+function makeTitleRow(tag, title, instruction, helper=''){
+  return `
+    <div class="title-row">
+      <div>
+        <div class="step-tag">${tag}</div>
+        <h2>${title}</h2>
+        <p class="instruction">${instruction}</p>
+        ${helper ? `<p class="helper">${helper}</p>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderMain(){
+  setProgress(getStepTitle());
+  const html = getStepHtml();
+  screenEl.innerHTML = html;
+  setQuestionHighlight(getQuestionKey());
+  attachMainEvents();
+}
+
+function getStepTitle(){
+  switch(state.step){
+    case 0: return 'Start the interactive';
+    case 1: return 'Find the possible range';
+    case 2: return 'Understand the 6-box clue';
+    case 3: return 'Build the 6-and-1 list';
+    case 4: return 'Keep only numbers in range';
+    case 5: return 'Understand the 4-box clue';
+    case 6: return 'Build the 4-short-of-1 list';
+    case 7: return 'Keep only numbers in range';
+    case 8: return 'Match the two lists';
+    case 9: return 'Question complete';
+    default: return 'Muffin Mystery';
+  }
+}
+function getQuestionKey(){
+  if(state.step === 1) return 'range';
+  if([2,3,4].includes(state.step)) return 'six';
+  if([5,6,7].includes(state.step)) return 'four';
+  if([8,9].includes(state.step)) return 'all';
+  return 'all';
+}
+
+function listPreview(values, placeholderCount = 0){
+  const chips = values.map(v => `<div class="num-chip">${v}</div>`).join('');
+  const placeholders = Array.from({length:placeholderCount}, () => `<div class="num-chip placeholder-chip">?</div>`).join('');
+  return `<div class="list-preview">${chips}${placeholders}</div>`;
+}
+
+function getStepHtml(){
+  if(state.step === 0){
+    return `
+      ${makeTitleRow('Start', 'Read the question carefully first.', 'The important clue words are highlighted in the question below. Read them before you start.', 'You will solve one clue at a time. If you get a step wrong, you will practise that idea until you get 3 correct in a row.')}
+      <div class="question-preview">
+        <div class="qp-label">Question</div>
+        <div class="qp-text">
+          Mia baked <span class="q-highlight range">10 to 30 muffins</span>.
+          When she packed them into <span class="q-highlight six">boxes of 6, she had 1 muffin left</span>.
+          When she packed them into <span class="q-highlight four">boxes of 4, she was short of 1 muffin</span>.
+          How many muffins did Mia bake?
+        </div>
+      </div>
+      <div class="focus">
+        <div class="focus-label">Your job</div>
+        <div class="focus-text">Find the one number that fits all 3 clues.</div>
+      </div>
+      <div class="work">
+        <div class="visual-stack">
+          <div class="visual-note"><strong>What to do now:</strong> Read the question. Notice the 3 highlighted clues. Then press the button to solve the first clue.</div>
+          <div class="center">
+            <button class="button" id="startBtn" type="button">Start with clue 1</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if(state.step === 1){
+    return `
+      ${makeTitleRow('Clue 1', 'Work out the possible range.', 'Type the smallest possible number and the greatest possible number.', 'This clue says the number can start at 10 and go up to 30. 10 and 30 both count.')}
+      <div class="focus">
+        <div class="focus-label">Look carefully at this part</div>
+        <div class="focus-text">10 to 30 muffins</div>
+      </div>
+      <div class="work work-grid">
+        ${renderNumberLine(10,30,'inclusive')}
+        <div class="answer-area">
+          <div class="field">
+            <label for="rangeSmall">Smallest possible number</label>
+            <input id="rangeSmall" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.rangeSmall)}" />
+          </div>
+          <div class="field">
+            <label for="rangeLarge">Greatest possible number</label>
+            <input id="rangeLarge" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.rangeLarge)}" />
+          </div>
+          <button class="button" id="checkRange" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 2){
+    return `
+      ${makeTitleRow('Clue 2', 'Find the total muffins.', 'Count the muffins in the boxes. Then count the 1 extra muffin.', 'You are not guessing. You are counting what is in the boxes and the 1 muffin left outside.')}
+      <div class="focus">
+        <div class="focus-label">Look carefully at this part</div>
+        <div class="focus-text">2 boxes of 6 and 1 muffin left</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(6,2,'plus')}
+        <div class="answer-area">
+          <div class="field wide">
+            <label for="sixIntro">Total muffins</label>
+            <input id="sixIntro" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.sixIntro)}" />
+          </div>
+          <button class="button" id="checkSixIntro" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 3){
+    const current = state.sixIndex;
+    return `
+      ${makeTitleRow('Clue 2', 'Build the 6-and-1 list.', 'Type one total. Then the next one will appear.', 'Each box holds 6 muffins. There is always 1 muffin left outside the boxes.')}
+      <div class="focus">
+        <div class="focus-label">Type the total for this one</div>
+        <div class="focus-text">${current} ${current === 1 ? 'box' : 'boxes'} of 6 and 1 muffin left</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(6,current,'plus')}
+        <div class="equation"><span class="n">${current} × 6</span> muffins in boxes <span>+</span> <span class="n">1</span> extra muffin</div>
+        <div class="answer-area">
+          <div class="field wide">
+            <label for="sixListInput">Total muffins</label>
+            <input id="sixListInput" inputmode="numeric" autocomplete="off" />
+          </div>
+          <button class="button" id="checkSixList" type="button">Check this total</button>
+        </div>
+        <div class="visual-note"><strong>Your list so far:</strong> ${listPreview(state.sixList, 5 - state.sixList.length)}</div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 4){
+    const values = correctData.sixList;
+    return `
+      ${makeTitleRow('Clue 2', 'Keep only the totals that fit the range.', 'Type the numbers that are from 10 to 30, from smallest to greatest.', 'Numbers smaller than 10 or bigger than 30 do not fit the first clue, so they must go.')}
+      <div class="focus">
+        <div class="focus-label">Use this list</div>
+        <div class="focus-text">${values.join(', ')}</div>
+      </div>
+      <div class="work work-grid">
+        <div class="visual-note"><strong>Numbers to check:</strong> ${listPreview(values)}</div>
+        <div class="answer-area">
+          ${state.sixKeep.map((v, i) => `
+            <div class="field small">
+              <label for="sixKeep${i}">Keep ${i + 1}</label>
+              <input id="sixKeep${i}" inputmode="numeric" autocomplete="off" value="${escapeHtml(v)}" />
+            </div>
+          `).join('')}
+          <button class="button" id="checkSixKeep" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 5){
+    return `
+      ${makeTitleRow('Clue 3', 'Find the total muffins.', 'One muffin is missing. Type the total muffins that are really there.', 'These boxes need 4 muffins each. Short of 1 means one muffin is missing, so one space stays empty.')}
+      <div class="focus">
+        <div class="focus-label">Look carefully at this part</div>
+        <div class="focus-text">2 boxes of 4, short of 1 muffin</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(4,2,'minus')}
+        <div class="answer-area">
+          <div class="field wide">
+            <label for="fourIntro">Total muffins</label>
+            <input id="fourIntro" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.fourIntro)}" />
+          </div>
+          <button class="button" id="checkFourIntro" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 6){
+    const current = state.fourIndex;
+    return `
+      ${makeTitleRow('Clue 3', 'Build the 4-short-of-1 list.', 'Type one total. Then the next one will appear.', 'Each box needs 4 muffins. One muffin is missing, so one space stays empty.')}
+      <div class="focus">
+        <div class="focus-label">Type the total for this one</div>
+        <div class="focus-text">${current} ${current === 1 ? 'box' : 'boxes'} of 4, short of 1 muffin</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(4,current,'minus')}
+        <div class="equation"><span class="n">${current} × 4</span> muffins would fill every box <span>−</span> <span class="n">1</span> missing muffin</div>
+        <div class="answer-area">
+          <div class="field wide">
+            <label for="fourListInput">Total muffins</label>
+            <input id="fourListInput" inputmode="numeric" autocomplete="off" />
+          </div>
+          <button class="button" id="checkFourList" type="button">Check this total</button>
+        </div>
+        <div class="visual-note"><strong>Your list so far:</strong> ${listPreview(state.fourList, 8 - state.fourList.length)}</div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 7){
+    const values = correctData.fourList;
+    return `
+      ${makeTitleRow('Clue 3', 'Keep only the totals that fit the range.', 'Type the numbers that are from 10 to 30, from smallest to greatest.', 'Numbers smaller than 10 or bigger than 30 do not fit the first clue, so they must go.')}
+      <div class="focus">
+        <div class="focus-label">Use this list</div>
+        <div class="focus-text">${values.join(', ')}</div>
+      </div>
+      <div class="work work-grid">
+        <div class="visual-note"><strong>Numbers to check:</strong> ${listPreview(values)}</div>
+        <div class="answer-area">
+          ${state.fourKeep.map((v, i) => `
+            <div class="field small">
+              <label for="fourKeep${i}">Keep ${i + 1}</label>
+              <input id="fourKeep${i}" inputmode="numeric" autocomplete="off" value="${escapeHtml(v)}" />
+            </div>
+          `).join('')}
+          <button class="button" id="checkFourKeep" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  if(state.step === 8){
+    return `
+      ${makeTitleRow('Final match', 'Find the one number that appears in both lists.', 'Look at both lists carefully. Type the number that is in both lists.', 'This is the number that fits every clue in the question.')}
+      <div class="focus">
+        <div class="focus-label">Match the two lists</div>
+        <div class="focus-text">Which number appears in both lists?</div>
+      </div>
+      <div class="work work-grid">
+        <div class="side-by-side">
+          <div class="compare-card">
+            <h3>Boxes of 6 and 1 left</h3>
+            ${listPreview(correctData.sixKeep)}
+          </div>
+          <div class="compare-card">
+            <h3>Boxes of 4, short of 1</h3>
+            ${listPreview(correctData.fourKeep)}
+          </div>
+        </div>
+        <div class="answer-area">
+          <div class="field wide">
+            <label for="commonInput">The number in both lists</label>
+            <input id="commonInput" inputmode="numeric" autocomplete="off" value="${escapeHtml(state.common)}" />
+          </div>
+          <button class="button" id="checkCommon" type="button">Check my answer</button>
+        </div>
+        <div class="feedback" id="feedback">${escapeHtml(state.lastFeedback || '')}</div>
+      </div>
+    `;
+  }
+
+  return `
+    ${makeTitleRow('Done', 'You solved it.', 'The number of muffins is 19.', '19 fits both clues, so you can now go to the next question.')}
+    <div class="focus">
+      <div class="focus-label">Answer</div>
+      <div class="focus-text">Mia baked 19 muffins. <span class="sparkle">✨</span></div>
+    </div>
+    <div class="work work-grid">
+      <div class="side-by-side">
+        <div class="visual-note">
+          <strong>Why 19 fits the 6-box clue:</strong><br>
+          18 is a multiple of 6, so 19 is <strong>1 more</strong>.
+        </div>
+        <div class="visual-note">
+          <strong>Why 19 fits the 4-box clue:</strong><br>
+          20 is a multiple of 4, so 19 is <strong>1 less</strong>.
+        </div>
+      </div>
+      <div class="center">
+        <button class="button" id="restartBtn" type="button">Start again</button>
+      </div>
+    </div>
+  `;
+}
+
+function setFeedback(message, good = false){
+  state.lastFeedback = message;
+  const fb = document.getElementById('feedback');
+  if(fb){
+    fb.textContent = message;
+    fb.className = 'feedback ' + (good ? 'good' : 'bad');
+  }
+}
+
+function goNext(){
+  state.lastFeedback = '';
+  state.step += 1;
+  renderMain();
+}
+
+function attachMainEvents(){
+  if(state.step === 0){
+    document.getElementById('startBtn').addEventListener('click', () => {
+      state.step = 1;
+      renderMain();
+    });
+    return;
+  }
+  if(state.step === 1){
+    document.getElementById('checkRange').addEventListener('click', checkRangeMain);
+    document.getElementById('rangeSmall').focus();
+    return;
+  }
+  if(state.step === 2){
+    document.getElementById('checkSixIntro').addEventListener('click', checkSixIntro);
+    document.getElementById('sixIntro').focus();
+    return;
+  }
+  if(state.step === 3){
+    document.getElementById('checkSixList').addEventListener('click', checkSixList);
+    document.getElementById('sixListInput').focus();
+    return;
+  }
+  if(state.step === 4){
+    document.getElementById('checkSixKeep').addEventListener('click', checkSixKeep);
+    document.getElementById('sixKeep0').focus();
+    return;
+  }
+  if(state.step === 5){
+    document.getElementById('checkFourIntro').addEventListener('click', checkFourIntro);
+    document.getElementById('fourIntro').focus();
+    return;
+  }
+  if(state.step === 6){
+    document.getElementById('checkFourList').addEventListener('click', checkFourList);
+    document.getElementById('fourListInput').focus();
+    return;
+  }
+  if(state.step === 7){
+    document.getElementById('checkFourKeep').addEventListener('click', checkFourKeep);
+    document.getElementById('fourKeep0').focus();
+    return;
+  }
+  if(state.step === 8){
+    document.getElementById('checkCommon').addEventListener('click', checkCommon);
+    document.getElementById('commonInput').focus();
+    return;
+  }
+  if(state.step === 9){
+    document.getElementById('restartBtn').addEventListener('click', restartAll);
+  }
+}
+
+function checkRangeMain(){
+  state.rangeSmall = document.getElementById('rangeSmall').value.trim();
+  state.rangeLarge = document.getElementById('rangeLarge').value.trim();
+  if(!isNum(state.rangeSmall) || !isNum(state.rangeLarge)){
+    setFeedback('Please type both numbers.');
+    return;
+  }
+  if(num(state.rangeSmall) === correctData.range.small && num(state.rangeLarge) === correctData.range.large){
+    setFeedback('Correct. The possible numbers go from 10 to 30.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise this range idea first.');
+    startPractice('range');
+  }
+}
+function checkSixIntro(){
+  state.sixIntro = document.getElementById('sixIntro').value.trim();
+  if(!isNum(state.sixIntro)){
+    setFeedback('Please type a number.');
+    return;
+  }
+  if(num(state.sixIntro) === correctData.sixIntro){
+    setFeedback('Correct. 12 in the boxes and 1 more make 13.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise this boxes-and-1-left idea first.');
+    startPractice('leftPlus');
+  }
+}
+function checkSixList(){
+  const input = document.getElementById('sixListInput').value.trim();
+  if(!isNum(input)){
+    setFeedback('Please type a number.');
+    return;
+  }
+  const expected = correctData.sixList[state.sixIndex - 1];
+  if(num(input) === expected){
+    state.sixList.push(expected);
+    if(state.sixIndex < correctData.sixList.length){
+      state.sixIndex += 1;
+      state.lastFeedback = 'Correct. Now do the next one.';
+      renderMain();
+    } else {
+      state.lastFeedback = 'Great. You built the whole list.';
+      state.step = 4;
+      renderMain();
+    }
+  } else {
+    setFeedback('Not yet. Let’s practise this boxes-and-1-left idea first.');
+    startPractice('leftPlus');
+  }
+}
+function checkSixKeep(){
+  state.sixKeep = [0,1,2].map(i => document.getElementById(`sixKeep${i}`).value.trim());
+  if(state.sixKeep.some(v => !isNum(v))){
+    setFeedback('Please type all 3 numbers.');
+    return;
+  }
+  const values = state.sixKeep.map(num);
+  const ok = values.length === 3 && values.every((v, i) => v === correctData.sixKeep[i]);
+  if(ok){
+    setFeedback('Correct. Only 13, 19 and 25 fit the range.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise the range idea first.');
+    startPractice('range');
+  }
+}
+function checkFourIntro(){
+  state.fourIntro = document.getElementById('fourIntro').value.trim();
+  if(!isNum(state.fourIntro)){
+    setFeedback('Please type a number.');
+    return;
+  }
+  if(num(state.fourIntro) === correctData.fourIntro){
+    setFeedback('Correct. 8 would fill both boxes, but 1 is missing, so there are 7 muffins.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise this short-of-1 idea first.');
+    startPractice('shortMinus');
+  }
+}
+function checkFourList(){
+  const input = document.getElementById('fourListInput').value.trim();
+  if(!isNum(input)){
+    setFeedback('Please type a number.');
+    return;
+  }
+  const expected = correctData.fourList[state.fourIndex - 1];
+  if(num(input) === expected){
+    state.fourList.push(expected);
+    if(state.fourIndex < correctData.fourList.length){
+      state.fourIndex += 1;
+      state.lastFeedback = 'Correct. Now do the next one.';
+      renderMain();
+    } else {
+      state.lastFeedback = 'Great. You built the whole list.';
+      state.step = 7;
+      renderMain();
+    }
+  } else {
+    setFeedback('Not yet. Let’s practise this short-of-1 idea first.');
+    startPractice('shortMinus');
+  }
+}
+function checkFourKeep(){
+  state.fourKeep = [0,1,2,3,4].map(i => document.getElementById(`fourKeep${i}`).value.trim());
+  if(state.fourKeep.some(v => !isNum(v))){
+    setFeedback('Please type all 5 numbers.');
+    return;
+  }
+  const values = state.fourKeep.map(num);
+  const ok = values.length === 5 && values.every((v, i) => v === correctData.fourKeep[i]);
+  if(ok){
+    setFeedback('Correct. These are the totals that fit the range.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise the range idea first.');
+    startPractice('range');
+  }
+}
+function checkCommon(){
+  state.common = document.getElementById('commonInput').value.trim();
+  if(!isNum(state.common)){
+    setFeedback('Please type a number.');
+    return;
+  }
+  if(num(state.common) === correctData.common){
+    setFeedback('Correct. 19 is the only number in both lists.', true);
+    setTimeout(goNext, 700);
+  } else {
+    setFeedback('Not yet. Let’s practise how to spot the matching number first.');
+    startPractice('compare');
+  }
+}
+
+function restartAll(){
+  state.step = 0;
+  state.rangeSmall = '';
+  state.rangeLarge = '';
+  state.sixIntro = '';
+  state.sixList = [];
+  state.sixIndex = 1;
+  state.sixKeep = ['', '', ''];
+  state.fourIntro = '';
+  state.fourList = [];
+  state.fourIndex = 1;
+  state.fourKeep = ['', '', '', '', ''];
+  state.common = '';
+  state.lastFeedback = '';
+  closePractice();
+  renderMain();
+}
+
+function randomInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function generatePracticeItem(type){
+  if(type === 'range'){
+    const start = randomInt(8, 24);
+    const end = start + randomInt(5, 10);
+    return { start, end, answerSmall: start, answerLarge: end };
+  }
+  if(type === 'leftPlus'){
+    const size = randomInt(3, 8);
+    const count = randomInt(1, 5);
+    return { size, count, answer: size * count + 1 };
+  }
+  if(type === 'shortMinus'){
+    const size = randomInt(3, 8);
+    const count = randomInt(1, 6);
+    return { size, count, answer: size * count - 1 };
+  }
+  if(type === 'compare'){
+    const common = randomInt(11, 39);
+    const a1 = common - randomInt(3, 7);
+    const a2 = common + randomInt(3, 9);
+    const b1 = common - randomInt(2, 6);
+    const b2 = common + randomInt(4, 8);
+    const left = shuffle([a1, common, a2]).sort((a,b) => a - b);
+    const right = shuffle([b1, common, b2]).sort((a,b) => a - b);
+    return { left, right, answer: common };
+  }
+  return null;
+}
+
+function startPractice(type){
+  practice.active = true;
+  practice.type = type;
+  practice.streak = 0;
+  practice.feedback = '';
+  practice.showExplain = false;
+  practice.item = generatePracticeItem(type);
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden','false');
+  renderPractice();
+}
+
+function closePractice(){
+  practice.active = false;
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden','true');
+}
+
+function renderStreak(){
+  for(let i = 0; i < 3; i++){
+    const dot = document.getElementById('streak' + i);
+    if(dot) dot.classList.toggle('on', i < practice.streak);
+  }
+}
+
+function renderPractice(){
+  renderStreak();
+  const introText = practice.streak === 0
+    ? 'Get 3 correct in a row to come back to the question.'
+    : `Great. Keep going. You have ${practice.streak} correct in a row.`;
+  document.getElementById('practiceIntro').textContent = introText;
+
+  let bodyHtml = '';
+  if(practice.type === 'range'){
+    const item = practice.item;
+    bodyHtml = `
+      ${makeTitleRow('Practice', 'Work out the possible range.', 'Type the smallest possible number and the greatest possible number.', 'This kind of clue gives the whole range from the start number to the end number.')}
+      <div class="focus">
+        <div class="focus-label">Look carefully at this part</div>
+        <div class="focus-text">${item.start} to ${item.end} muffins</div>
+      </div>
+      <div class="work work-grid">
+        ${renderNumberLine(item.start,item.end,'inclusive')}
+        <div class="answer-area">
+          <div class="field"><label for="pSmall">Smallest possible number</label><input id="pSmall" inputmode="numeric" autocomplete="off"></div>
+          <div class="field"><label for="pLarge">Greatest possible number</label><input id="pLarge" inputmode="numeric" autocomplete="off"></div>
+          <button class="button" id="practiceCheck" type="button">Check my answer</button>
+        </div>
+        <div class="feedback ${practice.feedback && practice.feedback.good ? 'good' : practice.feedback ? 'bad' : ''}" id="practiceFeedback">${practice.feedback ? practice.feedback.text : ''}</div>
+        <div class="explain ${practice.showExplain ? 'show' : ''}" id="practiceExplain">
+          ${practice.showExplain ? `
+            <h4>See it clearly</h4>
+            <div class="explain-step"><strong>Start at ${item.start}.</strong> This is the smallest possible number.</div>
+            <div class="explain-step" style="animation-delay:.12s"><strong>Stop at ${item.end}.</strong> This is the greatest possible number.</div>
+            <div class="explain-step" style="animation-delay:.24s">So the range is <strong>${item.start} to ${item.end}</strong>.</div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  if(practice.type === 'leftPlus'){
+    const item = practice.item;
+    bodyHtml = `
+      ${makeTitleRow('Practice', 'Find the total muffins.', 'Count the muffins in the boxes. Then count the 1 extra muffin.', 'Look first at the muffins in the boxes. Then add the 1 muffin left outside.')}
+      <div class="focus">
+        <div class="focus-label">Type the total for this one</div>
+        <div class="focus-text">${item.count} ${item.count === 1 ? 'box' : 'boxes'} of ${item.size} and 1 muffin left</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(item.size,item.count,'plus')}
+        <div class="plus-card">${item.count} × ${item.size} muffins in boxes, then + 1 more muffin</div>
+        <div class="answer-area">
+          <div class="field wide"><label for="pOne">Total muffins</label><input id="pOne" inputmode="numeric" autocomplete="off"></div>
+          <button class="button" id="practiceCheck" type="button">Check my answer</button>
+        </div>
+        <div class="feedback ${practice.feedback && practice.feedback.good ? 'good' : practice.feedback ? 'bad' : ''}" id="practiceFeedback">${practice.feedback ? practice.feedback.text : ''}</div>
+        <div class="explain ${practice.showExplain ? 'show' : ''}" id="practiceExplain">
+          ${practice.showExplain ? `
+            <h4>See it clearly</h4>
+            <div class="explain-step"><strong>${item.count} boxes of ${item.size}</strong> means ${item.count} groups of ${item.size}.</div>
+            <div class="explain-step" style="animation-delay:.12s">The boxes hold <strong>${item.count * item.size}</strong> muffins.</div>
+            <div class="explain-step" style="animation-delay:.24s">Then there is <strong>1 more muffin left</strong>.</div>
+            <div class="explain-step" style="animation-delay:.36s">So the total is <strong>${item.count * item.size} + 1 = ${item.answer}</strong>.</div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  if(practice.type === 'shortMinus'){
+    const item = practice.item;
+    bodyHtml = `
+      ${makeTitleRow('Practice', 'Find the total muffins.', 'One muffin is missing. Type the total muffins that are really there.', 'First think about how many muffins would fill every box. Then take away 1 missing muffin.')}
+      <div class="focus">
+        <div class="focus-label">Type the total for this one</div>
+        <div class="focus-text">${item.count} ${item.count === 1 ? 'box' : 'boxes'} of ${item.size}, short of 1 muffin</div>
+      </div>
+      <div class="work work-grid">
+        ${renderBoxVisual(item.size,item.count,'minus')}
+        <div class="minus-card">${item.count} × ${item.size} would fill every box, then − 1 missing muffin</div>
+        <div class="answer-area">
+          <div class="field wide"><label for="pOne">Total muffins</label><input id="pOne" inputmode="numeric" autocomplete="off"></div>
+          <button class="button" id="practiceCheck" type="button">Check my answer</button>
+        </div>
+        <div class="feedback ${practice.feedback && practice.feedback.good ? 'good' : practice.feedback ? 'bad' : ''}" id="practiceFeedback">${practice.feedback ? practice.feedback.text : ''}</div>
+        <div class="explain ${practice.showExplain ? 'show' : ''}" id="practiceExplain">
+          ${practice.showExplain ? `
+            <h4>See it clearly</h4>
+            <div class="explain-step"><strong>${item.count} boxes of ${item.size}</strong> would need <strong>${item.count * item.size}</strong> muffins to fill every space.</div>
+            <div class="explain-step" style="animation-delay:.12s">But the clue says <strong>short of 1 muffin</strong>.</div>
+            <div class="explain-step" style="animation-delay:.24s">So one space stays empty.</div>
+            <div class="explain-step" style="animation-delay:.36s">The total is <strong>${item.count * item.size} - 1 = ${item.answer}</strong>.</div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  if(practice.type === 'compare'){
+    const item = practice.item;
+    bodyHtml = `
+      ${makeTitleRow('Practice', 'Find the number that appears in both lists.', 'Look at both lists carefully. Then type the number that is in both lists.', 'A matching number must be in the left list and also in the right list.')}
+      <div class="focus">
+        <div class="focus-label">Match the lists</div>
+        <div class="focus-text">Which number appears in both lists?</div>
+      </div>
+      <div class="work work-grid">
+        <div class="side-by-side">
+          <div class="compare-card">
+            <h3>Left list</h3>
+            ${listPreview(item.left)}
+          </div>
+          <div class="compare-card">
+            <h3>Right list</h3>
+            ${listPreview(item.right)}
+          </div>
+        </div>
+        <div class="answer-area">
+          <div class="field wide"><label for="pOne">Number in both lists</label><input id="pOne" inputmode="numeric" autocomplete="off"></div>
+          <button class="button" id="practiceCheck" type="button">Check my answer</button>
+        </div>
+        <div class="feedback ${practice.feedback && practice.feedback.good ? 'good' : practice.feedback ? 'bad' : ''}" id="practiceFeedback">${practice.feedback ? practice.feedback.text : ''}</div>
+        <div class="explain ${practice.showExplain ? 'show' : ''}" id="practiceExplain">
+          ${practice.showExplain ? `
+            <h4>See it clearly</h4>
+            <div class="explain-step"><strong>Look at the first list:</strong> ${item.left.join(', ')}</div>
+            <div class="explain-step" style="animation-delay:.12s"><strong>Look at the second list:</strong> ${item.right.join(', ')}</div>
+            <div class="explain-step" style="animation-delay:.24s">The number that appears in both is <strong>${item.answer}</strong>.</div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  practiceBody.innerHTML = bodyHtml;
+  const checkBtn = document.getElementById('practiceCheck');
+  if(checkBtn) checkBtn.addEventListener('click', checkPractice);
+  const inputA = document.getElementById('pSmall') || document.getElementById('pOne');
+  if(inputA) inputA.focus();
+}
+
+function checkPractice(){
+  if(practice.type === 'range'){
+    const small = document.getElementById('pSmall').value.trim();
+    const large = document.getElementById('pLarge').value.trim();
+    if(!isNum(small) || !isNum(large)){
+      practice.feedback = { text:'Please type both numbers.', good:false };
+      practice.showExplain = false;
+      return renderPractice();
+    }
+    if(num(small) === practice.item.answerSmall && num(large) === practice.item.answerLarge){
+      practice.streak += 1;
+      practice.feedback = { text:'Correct.', good:true };
+      practice.showExplain = false;
+      if(practice.streak >= 3){
+        closePractice();
+        state.lastFeedback = 'Well done. Come back to the question and try again.';
+        renderMain();
+        return;
+      }
+      practice.item = generatePracticeItem(practice.type);
+      renderPractice();
+      return;
+    }
+    practice.streak = 0;
+    practice.feedback = { text:'Not yet. Look at the start number and the end number.', good:false };
+    practice.showExplain = true;
+    renderPractice();
+    return;
+  }
+
+  const input = document.getElementById('pOne').value.trim();
+  if(!isNum(input)){
+    practice.feedback = { text:'Please type a number.', good:false };
+    practice.showExplain = false;
+    renderPractice();
+    return;
+  }
+  let correct = false;
+  if(practice.type === 'leftPlus' || practice.type === 'shortMinus' || practice.type === 'compare'){
+    correct = num(input) === practice.item.answer;
+  }
+  if(correct){
+    practice.streak += 1;
+    practice.feedback = { text:'Correct.', good:true };
+    practice.showExplain = false;
+    if(practice.streak >= 3){
+      closePractice();
+      state.lastFeedback = 'Well done. Come back to the question and try again.';
+      renderMain();
+      return;
+    }
+    practice.item = generatePracticeItem(practice.type);
+    renderPractice();
+    return;
+  }
+  practice.streak = 0;
+  if(practice.type === 'leftPlus'){
+    practice.feedback = { text:'Not yet. Count the muffins in the boxes, then count the 1 extra muffin.', good:false };
+  }
+  if(practice.type === 'shortMinus'){
+    practice.feedback = { text:'Not yet. First find how many would fill every box. Then take away 1 missing muffin.', good:false };
+  }
+  if(practice.type === 'compare'){
+    practice.feedback = { text:'Not yet. The answer must be in both lists.', good:false };
+  }
+  practice.showExplain = true;
+  renderPractice();
+}
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    if(practice.active){
+      const btn = document.getElementById('practiceCheck');
+      if(btn) btn.click();
+      return;
+    }
+    const map = {
+      1:'checkRange',2:'checkSixIntro',3:'checkSixList',4:'checkSixKeep',
+      5:'checkFourIntro',6:'checkFourList',7:'checkFourKeep',8:'checkCommon'
+    };
+    const id = map[state.step];
+    if(id){
+      const btn = document.getElementById(id);
+      if(btn) btn.click();
+    }
+  }
+});
+
+renderMain();
+</script>
+</body>
+</html>

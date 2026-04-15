@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Systematic Listing 04 - Lighter</title>
+  <style>
+    :root{
+      --bg:#f3f6fb; --card:#ffffff; --text:#13233f; --muted:#55657f; --line:#d6dfeb;
+      --blue:#2d6cdf; --blue-soft:#eaf2ff; --orange:#e69500; --orange-soft:#fff3d8;
+      --green:#0c7a43; --green-soft:#e8f7ef; --red:#b42318; --red-soft:#fdeeee;
+      --shadow:0 10px 28px rgba(18,35,63,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .app{max-width:1120px;margin:0 auto;padding:18px}
+    .topbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .title{font-size:2rem;font-weight:800;margin:0}
+    .progress-wrap{display:flex;align-items:center;gap:14px;flex:1;justify-content:flex-end;min-width:280px}
+    .progress{width:min(520px,100%);height:18px;background:#d8e1ef;border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#73adff);transition:width .3s}
+    .progress-label{font-weight:800;color:var(--muted);min-width:110px;text-align:right}
+    .panel{background:var(--card);border:1px solid #e7eef8;border-radius:26px;box-shadow:var(--shadow);padding:24px}
+    .screen{display:none;animation:fade .25s ease}
+    .screen.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .action-box{background:var(--blue-soft);border:4px solid var(--blue);border-radius:20px;padding:16px 18px;font-size:1.34rem;font-weight:800;margin-bottom:16px}
+    .support-box{background:var(--orange-soft);border:4px solid var(--orange);border-radius:20px;padding:14px 16px;font-size:1rem;margin-bottom:16px}
+    .question-box,.scene-card,.answer-card,.choice-card,.tap-card{background:#fbfdff;border:3px solid var(--line);border-radius:20px;padding:16px}
+    .question-box p{margin:10px 0;font-size:1.14rem}
+    .controls{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 18px}
+    button{font:inherit;border:none;border-radius:16px;padding:14px 18px;cursor:pointer;touch-action:manipulation;transition:transform .06s ease,background .2s ease}
+    button:hover{transform:translateY(-1px)} button:active{transform:translateY(1px)}
+    .btn{background:var(--blue);color:#fff;font-weight:800}
+    .btn.secondary{background:#eef3fb;color:var(--text);border:3px solid #c9d6ea}
+    .btn.ghost{background:#fff;color:var(--text);border:3px dashed #c5d3e7}
+    .btn.good{background:var(--green)}
+    .hidden{display:none !important}
+    .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;padding-top:20px;border-top:2px solid #edf2fa}
+    .feedback{display:none;margin-top:14px;padding:14px 16px;border-radius:18px;font-weight:800;font-size:1rem}
+    .feedback.show{display:block}
+    .feedback.good{background:var(--green-soft);border:3px solid #78c49a;color:#0f5132}
+    .feedback.bad{background:var(--red-soft);border:3px solid #efb7b7;color:#8a1f1f}
+    .question-panel{display:none;margin-top:10px}
+    .question-panel.show{display:block}
+
+    .range-card{cursor:pointer}
+    .range-card.goodpick{border-color:var(--green);background:var(--green-soft)}
+    .range-top{display:flex;justify-content:space-between;font-weight:800;margin-bottom:10px}
+    .range-bar{position:relative;height:18px;border-radius:999px;background:#d7e2f0;overflow:hidden;border:2px solid #c9d6ea}
+    .range-fill{position:absolute;left:0;top:0;height:100%;width:100%;background:linear-gradient(90deg,#c9dfff,#74aefc);transform:scaleX(0);transform-origin:left;transition:transform .45s ease}
+    .range-fill.show{transform:scaleX(1)}
+    .range-labels{display:grid;grid-template-columns:repeat(21,1fr);gap:4px;margin-top:10px;font-size:.85rem;color:var(--muted)}
+    .range-labels span{text-align:center}
+
+    .model-row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+    .group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+    .group-card{background:#fff;border:3px solid #d7dfeb;border-radius:18px;padding:12px;min-height:120px}
+    .group-label{font-weight:800;margin-bottom:10px}
+    .marbles{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start}
+    .marble{width:18px;height:18px;border-radius:999px;background:#4aa3ff;border:2px solid #2d6cdf;display:inline-block}
+    .marble.left{background:#ff7aa2;border-color:#cf416c}
+    .tap-card.clickable{cursor:pointer}
+    .tap-card.goodpick{border-color:var(--green);background:var(--green-soft)}
+
+    .scene-title{font-size:1.12rem;font-weight:800;margin-bottom:8px}
+    .chip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:12px;margin-top:12px}
+    .chip-btn,.option-btn{
+      background:#fff;border:4px solid #cfd8e6;border-radius:18px;padding:14px 12px;
+      font-weight:800;color:var(--text);text-align:center
+    }
+    .chip-btn.selected,.option-btn.selected{border-color:var(--blue);background:var(--blue-soft)}
+    .chip-btn.good{border-color:var(--green);background:var(--green-soft)}
+    .chip-btn.bad{opacity:.6;text-decoration:line-through;text-decoration-thickness:3px;text-decoration-color:#8ea5c7}
+    .two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .list-card{background:#fbfdff;border:3px solid var(--line);border-radius:20px;padding:16px}
+    .list-card h3{margin:0 0 10px;font-size:1.14rem}
+    .choice-card{margin-top:14px}
+    .choice-title{font-weight:800;margin-bottom:10px}
+    .small-btn-row{display:flex;flex-wrap:wrap;gap:12px}
+
+    .mini-table{margin-top:16px;border:2px solid var(--line);border-radius:16px;overflow:auto;background:#fff}
+    table{width:100%;border-collapse:collapse;min-width:720px}
+    th,td{border:2px solid #d7dfeb;padding:12px;text-align:center;font-size:1rem}
+    th:first-child,td:first-child{text-align:left;font-weight:800;background:#f7fbff;width:180px}
+    .highlight{background:#fff6db;font-weight:800}
+    .big-answer{font-size:1.85rem;font-weight:800}
+    .row-chip{display:inline-block;padding:8px 12px;border-radius:999px;border:2px solid #cfdae8;background:#fff;font-weight:800;margin:0 8px 8px 0}
+    @media (max-width:820px){
+      .action-box{font-size:1.16rem}
+      .title{font-size:1.8rem}
+      .model-row,.two-col{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1 class="title">Systematic Listing</h1>
+    <div class="progress-wrap">
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">Step 1 / 10</div>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <section class="screen active" id="screen-1">
+      <div class="action-box">Read or listen to the question.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="q">🔊 Read aloud</button></div>
+      <div class="question-box">
+        <p><strong>Question 4</strong></p>
+        <p>A bottle contained <strong>30 to 50 marbles</strong>.</p>
+        <p>If the marbles were placed in groups of <strong>3</strong>, there would be <strong>1 left</strong>.</p>
+        <p>If the marbles were placed in groups of <strong>8</strong>, there would be <strong>3 left</strong>.</p>
+        <p>How many marbles were there in the bottle?</p>
+      </div>
+      <div class="support-box">We need a number that fits <strong>all the clues</strong>.</div>
+      <div class="nav"><div></div><button class="btn next-btn">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-2">
+      <div class="action-box">Tap the range 30 to 50.</div>
+      <div class="support-box">We must stay inside this range.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s2">🔊 Read aloud</button></div>
+      <div class="tap-card clickable range-card" id="range-card">
+        <div class="range-top"><span>30</span><span>50</span></div>
+        <div class="range-bar"><div class="range-fill" id="range-fill"></div></div>
+        <div class="range-labels" id="range-labels"></div>
+      </div>
+      <div class="feedback" id="fb-s2"></div>
+      <button class="btn ghost toggle-question">Show question</button>
+      <div class="question-panel"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-3">
+      <div class="action-box">Look at groups of 3 and 1 left. Tap the 1 left.</div>
+      <div class="support-box">This clue means: groups of 3, then 1 more marble.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s3">🔊 Read aloud</button></div>
+      <div class="model-row">
+        <div class="scene-card">
+          <div class="scene-title">Groups of 3</div>
+          <div class="group-grid" id="groups3"></div>
+        </div>
+        <div class="tap-card clickable" id="leftover-1">
+          <div class="scene-title">Tap this 1 left</div>
+          <div class="marbles" id="left1"></div>
+        </div>
+      </div>
+      <div class="feedback" id="fb-s3"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-4">
+      <div class="action-box">Tap all the multiples of 3 in the range. Then build the 3-group list.</div>
+      <div class="support-box">Choose the 3-group numbers first. After that, add 1 more.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s4">🔊 Read aloud</button></div>
+      <div class="scene-card">
+        <div class="scene-title">Tap all the multiples of 3</div>
+        <div class="chip-grid" id="pick3-grid"></div>
+        <div class="small-btn-row" style="margin-top:12px">
+          <button class="btn" id="check3">Check</button>
+        </div>
+        <div class="feedback" id="fb-s4-a"></div>
+      </div>
+      <div class="choice-card hidden" id="plus1-card">
+        <div class="choice-title">Now tap +1 more to build the 3-group list.</div>
+        <button class="btn" id="show-plus1">+1 more</button>
+        <div class="chip-grid" id="plus1-grid"></div>
+        <div class="feedback" id="fb-s4-b"></div>
+      </div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-5">
+      <div class="action-box">Look at groups of 8 and 3 left. Tap the 3 left.</div>
+      <div class="support-box">This clue means: groups of 8, then 3 more marbles.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s5">🔊 Read aloud</button></div>
+      <div class="model-row">
+        <div class="scene-card">
+          <div class="scene-title">Groups of 8</div>
+          <div class="group-grid" id="groups8"></div>
+        </div>
+        <div class="tap-card clickable" id="leftover-3">
+          <div class="scene-title">Tap these 3 left</div>
+          <div class="marbles" id="left3"></div>
+        </div>
+      </div>
+      <div class="feedback" id="fb-s5"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-6">
+      <div class="action-box">Tap all the multiples of 8 in the range. Then build the 8-group list.</div>
+      <div class="support-box">Choose the 8-group numbers first. After that, add 3 more.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s6">🔊 Read aloud</button></div>
+      <div class="scene-card">
+        <div class="scene-title">Tap all the multiples of 8</div>
+        <div class="chip-grid" id="pick8-grid"></div>
+        <div class="small-btn-row" style="margin-top:12px">
+          <button class="btn" id="check8">Check</button>
+        </div>
+        <div class="feedback" id="fb-s6-a"></div>
+      </div>
+      <div class="choice-card hidden" id="plus3-card">
+        <div class="choice-title">Now tap +3 more to build the 8-group list.</div>
+        <button class="btn" id="show-plus3">+3 more</button>
+        <div class="chip-grid" id="plus3-grid"></div>
+        <div class="feedback" id="fb-s6-b"></div>
+      </div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-7">
+      <div class="action-box">Tap the number that is too big.</div>
+      <div class="support-box">Stay inside the range 30 to 50.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s7">🔊 Read aloud</button></div>
+      <div class="scene-card">
+        <div class="scene-title">8-group list</div>
+        <div class="chip-grid" id="too-big-grid"></div>
+      </div>
+      <div class="feedback" id="fb-s7"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-8">
+      <div class="action-box">Tap the number in both lists.</div>
+      <div class="support-box">Now compare the two lists.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s8">🔊 Read aloud</button></div>
+      <div class="two-col">
+        <div class="list-card">
+          <h3>3-group list</h3>
+          <div class="chip-grid" id="list-left"></div>
+        </div>
+        <div class="list-card">
+          <h3>8-group list</h3>
+          <div class="chip-grid" id="list-right"></div>
+        </div>
+      </div>
+      <div class="choice-card">
+        <div class="choice-title">Choose the number in both lists.</div>
+        <div class="small-btn-row" id="group-s8">
+          <button class="option-btn" data-value="40">40</button>
+          <button class="option-btn" data-value="43">43</button>
+          <button class="option-btn" data-value="46">46</button>
+        </div>
+      </div>
+      <div class="feedback" id="fb-s8"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-9">
+      <div class="action-box">How many marbles were there?</div>
+      <div class="support-box">Choose the number that fits all the clues.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s9">🔊 Read aloud</button></div>
+      <div class="small-btn-row" id="group-s9">
+        <button class="option-btn" data-value="40">40</button>
+        <button class="option-btn" data-value="43">43</button>
+        <button class="option-btn" data-value="46">46</button>
+      </div>
+      <div class="feedback" id="fb-s9"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-10">
+      <div class="action-box">Draw this table in your corrections.</div>
+      <div class="support-box">This is the full systematic listing table.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s10">🔊 Read aloud</button></div>
+      <div class="answer-card"><div class="big-answer">There were <strong>43 marbles</strong>.</div></div>
+      <div class="mini-table">
+        <table>
+          <tbody>
+            <tr>
+              <td>× 3</td>
+              <td>30</td><td>33</td><td>36</td><td>39</td><td>42</td><td>45</td><td>48</td>
+            </tr>
+            <tr>
+              <td>× 3 + 1</td>
+              <td>31</td><td>34</td><td>37</td><td>40</td><td class="highlight">43</td><td>46</td><td>49</td>
+            </tr>
+            <tr>
+              <td>× 8</td>
+              <td>32</td><td>40</td><td>48</td><td></td><td></td><td></td><td></td>
+            </tr>
+            <tr>
+              <td>× 8 + 3</td>
+              <td>35</td><td class="highlight">43</td><td>51</td><td></td><td></td><td></td><td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="answer-card">
+        <div class="row-chip">51 is too big</div>
+        <div class="row-chip">43 is in both lists</div>
+      </div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn good" id="restartBtn">Restart</button></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+const mult3 = [30,33,36,39,42,45,48];
+const plus1 = [31,34,37,40,43,46,49];
+const mult8 = [32,40,48];
+const plus3 = [35,43,51];
+
+const screens=[...document.querySelectorAll('.screen')];
+let currentScreen=0;
+const progressBar=document.getElementById('progressBar');
+const progressLabel=document.getElementById('progressLabel');
+
+function updateProgress(){
+  const step=currentScreen+1;
+  progressBar.style.width=`${(step/screens.length)*100}%`;
+  progressLabel.textContent=`Step ${step} / ${screens.length}`;
+}
+function showScreen(i){
+  if(i<0||i>=screens.length)return;
+  screens[currentScreen].classList.remove('active');
+  currentScreen=i;
+  screens[currentScreen].classList.add('active');
+  updateProgress();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.next-btn').forEach(btn=>btn.addEventListener('click',()=>showScreen(currentScreen+1)));
+document.querySelectorAll('.prev-btn').forEach(btn=>btn.addEventListener('click',()=>showScreen(currentScreen-1)));
+
+const spokenText = {
+  q:"Question 4. A bottle contained 30 to 50 marbles. If the marbles were placed in groups of 3, there would be 1 left. If the marbles were placed in groups of 8, there would be 3 left. How many marbles were there in the bottle?",
+  s2:"Tap the range 30 to 50.",
+  s3:"Look at groups of 3 and 1 left. Tap the 1 left.",
+  s4:"Tap all the multiples of 3 in the range. Then build the 3-group list.",
+  s5:"Look at groups of 8 and 3 left. Tap the 3 left.",
+  s6:"Tap all the multiples of 8 in the range. Then build the 8-group list.",
+  s7:"Tap the number that is too big.",
+  s8:"Tap the number in both lists.",
+  s9:"How many marbles were there?",
+  s10:"Draw this table in your corrections. There were 43 marbles."
+};
+function speak(key){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(spokenText[key]||'');
+  u.rate=.95;
+  speechSynthesis.speak(u);
+}
+document.querySelectorAll('.speak-btn').forEach(btn=>btn.addEventListener('click',()=>speak(btn.dataset.speak)));
+
+const questionHTML = `<div class="question-box">
+  <p><strong>Question 4</strong></p>
+  <p>A bottle contained <strong>30 to 50 marbles</strong>.</p>
+  <p>If the marbles were placed in groups of <strong>3</strong>, there would be <strong>1 left</strong>.</p>
+  <p>If the marbles were placed in groups of <strong>8</strong>, there would be <strong>3 left</strong>.</p>
+  <p>How many marbles were there in the bottle?</p>
+</div>`;
+document.querySelectorAll('.toggle-question').forEach(btn=>btn.addEventListener('click',()=>{
+  const panel=btn.nextElementSibling;
+  panel.innerHTML=questionHTML;
+  panel.classList.toggle('show');
+  btn.textContent=panel.classList.contains('show')?'Hide question':'Show question';
+}));
+
+function showFeedback(id,type,html){
+  const el=document.getElementById(id);
+  el.className=`feedback show ${type}`;
+  el.innerHTML=html;
+}
+function unlockNext(screenId){
+  document.querySelector(`#${screenId} .next-btn`).classList.remove('hidden');
+}
+function markSelected(group,btn){
+  [...group.querySelectorAll('button')].forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function setupChoiceGroup(groupId,correct,feedbackId,successMsg,failMsg,onSuccess){
+  const group=document.getElementById(groupId);
+  [...group.querySelectorAll('button[data-value]')].forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      markSelected(group,btn);
+      if(btn.dataset.value===correct){
+        showFeedback(feedbackId,'good',successMsg);
+        if(onSuccess) onSuccess();
+      } else {
+        showFeedback(feedbackId,'bad',failMsg);
+      }
+    });
+  });
+}
+
+function makeMarble(left=false){
+  const s=document.createElement('span');
+  s.className=`marble ${left?'left':''}`.trim();
+  return s;
+}
+function renderGroups(containerId, groups, each){
+  const container=document.getElementById(containerId);
+  container.innerHTML='';
+  for(let i=1;i<=groups;i++){
+    const card=document.createElement('div');
+    card.className='group-card';
+    const label=document.createElement('div');
+    label.className='group-label';
+    label.textContent=`Group ${i}`;
+    const marbles=document.createElement('div');
+    marbles.className='marbles';
+    for(let j=0;j<each;j++) marbles.appendChild(makeMarble(false));
+    card.appendChild(label);
+    card.appendChild(marbles);
+    container.appendChild(card);
+  }
+}
+renderGroups('groups3',3,3);
+renderGroups('groups8',2,8);
+
+const left1=document.getElementById('left1');
+left1.appendChild(makeMarble(true));
+const left3=document.getElementById('left3');
+for(let i=0;i<3;i++) left3.appendChild(makeMarble(true));
+
+const labels=document.getElementById('range-labels');
+for(let i=30;i<=50;i++){
+  const span=document.createElement('span');
+  span.textContent=i;
+  labels.appendChild(span);
+}
+
+document.getElementById('range-card').addEventListener('click',()=>{
+  document.getElementById('range-card').classList.add('goodpick');
+  document.getElementById('range-fill').classList.add('show');
+  showFeedback('fb-s2','good','Good. We must stay between <strong>30 and 50</strong>.');
+  unlockNext('screen-2');
+});
+
+document.getElementById('leftover-1').addEventListener('click',()=>{
+  document.getElementById('leftover-1').classList.add('goodpick');
+  showFeedback('fb-s3','good','Yes. This clue means: groups of <strong>3</strong>, then <strong>1 more</strong> marble.');
+  unlockNext('screen-3');
+});
+document.getElementById('leftover-3').addEventListener('click',()=>{
+  document.getElementById('leftover-3').classList.add('goodpick');
+  showFeedback('fb-s5','good','Yes. This clue means: groups of <strong>8</strong>, then <strong>3 more</strong> marbles.');
+  unlockNext('screen-5');
+});
+
+function buildPicker(gridId, values){
+  const grid=document.getElementById(gridId);
+  values.forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='chip-btn';
+    btn.dataset.value=v;
+    btn.textContent=v;
+    btn.addEventListener('click',()=>btn.classList.toggle('selected'));
+    grid.appendChild(btn);
+  });
+}
+buildPicker('pick3-grid', [30,31,33,34,36,39,40,42,45,48]);
+buildPicker('pick8-grid', [32,33,40,42,48,50]);
+
+function selectedValues(gridId){
+  return [...document.querySelectorAll(`#${gridId} .chip-btn.selected`)].map(b=>Number(b.dataset.value)).sort((a,b)=>a-b);
+}
+function sameArray(a,b){
+  return a.length===b.length && a.every((v,i)=>v===b[i]);
+}
+function populateResultGrid(id, values){
+  const grid=document.getElementById(id);
+  grid.innerHTML='';
+  values.forEach((v, idx)=>{
+    const chip=document.createElement('div');
+    chip.className='chip-btn';
+    chip.textContent=v;
+    chip.style.cursor='default';
+    chip.style.transform='translateY(6px)';
+    chip.style.opacity='0';
+    grid.appendChild(chip);
+    setTimeout(()=>{
+      chip.style.transition='opacity .25s ease, transform .25s ease';
+      chip.style.opacity='1';
+      chip.style.transform='translateY(0)';
+    }, 120*idx);
+  });
+}
+
+document.getElementById('check3').addEventListener('click',()=>{
+  const picks=selectedValues('pick3-grid');
+  if(sameArray(picks, mult3)){
+    showFeedback('fb-s4-a','good','Good. These are the multiples of <strong>3</strong> in the range.');
+    document.getElementById('plus1-card').classList.remove('hidden');
+  } else {
+    showFeedback('fb-s4-a','bad','Check again. Tap all the numbers in the range that are multiples of <strong>3</strong>.');
+  }
+});
+document.getElementById('show-plus1').addEventListener('click',()=>{
+  populateResultGrid('plus1-grid', plus1);
+  showFeedback('fb-s4-b','good','Good. That gives the 3-group list.');
+  unlockNext('screen-4');
+});
+
+document.getElementById('check8').addEventListener('click',()=>{
+  const picks=selectedValues('pick8-grid');
+  if(sameArray(picks, mult8)){
+    showFeedback('fb-s6-a','good','Good. These are the multiples of <strong>8</strong> in the range.');
+    document.getElementById('plus3-card').classList.remove('hidden');
+  } else {
+    showFeedback('fb-s6-a','bad','Check again. Tap all the numbers in the range that are multiples of <strong>8</strong>.');
+  }
+});
+document.getElementById('show-plus3').addEventListener('click',()=>{
+  populateResultGrid('plus3-grid', plus3);
+  showFeedback('fb-s6-b','good','Good. That gives the 8-group list.');
+  unlockNext('screen-6');
+});
+
+const tooBigGrid=document.getElementById('too-big-grid');
+[35,43,51].forEach(v=>{
+  const btn=document.createElement('button');
+  btn.className='chip-btn';
+  btn.dataset.value=v;
+  btn.textContent=v;
+  btn.addEventListener('click',()=>{
+    if(v===51){
+      btn.classList.add('bad');
+      showFeedback('fb-s7','good','Correct. <strong>51</strong> is too big because it is more than 50.');
+      unlockNext('screen-7');
+    } else {
+      markSelected(tooBigGrid, btn);
+      showFeedback('fb-s7','bad','Look again. We need the number that is <strong>more than 50</strong>.');
+    }
+  });
+  tooBigGrid.appendChild(btn);
+});
+
+function loadLists(){
+  const left=document.getElementById('list-left');
+  const right=document.getElementById('list-right');
+  left.innerHTML=''; right.innerHTML='';
+  plus1.forEach(v=>{
+    const chip=document.createElement('div');
+    chip.className='chip-btn';
+    chip.textContent=v;
+    chip.style.cursor='default';
+    if(v===43) chip.dataset.target='yes';
+    left.appendChild(chip);
+  });
+  [35,43].forEach(v=>{
+    const chip=document.createElement('div');
+    chip.className='chip-btn';
+    chip.textContent=v;
+    chip.style.cursor='default';
+    if(v===43) chip.dataset.target='yes';
+    right.appendChild(chip);
+  });
+}
+loadLists();
+
+setupChoiceGroup(
+  'group-s8','43','fb-s8',
+  'Correct. <strong>43</strong> is in both lists.',
+  'Look for the number that appears in the <strong>3-group list</strong> and the <strong>8-group list</strong>.',
+  ()=>{
+    [...document.querySelectorAll('[data-target="yes"]')].forEach(el=>el.classList.add('good'));
+    unlockNext('screen-8');
+  }
+);
+setupChoiceGroup(
+  'group-s9','43','fb-s9',
+  'Correct. There were <strong>43 marbles</strong>.',
+  'Look for the number that fits <strong>all the clues</strong>.',
+  ()=>unlockNext('screen-9')
+);
+
+document.getElementById('restartBtn').addEventListener('click',()=>{
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  location.reload();
+});
+
+updateProgress();
+</script>
+</body>
+</html>

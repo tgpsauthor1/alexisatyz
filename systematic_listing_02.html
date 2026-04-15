@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Systematic Listing 02 - Rebuilt v4</title>
+  <style>
+    :root{
+      --bg:#f3f6fb; --card:#ffffff; --text:#13233f; --muted:#55657f; --line:#d6dfeb;
+      --blue:#2d6cdf; --blue-soft:#eaf2ff; --orange:#e69500; --orange-soft:#fff3d8;
+      --green:#0c7a43; --green-soft:#e8f7ef; --red:#b42318; --red-soft:#fdeeee;
+      --shadow:0 10px 28px rgba(18,35,63,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .app{max-width:1120px;margin:0 auto;padding:18px}
+    .topbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .title{font-size:2.15rem;font-weight:800;margin:0}
+    .progress-wrap{display:flex;align-items:center;gap:14px;flex:1;justify-content:flex-end;min-width:280px}
+    .progress{width:min(520px,100%);height:18px;background:#d8e1ef;border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#73adff);transition:width .3s}
+    .progress-label{font-weight:800;color:var(--muted);min-width:110px;text-align:right}
+    .panel{background:var(--card);border:1px solid #e7eef8;border-radius:26px;box-shadow:var(--shadow);padding:24px}
+    .screen{display:none;animation:fade .25s ease}
+    .screen.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .action-box{background:var(--blue-soft);border:4px solid var(--blue);border-radius:20px;padding:16px 18px;font-size:1.45rem;font-weight:800;margin-bottom:16px}
+    .support-box{background:var(--orange-soft);border:4px solid var(--orange);border-radius:20px;padding:14px 16px;font-size:1.05rem;margin-bottom:16px}
+    .question-box,.answer-card,.scene-card,.tap-card,.choice-card{background:#fbfdff;border:3px solid var(--line);border-radius:20px;padding:16px}
+    .question-box p{margin:10px 0;font-size:1.14rem}
+    .controls{display:flex;flex-wrap:wrap;gap:12px;margin:12px 0 18px}
+    button{font:inherit;border:none;border-radius:16px;padding:14px 18px;cursor:pointer;touch-action:manipulation;transition:transform .06s ease,background .2s ease}
+    button:hover{transform:translateY(-1px)} button:active{transform:translateY(1px)}
+    .btn{background:var(--blue);color:#fff;font-weight:800}
+    .btn.secondary{background:#eef3fb;color:var(--text);border:3px solid #c9d6ea}
+    .btn.ghost{background:#fff;color:var(--text);border:3px dashed #c5d3e7}
+    .btn.good{background:var(--green)}
+    .hidden{display:none !important}
+    .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;padding-top:20px;border-top:2px solid #edf2fa}
+    .feedback{display:none;margin-top:14px;padding:14px 16px;border-radius:18px;font-weight:800;font-size:1.02rem}
+    .feedback.show{display:block}
+    .feedback.good{background:var(--green-soft);border:3px solid #78c49a;color:#0f5132}
+    .feedback.bad{background:var(--red-soft);border:3px solid #efb7b7;color:#8a1f1f}
+    .question-panel{display:none;margin-top:10px}
+    .question-panel.show{display:block}
+    .cousin-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+    .cousin-card{background:#fff;border:3px solid #d7dfeb;border-radius:18px;padding:12px;min-height:160px}
+    .cousin-label{font-weight:800;margin-bottom:10px}
+    .tap-target{width:100%;padding:10px 12px;font-weight:800;background:#fff;border:3px solid #cfd8e6;border-radius:14px;color:var(--text)}
+    .tap-target.done{background:var(--green-soft);border-color:var(--green);color:#0f5132}
+    .sweets{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;margin-top:10px}
+    .sweet{width:18px;height:18px;border-radius:999px;background:#ff5a7a;border:2px solid #cf3c5e;display:inline-block}
+    .sweet.missing{background:transparent;border:3px dashed #a8b7cd}
+    .sweet.crossed{position:relative}
+    .sweet.crossed::after{content:'';position:absolute;left:-2px;right:-2px;top:7px;height:3px;background:#a8b7cd;transform:rotate(-35deg)}
+    .two-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+    .scene-wrap{display:grid;grid-template-columns:1.25fr .95fr;gap:16px;align-items:start}
+    .scene-title{font-size:1.14rem;font-weight:800;margin-bottom:10px}
+    .scene-sub{font-size:.98rem;color:var(--muted);margin-bottom:8px}
+    .tap-card.clickable{cursor:pointer}
+    .tap-card.goodpick{border-color:var(--green);background:var(--green-soft)}
+    .choice-card{margin-top:14px}
+    .choice-title{font-weight:800;margin-bottom:10px}
+    .small-btn-row{display:flex;flex-wrap:wrap;gap:12px}
+    .small-btn,.option-btn{background:#fff;border:4px solid #cfd8e6;border-radius:18px;padding:16px 18px;font-weight:800;color:var(--text)}
+    .small-btn{min-width:90px;font-size:1.12rem}
+    .option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0}
+    .option-btn{text-align:left;min-height:90px;font-size:1.08rem}
+    .small-btn.selected,.option-btn.selected{border-color:var(--blue);background:var(--blue-soft)}
+    .mini-table{margin-top:16px;border:2px solid var(--line);border-radius:16px;overflow:auto;background:#fff}
+    table{width:100%;border-collapse:collapse;min-width:620px}
+    th,td{border:2px solid #d7dfeb;padding:12px;text-align:center;font-size:1rem}
+    th:first-child,td:first-child{text-align:left;font-weight:800;background:#f7fbff;width:175px}
+    .highlight{background:#fff6db;font-weight:800}
+    .big-answer{font-size:1.85rem;font-weight:800}
+    .row-chip{display:inline-block;padding:8px 12px;border-radius:999px;border:2px solid #cfdae8;background:#fff;font-weight:800;margin:0 8px 8px 0}
+    @media (max-width:820px){
+      .action-box{font-size:1.24rem}
+      .scene-wrap{grid-template-columns:1fr}
+      .title{font-size:1.8rem}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1 class="title">Systematic Listing</h1>
+    <div class="progress-wrap">
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-label" id="progressLabel">Step 1 / 12</div>
+    </div>
+  </div>
+
+  <div class="panel">
+
+    <section class="screen active" id="screen-1">
+      <div class="action-box">Read or listen to the question.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="q">🔊 Read aloud</button></div>
+      <div class="question-box">
+        <p><strong>Question 2</strong></p>
+        <p>James bought some sweets for his cousins.</p>
+        <p>If he gave them <strong>5 sweets each</strong>, he would have <strong>3 sweets left</strong>.</p>
+        <p>If he gave them <strong>7 sweets each</strong>, he would <strong>need 5 more sweets</strong>.</p>
+        <p><strong>(a)</strong> How many cousins was he giving the sweets to?</p>
+        <p><strong>(b)</strong> How many sweets did he buy?</p>
+      </div>
+      <div class="support-box">We will try <strong>one number of cousins at a time</strong>.</div>
+      <div class="nav"><div></div><button class="btn next-btn">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-2">
+      <div class="action-box">Tap what stays the same.</div>
+      <div class="support-box">Only one thing stays the same in both parts.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s2">🔊 Read aloud</button></div>
+      <div class="option-grid" id="group-s2">
+        <button class="option-btn" data-value="cousins">The number of cousins</button>
+        <button class="option-btn" data-value="each">The sweets each cousin gets</button>
+        <button class="option-btn" data-value="extra">The extra 3 and the missing 5</button>
+      </div>
+      <div class="feedback" id="fb-s2"></div>
+      <button class="btn ghost toggle-question">Show question</button>
+      <div class="question-panel"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-3">
+      <div class="action-box">Try 2 cousins first.</div>
+      <div class="support-box">Tap each cousin to give <strong>5 sweets</strong>.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s3">🔊 Read aloud</button></div>
+      <div class="scene-card">
+        <div class="cousin-grid" id="build-5-two"></div>
+      </div>
+      <div class="feedback" id="fb-s3"></div>
+      <button class="btn ghost toggle-question">Show question</button>
+      <div class="question-panel"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-4">
+      <div class="action-box">Tap the 3 sweets left. Then count all the sweets.</div>
+      <div class="support-box">First count the sweets given out. Then count the sweets left.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s4">🔊 Read aloud</button></div>
+      <div class="scene-wrap">
+        <div class="scene-card">
+          <div class="scene-title">5 each, then 3 left</div>
+          <div class="cousin-grid render-cousins" data-cousins="2" data-per="5"></div>
+        </div>
+        <div class="tap-card clickable" id="leftover-3">
+          <div class="scene-title">Tap these 3 left</div>
+          <div class="sweets render-sweets" data-count="3" data-kind="real"></div>
+        </div>
+      </div>
+      <div class="choice-card hidden" id="s4-shared-card">
+        <div class="choice-title">How many sweets were given to the cousins?</div>
+        <div class="small-btn-row" id="group-s4-a">
+          <button class="small-btn" data-value="10">10</button>
+          <button class="small-btn" data-value="13">13</button>
+          <button class="small-btn" data-value="15">15</button>
+        </div>
+        <div class="feedback" id="fb-s4-a"></div>
+      </div>
+      <div class="choice-card hidden" id="s4-total-card">
+        <div class="choice-title">How many sweets altogether in this part?</div>
+        <div class="small-btn-row" id="group-s4-b">
+          <button class="small-btn" data-value="10">10</button>
+          <button class="small-btn" data-value="13">13</button>
+          <button class="small-btn" data-value="16">16</button>
+        </div>
+        <div class="feedback" id="fb-s4-b"></div>
+      </div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-5">
+      <div class="action-box">Now tap each cousin to give 7 sweets.</div>
+      <div class="support-box">Use the same <strong>2 cousins</strong> again.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s5">🔊 Read aloud</button></div>
+      <div class="scene-card">
+        <div class="cousin-grid" id="build-7-two"></div>
+      </div>
+      <div class="feedback" id="fb-s5"></div>
+      <button class="btn ghost toggle-question">Show question</button>
+      <div class="question-panel"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-6">
+      <div class="action-box">Tap the 5 missing circles. Then finish row 2.</div>
+      <div class="support-box">The last cousin only has <strong>2 sweets</strong>. The 5 empty circles show what is still missing.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s6">🔊 Read aloud</button></div>
+      <div class="scene-card clickable" id="partial-two-card">
+        <div class="scene-title">7 each part for 2 cousins</div>
+        <div class="scene-sub">Tap the last cousin's missing circles.</div>
+        <div class="cousin-grid" id="partial-two"></div>
+      </div>
+      <div class="choice-card hidden" id="s6-needed-card">
+        <div class="choice-title">How many sweets are needed for 7 each?</div>
+        <div class="small-btn-row" id="group-s6-a">
+          <button class="small-btn" data-value="9">9</button>
+          <button class="small-btn" data-value="14">14</button>
+          <button class="small-btn" data-value="19">19</button>
+        </div>
+        <div class="feedback" id="fb-s6-a"></div>
+      </div>
+      <div class="choice-card hidden" id="s6-actual-card">
+        <div class="choice-title">How many sweets does James really have in the 7 each part?</div>
+        <div class="small-btn-row" id="group-s6-b">
+          <button class="small-btn" data-value="9">9</button>
+          <button class="small-btn" data-value="14">14</button>
+          <button class="small-btn" data-value="5">5</button>
+        </div>
+        <div class="feedback" id="fb-s6-b"></div>
+      </div>
+      <div class="choice-card hidden" id="s6-match-card">
+        <div class="choice-title">Do these match: 13 and 9?</div>
+        <div class="small-btn-row" id="group-s6-c">
+          <button class="small-btn" data-value="yes">Yes</button>
+          <button class="small-btn" data-value="no">No</button>
+        </div>
+        <div class="feedback" id="fb-s6-c"></div>
+      </div>
+      <div class="mini-table" id="grow-1"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-7">
+      <div class="action-box">Now try 3 cousins.</div>
+      <div class="support-box">Left side: <strong>5 each, then 3 left</strong>. Right side: the <strong>7 each part</strong>. The last cousin has 2 sweets and 5 empty circles.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s7">🔊 Read aloud</button></div>
+      <div class="two-col">
+        <div class="scene-card">
+          <div class="scene-title">5 each, then 3 left</div>
+          <div class="cousin-grid render-cousins" data-cousins="3" data-per="5"></div>
+          <div class="sweets render-sweets" data-count="3" data-kind="real"></div>
+        </div>
+        <div class="scene-card">
+          <div class="scene-title">7 each part</div>
+          <div class="scene-sub">The last cousin has 2 sweets. The 5 empty circles are missing.</div>
+          <div class="cousin-grid partial-cousins" data-cousins="3"></div>
+        </div>
+      </div>
+      <div class="choice-card">
+        <div class="choice-title">How many sweets altogether in the 5 each, then 3 left part?</div>
+        <div class="small-btn-row" id="group-s7-a">
+          <button class="small-btn" data-value="15">15</button>
+          <button class="small-btn" data-value="18">18</button>
+          <button class="small-btn" data-value="21">21</button>
+        </div>
+        <div class="feedback" id="fb-s7-a"></div>
+      </div>
+      <div class="choice-card hidden" id="s7b-card">
+        <div class="choice-title">How many sweets does James really have in the 7 each part?</div>
+        <div class="small-btn-row" id="group-s7-b">
+          <button class="small-btn" data-value="16">16</button>
+          <button class="small-btn" data-value="18">18</button>
+          <button class="small-btn" data-value="21">21</button>
+        </div>
+        <div class="feedback" id="fb-s7-b"></div>
+      </div>
+      <div class="choice-card hidden" id="s7c-card">
+        <div class="choice-title">Do these match: 18 and 16?</div>
+        <div class="small-btn-row" id="group-s7-c">
+          <button class="small-btn" data-value="yes">Yes</button>
+          <button class="small-btn" data-value="no">No</button>
+        </div>
+        <div class="feedback" id="fb-s7-c"></div>
+      </div>
+      <div class="mini-table" id="grow-2"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-8">
+      <div class="action-box">Now try 4 cousins.</div>
+      <div class="support-box">Left side: <strong>5 each, then 3 left</strong>. Right side: the <strong>7 each part</strong>. The last cousin has 2 sweets and 5 empty circles.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s8">🔊 Read aloud</button></div>
+      <div class="two-col">
+        <div class="scene-card">
+          <div class="scene-title">5 each, then 3 left</div>
+          <div class="cousin-grid render-cousins" data-cousins="4" data-per="5"></div>
+          <div class="sweets render-sweets" data-count="3" data-kind="real"></div>
+        </div>
+        <div class="scene-card">
+          <div class="scene-title">7 each part</div>
+          <div class="scene-sub">The last cousin has 2 sweets. The 5 empty circles are missing.</div>
+          <div class="cousin-grid partial-cousins" data-cousins="4"></div>
+        </div>
+      </div>
+      <div class="choice-card">
+        <div class="choice-title">How many sweets altogether in the 5 each, then 3 left part?</div>
+        <div class="small-btn-row" id="group-s8-a">
+          <button class="small-btn" data-value="20">20</button>
+          <button class="small-btn" data-value="23">23</button>
+          <button class="small-btn" data-value="28">28</button>
+        </div>
+        <div class="feedback" id="fb-s8-a"></div>
+      </div>
+      <div class="choice-card hidden" id="s8b-card">
+        <div class="choice-title">How many sweets does James really have in the 7 each part?</div>
+        <div class="small-btn-row" id="group-s8-b">
+          <button class="small-btn" data-value="23">23</button>
+          <button class="small-btn" data-value="28">28</button>
+          <button class="small-btn" data-value="33">33</button>
+        </div>
+        <div class="feedback" id="fb-s8-b"></div>
+      </div>
+      <div class="choice-card hidden" id="s8c-card">
+        <div class="choice-title">Do these match: 23 and 23?</div>
+        <div class="small-btn-row" id="group-s8-c">
+          <button class="small-btn" data-value="yes">Yes</button>
+          <button class="small-btn" data-value="no">No</button>
+        </div>
+        <div class="feedback" id="fb-s8-c"></div>
+      </div>
+      <div class="mini-table" id="grow-3"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-9">
+      <div class="action-box">Which row works?</div>
+      <div class="support-box">Look for the row where the two totals are the same.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s9">🔊 Read aloud</button></div>
+      <div class="mini-table" id="grow-4"></div>
+      <div class="option-grid" id="group-s9">
+        <button class="option-btn" data-value="2">2 cousins</button>
+        <button class="option-btn" data-value="3">3 cousins</button>
+        <button class="option-btn" data-value="4">4 cousins</button>
+      </div>
+      <div class="feedback" id="fb-s9"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-10">
+      <div class="action-box">Answer part (a).</div>
+      <div class="support-box">How many cousins was he giving the sweets to?</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s10">🔊 Read aloud</button></div>
+      <div class="small-btn-row" id="group-s10">
+        <button class="small-btn" data-value="4">4</button>
+        <button class="small-btn" data-value="23">23</button>
+      </div>
+      <div class="feedback" id="fb-s10"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-11">
+      <div class="action-box">Answer part (b).</div>
+      <div class="support-box">How many sweets did he buy?</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s11">🔊 Read aloud</button></div>
+      <div class="small-btn-row" id="group-s11">
+        <button class="small-btn" data-value="20">20</button>
+        <button class="small-btn" data-value="23">23</button>
+        <button class="small-btn" data-value="28">28</button>
+      </div>
+      <div class="feedback" id="fb-s11"></div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn next-btn hidden">Next</button></div>
+    </section>
+
+    <section class="screen" id="screen-12">
+      <div class="action-box">Draw this table in your corrections.</div>
+      <div class="support-box">This is the full systematic listing table.</div>
+      <div class="controls"><button class="btn secondary speak-btn" data-speak="s12">🔊 Read aloud</button></div>
+      <div class="answer-card"><div class="big-answer">James had <strong>4 cousins</strong> and bought <strong>23 sweets</strong>.</div></div>
+      <div class="mini-table">
+        <table>
+          <thead>
+            <tr><th>No. of cousins</th><th>2</th><th>3</th><th class="highlight">4</th><th>5</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>× 5</td><td>10</td><td>15</td><td class="highlight">20</td><td>25</td></tr>
+            <tr><td>× 5 + 3</td><td>13</td><td>18</td><td class="highlight">23</td><td>28</td></tr>
+            <tr><td>× 7</td><td>14</td><td>21</td><td class="highlight">28</td><td>35</td></tr>
+            <tr><td>× 7 − 5</td><td>9</td><td>16</td><td class="highlight">23</td><td>30</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="answer-card">
+        <div class="row-chip">4 cousins works</div>
+        <div class="row-chip">23 sweets and 23 sweets match</div>
+      </div>
+      <div class="nav"><button class="btn secondary prev-btn">Back</button><button class="btn good" id="restartBtn">Restart</button></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+const spokenText = {
+  q:"Question 2. James bought some sweets for his cousins. If he gave them 5 sweets each, he would have 3 sweets left. If he gave them 7 sweets each, he would need 5 more sweets. Part a, how many cousins was he giving the sweets to? Part b, how many sweets did he buy?",
+  s2:"Tap what stays the same.",
+  s3:"Try 2 cousins first. Tap each cousin to give 5 sweets.",
+  s4:"Tap the 3 sweets left. Then count all the sweets.",
+  s5:"Now tap each cousin to give 7 sweets.",
+  s6:"Tap the 5 missing circles. Then finish row 2.",
+  s7:"Now try 3 cousins.",
+  s8:"Now try 4 cousins.",
+  s9:"Which row works?",
+  s10:"Answer part a.",
+  s11:"Answer part b.",
+  s12:"Draw this table in your corrections. James had 4 cousins and bought 23 sweets."
+};
+const questionHTML = `<div class="question-box">
+  <p><strong>Question 2</strong></p>
+  <p>James bought some sweets for his cousins.</p>
+  <p>If he gave them <strong>5 sweets each</strong>, he would have <strong>3 sweets left</strong>.</p>
+  <p>If he gave them <strong>7 sweets each</strong>, he would <strong>need 5 more sweets</strong>.</p>
+  <p><strong>(a)</strong> How many cousins was he giving the sweets to?</p>
+  <p><strong>(b)</strong> How many sweets did he buy?</p>
+</div>`;
+const state = { row2:false, row3:false, row4:false };
+
+const screens=[...document.querySelectorAll('.screen')];
+let currentScreen=0;
+const progressBar=document.getElementById('progressBar');
+const progressLabel=document.getElementById('progressLabel');
+
+function updateProgress(){const step=currentScreen+1; progressBar.style.width=`${(step/screens.length)*100}%`; progressLabel.textContent=`Step ${step} / ${screens.length}`;}
+function showScreen(i){if(i<0||i>=screens.length)return; screens[currentScreen].classList.remove('active'); currentScreen=i; screens[currentScreen].classList.add('active'); updateProgress(); window.scrollTo({top:0,behavior:'smooth'});}
+document.querySelectorAll('.next-btn').forEach(btn=>btn.addEventListener('click',()=>showScreen(currentScreen+1)));
+document.querySelectorAll('.prev-btn').forEach(btn=>btn.addEventListener('click',()=>showScreen(currentScreen-1)));
+function speak(key){if(!('speechSynthesis'in window))return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(spokenText[key]||''); u.rate=.95; speechSynthesis.speak(u);}
+document.querySelectorAll('.speak-btn').forEach(btn=>btn.addEventListener('click',()=>speak(btn.dataset.speak)));
+document.querySelectorAll('.toggle-question').forEach(btn=>btn.addEventListener('click',()=>{const panel=btn.nextElementSibling; panel.innerHTML=questionHTML; panel.classList.toggle('show'); btn.textContent=panel.classList.contains('show')?'Hide question':'Show question';}));
+
+function renderSweets(holder,count,missing=false){
+  holder.innerHTML='';
+  for(let i=0;i<count;i++){
+    const s=document.createElement('span');
+    s.className=`sweet ${missing?'missing':''}`;
+    holder.appendChild(s);
+  }
+}
+function renderCousins(container,cousins,sweetsEach){
+  container.innerHTML='';
+  for(let i=1;i<=cousins;i++){
+    const card=document.createElement('div');
+    card.className='cousin-card';
+    const label=document.createElement('div'); label.className='cousin-label'; label.textContent=`Cousin ${i}`;
+    const sweets=document.createElement('div'); sweets.className='sweets';
+    for(let j=0;j<sweetsEach;j++){const s=document.createElement('span'); s.className='sweet'; sweets.appendChild(s);}
+    card.appendChild(label); card.appendChild(sweets); container.appendChild(card);
+  }
+}
+function renderPartialLast(container,cousins){
+  container.innerHTML='';
+  for(let i=1;i<=cousins;i++){
+    const card=document.createElement('div');
+    card.className='cousin-card';
+    const label=document.createElement('div'); label.className='cousin-label'; label.textContent=`Cousin ${i}`;
+    const sweets=document.createElement('div'); sweets.className='sweets';
+    if(i < cousins){
+      for(let j=0;j<7;j++){const s=document.createElement('span'); s.className='sweet'; sweets.appendChild(s);}
+    } else {
+      for(let j=0;j<2;j++){const s=document.createElement('span'); s.className='sweet'; sweets.appendChild(s);}
+      for(let j=0;j<5;j++){const s=document.createElement('span'); s.className='sweet missing'; sweets.appendChild(s);}
+    }
+    card.appendChild(label); card.appendChild(sweets); container.appendChild(card);
+  }
+}
+document.querySelectorAll('.render-cousins').forEach(el=>renderCousins(el,Number(el.dataset.cousins),Number(el.dataset.per)));
+document.querySelectorAll('.render-sweets').forEach(el=>renderSweets(el,Number(el.dataset.count),el.dataset.kind==='missing'));
+document.querySelectorAll('.partial-cousins').forEach(el=>renderPartialLast(el,Number(el.dataset.cousins)));
+renderPartialLast(document.getElementById('partial-two'),2);
+
+function showFeedback(id,type,html){const el=document.getElementById(id); el.className=`feedback show ${type}`; el.innerHTML=html;}
+function unlockNext(screenId){document.querySelector(`#${screenId} .next-btn`).classList.remove('hidden');}
+function markSelected(group,btn){[...group.querySelectorAll('button')].forEach(b=>b.classList.remove('selected')); btn.classList.add('selected');}
+function setupChoiceGroup(groupId,correct,feedbackId,successMsg,failMsg,onSuccess){
+  const group=document.getElementById(groupId);
+  [...group.querySelectorAll('button[data-value]')].forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      markSelected(group,btn);
+      if(btn.dataset.value===correct){showFeedback(feedbackId,'good',successMsg); if(onSuccess)onSuccess();}
+      else{showFeedback(feedbackId,'bad',failMsg);}
+    });
+  });
+}
+function renderGrowingTable(){
+  const html=`<table>
+    <thead><tr><th>No. of cousins</th><th>2</th><th>3</th><th>4</th></tr></thead>
+    <tbody>
+      <tr><td>× 5 + 3</td><td>${state.row2?'13':''}</td><td>${state.row3?'18':''}</td><td>${state.row4?'23':''}</td></tr>
+      <tr><td>× 7 − 5</td><td>${state.row2?'9':''}</td><td>${state.row3?'16':''}</td><td>${state.row4?'23':''}</td></tr>
+    </tbody>
+  </table>`;
+  document.querySelectorAll('#grow-1,#grow-2,#grow-3,#grow-4').forEach(el=>el.innerHTML=html);
+}
+renderGrowingTable();
+
+/* Screen 2 */
+setupChoiceGroup('group-s2','cousins','fb-s2','Good. The <strong>number of cousins</strong> stays the same.','Look again. James is still sharing with the <strong>same cousins</strong>.',()=>unlockNext('screen-2'));
+
+/* Build screens */
+function buildTapCousins(containerId,sweetsEach,count,feedbackId,screenId,message){
+  const container=document.getElementById(containerId);
+  let done=0;
+  for(let i=1;i<=count;i++){
+    const card=document.createElement('div');
+    card.className='cousin-card';
+    const label=document.createElement('div'); label.className='cousin-label'; label.textContent=`Cousin ${i}`;
+    const btn=document.createElement('button'); btn.className='tap-target'; btn.textContent=`Tap to give ${sweetsEach}`;
+    const sweets=document.createElement('div'); sweets.className='sweets';
+    btn.addEventListener('click',()=>{
+      if(btn.classList.contains('done')) return;
+      btn.classList.add('done'); btn.textContent=`${sweetsEach} sweets given`;
+      renderSweets(sweets,sweetsEach,false);
+      done += 1;
+      if(done===count){showFeedback(feedbackId,'good',message); unlockNext(screenId);}
+    });
+    card.appendChild(label); card.appendChild(btn); card.appendChild(sweets); container.appendChild(card);
+  }
+}
+buildTapCousins('build-5-two',5,2,'fb-s3','screen-3','Good. Both cousins got <strong>5 sweets each</strong>.');
+buildTapCousins('build-7-two',7,2,'fb-s5','screen-5','Good. Both cousins got <strong>7 sweets each</strong>.');
+
+/* Screen 4 */
+document.getElementById('leftover-3').addEventListener('click',()=>{
+  document.getElementById('leftover-3').classList.add('goodpick');
+  document.getElementById('s4-shared-card').classList.remove('hidden');
+});
+setupChoiceGroup('group-s4-a','10','fb-s4-a','Yes. The cousins got <strong>10 sweets</strong> altogether.','Count again. Two cousins get <strong>5 each</strong>.',()=>document.getElementById('s4-total-card').classList.remove('hidden'));
+setupChoiceGroup('group-s4-b','13','fb-s4-b','Correct. 10 sweets were given out and 3 sweets were left. So there are <strong>13 sweets altogether</strong>.','Now add the <strong>3 left</strong> to 10.',()=>unlockNext('screen-4'));
+
+/* Screen 6 */
+document.getElementById('partial-two-card').addEventListener('click',()=>{
+  document.getElementById('partial-two-card').classList.add('goodpick');
+  document.getElementById('s6-needed-card').classList.remove('hidden');
+});
+setupChoiceGroup('group-s6-a','14','fb-s6-a','Yes. To give 7 each to 2 cousins, he needs <strong>14 sweets</strong>.','Count again. Two cousins need <strong>7 each</strong>.',()=>document.getElementById('s6-actual-card').classList.remove('hidden'));
+setupChoiceGroup('group-s6-b','9','fb-s6-b','Correct. James really has <strong>9 sweets</strong> in the 7 each part.','Start from 14. Then take away the <strong>5 missing</strong>.',()=>document.getElementById('s6-match-card').classList.remove('hidden'));
+setupChoiceGroup('group-s6-c','no','fb-s6-c','Correct. <strong>13</strong> and <strong>9</strong> do not match. So 2 cousins does not work.','Look again. 13 and 9 are different.',()=>{state.row2=true; renderGrowingTable(); unlockNext('screen-6');});
+
+/* Screen 7 */
+setupChoiceGroup('group-s7-a','18','fb-s7-a','Good. There are <strong>18 sweets altogether</strong> in the 5 each, then 3 left part.','Try again. 3 cousins get 5 each, then add the 3 left.',()=>document.getElementById('s7b-card').classList.remove('hidden'));
+setupChoiceGroup('group-s7-b','16','fb-s7-b','Good. James really has <strong>16 sweets</strong> in the 7 each part.','Try again. The last cousin only has 2 sweets, and 5 are still missing.',()=>document.getElementById('s7c-card').classList.remove('hidden'));
+setupChoiceGroup('group-s7-c','no','fb-s7-c','Correct. <strong>18</strong> and <strong>16</strong> do not match.','Look again. 18 and 16 are different.',()=>{state.row3=true; renderGrowingTable(); unlockNext('screen-7');});
+
+/* Screen 8 */
+setupChoiceGroup('group-s8-a','23','fb-s8-a','Good. There are <strong>23 sweets altogether</strong> in the 5 each, then 3 left part.','Try again. 4 cousins get 5 each, then add the 3 left.',()=>document.getElementById('s8b-card').classList.remove('hidden'));
+setupChoiceGroup('group-s8-b','23','fb-s8-b','Good. James really has <strong>23 sweets</strong> in the 7 each part.','Try again. The last cousin only has 2 sweets, and 5 are still missing.',()=>document.getElementById('s8c-card').classList.remove('hidden'));
+setupChoiceGroup('group-s8-c','yes','fb-s8-c','Yes. <strong>23</strong> and <strong>23</strong> match.','Look again. 23 and 23 are the same.',()=>{state.row4=true; renderGrowingTable(); unlockNext('screen-8');});
+
+/* Screen 9 */
+setupChoiceGroup('group-s9','4','fb-s9','Correct. The row for <strong>4 cousins</strong> works.','Look for the row where the two totals are the same.',()=>unlockNext('screen-9'));
+
+/* Screen 10 */
+setupChoiceGroup('group-s10','4','fb-s10','Correct. Part (a) is <strong>4</strong>.','Part (a) asks for the <strong>number of cousins</strong>.',()=>unlockNext('screen-10'));
+
+/* Screen 11 */
+setupChoiceGroup('group-s11','23','fb-s11','Correct. Part (b) is <strong>23</strong> sweets.','Part (b) asks for the <strong>total sweets</strong>.',()=>unlockNext('screen-11'));
+
+document.getElementById('restartBtn').addEventListener('click',()=>{if('speechSynthesis'in window) speechSynthesis.cancel(); location.reload();});
+updateProgress();
+</script>
+</body>
+</html>
