@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>water_change_in_state_03</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --card: #ffffff;
+      --ink: #17324d;
+      --muted: #5b728a;
+      --line: #c8d9ee;
+      --blue: #2b6cb0;
+      --blue-2: #d9ebff;
+      --green: #2f855a;
+      --green-2: #def7e8;
+      --red: #c53030;
+      --red-2: #fde8e8;
+      --yellow: #b7791f;
+      --yellow-2: #fff7d6;
+      --shadow: 0 10px 30px rgba(22, 52, 93, 0.10);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(180deg, #edf5ff 0%, #f7fbff 100%);
+      color: var(--ink);
+    }
+
+    .page {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 14px 14px 28px;
+    }
+
+    .top-strip {
+      background: #fff;
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 10px 14px;
+      display: grid;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .top-row, .top-row-2 {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--blue);
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .bubble-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f5fbff;
+      border: 1px solid #cfe6ff;
+    }
+
+    .bubble-label {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .bubble {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff 0 22%, #9fd4ff 23% 55%, #58a8f1 56% 100%);
+      border: 1px solid #4e9ae1;
+      display: inline-block;
+    }
+
+    .bubble.lost {
+      background: #edf2f7;
+      border-color: #cbd5e0;
+      opacity: 0.65;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f7fbff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 10px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .toggle-wrap input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: var(--blue);
+      color: white;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      min-height: 52px;
+      box-shadow: 0 8px 18px rgba(43, 108, 176, 0.18);
+      transition: transform 0.08s ease, opacity 0.2s ease, background 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn.secondary {
+      background: white;
+      color: var(--blue);
+      border: 2px solid var(--line);
+      box-shadow: none;
+    }
+
+    .btn.good {
+      background: var(--green);
+      box-shadow: 0 8px 18px rgba(47, 133, 90, 0.18);
+    }
+
+    .btn.warn {
+      background: var(--yellow);
+      color: #3f2e11;
+      box-shadow: none;
+    }
+
+    .card {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .screen-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+    }
+
+    .screen-title {
+      margin: 0;
+      font-size: clamp(1.4rem, 3.4vw, 2rem);
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    .instruction {
+      font-size: clamp(1.12rem, 2.5vw, 1.35rem);
+      font-weight: 900;
+      line-height: 1.25;
+      background: #eef6ff;
+      color: var(--ink);
+      border: 2px solid #c9def9;
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin: 8px 0 12px;
+    }
+
+    .main-grid {
+      display: grid;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .visual-card {
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      background: #f8fbff;
+      padding: 12px;
+    }
+
+    .question-box {
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+
+    .question-text {
+      font-size: 1.08rem;
+      line-height: 1.45;
+    }
+
+    mark {
+      background: #fff09c;
+      color: inherit;
+      padding: 0 4px;
+      border-radius: 6px;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      background: white;
+      color: var(--ink);
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 62px;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
+    }
+
+    .option-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .option-btn.selected {
+      border-color: var(--blue);
+      background: var(--blue-2);
+      box-shadow: 0 0 0 3px rgba(43,108,176,0.10);
+    }
+
+    .option-btn.correct {
+      border-color: var(--green);
+      background: var(--green-2);
+    }
+
+    .option-btn.wrong {
+      border-color: var(--red);
+      background: var(--red-2);
+    }
+
+    .mini-help {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+
+    .feedback {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.4;
+      border: 2px solid var(--line);
+      background: #f7fbff;
+      min-height: 56px;
+    }
+
+    .feedback.good {
+      border-color: #b7e4c7;
+      background: var(--green-2);
+      color: #20543f;
+    }
+
+    .feedback.bad {
+      border-color: #fecaca;
+      background: var(--red-2);
+      color: #822727;
+    }
+
+    .feedback.info {
+      border-color: #d6e4ff;
+      background: #edf5ff;
+      color: #254e7a;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    details.question-panel {
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      background: #fcfeff;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+
+    details.question-panel summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 14px 16px;
+      font-weight: 900;
+      color: var(--blue);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    details.question-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .panel-body {
+      padding: 0 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .source-image {
+      width: 100%;
+      max-width: 560px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 14px;
+      border: 2px solid var(--line);
+      background: #fff;
+    }
+
+    .source-caption {
+      margin-top: 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .step-bank {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .build-area {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .slot {
+      min-height: 70px;
+      border: 2px dashed #9db7d6;
+      border-radius: 16px;
+      background: #f7fbff;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .slot.filled {
+      border-style: solid;
+      border-color: #7eb3e7;
+      background: #eaf4ff;
+      color: var(--ink);
+    }
+
+    .judge-card {
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      background: white;
+    }
+
+    .judge-statement {
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+
+    .judge-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .judge-note {
+      font-size: 0.96rem;
+      line-height: 1.4;
+      color: var(--muted);
+      display: none;
+    }
+
+    .judge-note.show {
+      display: block;
+    }
+
+    .summary-box {
+      background: #f8fbff;
+      border: 2px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #edf5ff;
+      border: 1px solid #cfe2ff;
+      color: var(--blue);
+      font-weight: 800;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .completion {
+      display: grid;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(16, 32, 52, 0.52);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 50;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(520px, 100%);
+      background: white;
+      border-radius: 22px;
+      border: 2px solid var(--line);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .modal-card h2 {
+      margin-top: 0;
+      font-size: 1.6rem;
+      color: var(--red);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .soup-visual, .boiling-visual {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    @media (min-width: 860px) {
+      .main-grid.two {
+        grid-template-columns: 1.1fr 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .build-area {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .judge-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-strip" id="topStrip">
+      <div class="top-row">
+        <div class="brand">Boiling and Condensation</div>
+        <div class="progress-wrap">
+          <span id="progressText">Step 1 of 11</span>
+          <div class="bubble-strip" aria-label="Bubble chances">
+            <span class="bubble-label">Bubble chances</span>
+            <span id="bubbleWrap"></span>
+          </div>
+        </div>
+      </div>
+      <div class="top-row-2">
+        <div class="controls">
+          <label class="toggle-wrap">
+            <input type="checkbox" id="autoReadToggle" />
+            <span>Auto read-aloud</span>
+          </label>
+          <button class="btn secondary" id="speakBtn" type="button">🔊 Read this screen</button>
+        </div>
+        <button class="btn secondary" id="restartBtn" type="button">Restart</button>
+      </div>
+    </div>
+
+    <main id="app" aria-live="polite"></main>
+  </div>
+
+  <div class="modal" id="gameOverModal" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+    <div class="modal-card">
+      <h2 id="gameOverTitle">All bubble chances used.</h2>
+      <p class="muted">The whole interactive will restart so you can try again carefully.</p>
+      <button class="btn" id="restartNowBtn" type="button">Restart now</button>
+    </div>
+  </div>
+
+  <script>
+    const SOURCE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAjAAAAEjCAYAAAAsWzvHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAD7oSURBVHhe7d19tB1Vff/xHXkMTwLKQ0NEmlxoEVAEiRCS8KArN1jsam26msRWsyyNK/mjq8umScFo6VqpayVNtT+oicbWRiq5oQQoUDGJJSa5IdUrCiIVCglmxRBplQeDkPIQ7++89z3f4/cOM+fMufc8Tc7ntdbcMzNnz549M+fOfGfPnpkxgyVBREREpEDeVP4UERERKQwFMCIiIlI4CmBERESkcBTAiIiISOEogBEREZHCUQAjIiIihaMARkRERApHAYyIiIgUjgIYERERKRwFMCIiIlI4CmBERESkcBTAiIiISOEogBEREZHCUQAjIiIihaMApsnGjBlT7hMREZFGUQAjIiIihdPSAIbaiKwuTU9Pz7A0DHtPPfXUsPHJ4TQLFiyIadatWzdseMaMGXHYLF++PI7n02M6xvsumUZERESaq2NqYHzQYYHIrl27ymOGMMz47du3l8c0zsaNGytBTRaCndmzZ5eHfmXx4sVvCIBERESkedoSwAwODg7rQHBC4AICBfT29g5LN3/+/Dh+7ty58bPR0oITQ3CzatWq2E9ZrUx9fX1xHAFQMwIrEREReaOOagMzYcKEGMQQDGDDhg3x06xcuTJMnDgxBhDNChYseEpas2ZN/CRgoZxm1qxZMdBi/JQpU8pjRUREpJnaEsD49iN06O/vj5/79u2LnwQFaaZPnx4/9+7dGz8bxWpSqGVJC4527twZPydNmhQ/PQItAhkRERFpjY6pgZk6dWrlElK7WBCT9xJVspGxGvOKiIi0Rke0gbG2LevXrw/jxo2L/XYZKWnTpk3xc/z48fGzkexyEJeoaJjrWc3PwMBA/BQREZH26ag2MKB9iV0+St4OzZ0+BBe0g2lWexPa2aSZM2dO/KShr11i4rISAdiyZcvisIiIiLRGR7SBsbt7Zs6cGT8tiCBY8emsVsYa1GZJTmddHgRQaQEJAZPVFHG5y+drtTVWfhEREWmujqmBoRGv3d3DJzUb1LR4DDO+2Xf7LFq06A3zBoGVNTb2CHgol787SURERJpnTOnAO/QgFmkKami0ikVERBqrZQFM3ks4RZdcnQpgREREGk81ME2mAEZERKTxOu4upEONghcREZHGUwAjIiIihaMARkRERApHAYyIiIgUjgIYERERKRwFMCIiIlI4CmBERESkcBTAiIiISOEogBEREZHCUQAjIiIihaMARkRERApHAYyIiIgUjgIYERERKRwFMCIiIlI4CmBERESkcBTAiIiISOG0NIBZvnx5GDNmTOxmzJhRHtt+lKWnp6c8NGT79u2xnFiwYEHsGqGReSX5Mlv/U089FYeLhN9JK34ffn3lxe+E8rXLSObfqvUpItJKLQtgOFisXr06DA4Oxm7nzp1tPRAYDvCUBZQxzcqVK2MnrbFo0aKwYcOG8pCIiMgbtSyAmTJlSiVQwPTp08Pu3bvLQ+2zfv36MG/evNitXbu2PHa4rFoTgh/O4K3zARDBmY23aRm3atWq2CWDt2SNybp16yq1QjZ/hkmTdjbNdFOnTo39vjZpxYoVlXL48pG/ja92dp6WzpcNDNt3VkNg0/jlTK4vQxqmZxyfNoy0/FgXyTxgedBRJtg8/TR8l7W+jF9uOo/frY23bWv8NMzD5s8n/LKBebNd+PRlTObr+fmTn2fj6WyeSX4+Nr2td6SVuVp5RETaYrBNJk6cONjX11ceah/KsWvXrtj51dHf318Znj9/fuySent7K8tAevIC43xe9Fu6rLxsfpQDpLf8SM93pAHjly1bFvs9X2brt3TkQXmRnFet/NLS8Wn9Nk+QxoZtnVq56ffrwcpDPn4+DNt35EcHW682X1+erOWzMtg6J73lZ+nSJMtj0/vyJNcP80+bD+Ntuem38Uxn/dXy9UhjZbZls/XLd7Y+/Pzpt3Vj6xB+esb7NEzry2zzEBHpFC1vxGtntqWdZ5g1a1Z5bHtYjcSECRNiV9pRV87c89qzZ0/89DVM27ZtC6WDRuwH/WvWrCkPjQxlYx6gtmjz5s2xv5aZM2fGz2nTplXKt2PHjlA60MZlxtKlS+PlvaRq6bjMQxk4cy8d6OI4Y8tu65R8WNelg2Jlmy9cuDBs3LixcpbPdzafJJYX48ePj5+2TL4Wb9OmTWHJkiWxn/XEfKldM3PmzImfkydPjr+9PPbt2xc/WVZ/CdHKY9uDdCwHy8NygWmYD8t99dVXV34noNykHxgYiP0mLd80aeuX/Jgf84Wfv8fv0E/P9qXmcdKkScN+v2xrKzPLZWUSEekULQ9gOICVAqd40COQaSd23OzkrTqdHXU9gQbtNDig2/R2sOBgsnjx4sp4+hvpzDPPHHY5rl4c9LmMZeWbPXt2+ZvhaqWbO3duLEe1QJSDJPns3bt32LomYGkk8uaSkOXPthyNZH61ZAUbIGgi2ON3wfogmCR4IVCgfzRs/dr8rbxZZc763ZAPKCMd25Qy85smSBIR6TQtD2AMZ3xgZ9kuHJz7+/tjQEXHQcvXCuTBAYFpyYcDOjgYcJZr+dLVapQ6bty4cl9tnBmntdvI66yzzopn3r58aQe2WukIaDhTT7bD8FiX5EPtCUGLz4vODpyjRd5+W9JZbcRIUC7Lh21Zqw1Ite1H7QW/K4IWAhZ++wQv1BqNthbS1q/N3y8/XbLmpNrvhtogyuhRu2O/axGRTtKyAIZLM37nSePSapcNms0uFfkdPGVJXnqoxhpgJnGQ8rUuXGbJ2wjSzqSTNUE+sKLWh8sSI0WNAMGb5UfZfMNSUy0d/dSi2Zm6pYFdZmIc5SYf1jMBoq13u5TYKBx8CaYMedd7OdBQ7nrLZr8dftewoM5+XwSCbFOCF9ISvIw0CE1bv+TJ/5PNl98ly+C3CwhG7LfJd2xfqwXiMhtltN8WeTIvO9kQEekopbO0limdycZGg9YZGguWdv7lodZgfqWDSnnoV6yMNFq0MpIuLa2lsa50gC5/M3xZ/bKxrIyrNm/7vnRAiuPpJw//XRZLY2WzMjFfyw9WDjo/PiktHeX0y8Q8+B6k8WVlemPprLOykZ8vg8+f8QwjuUysB78u/HxtGpsn08JvV1j6JKa373zZfHnA95Y3bBo6KydsPRrK6vOpla8hHcts8/DrFzbeT0++fnv56f08wTjLk0+/7OTnh0VE2mkMf0o7Lelg1HZwtlyEZ6NQq0Bj1NFcvhEREamlbW1gREREREZKNTAiIiJSOApgRKSmAwcOhFdffTUceeSRYezYseWxIiLtowBGRKq6//77w/+76aZ4K/yPf/zjcMMNN4TLLr20/K2ISHuoDYyIVMVDCGf09oabS0HM1VddFfY9/XT5GxGR9lEAIyJVHX744fGy0WGHHVb5FBFpNwUwIlKTXWnWFWcR6RQKYERERKRwFMCIiIhI4SiAERERkcJRACMiIiKFowBGRERECkcBjIiIiBSOAhgREREpHAUwIiIiUjgKYERERKRwFMCIiIhI4SiAERERkcJRACMiIiKFowBGRERECkcBjIiIiBSOAhgREREpHAUwIiIiUjgKYERERKRwFMCIiIhI4SiAERERkcJRACMiIiKFowBGRERECkcBjIiIiBSOAhgREREpHAUwIh3g0UcfDRs2bAj/93//Vx4jIiLVKIARabOtW7eG9evXh2effTasWLEiHDhwoPyNiIhkUQAj0mYDAwPhD//wD8OHP/zhcPTRR4fdu3eXvxERkSwKYETajKDlTW8a+lek/5e//GXsFxGRbApgRNpszJgx5b4QBgcHhw2LiEg6BTAiIiJSOApgREREpHAUwIi0Ge1fjjvuuNiv9i8iIvkogBFps/3794e77ror9iuAERHJRwGMSJsRtLzyyiuxXw14RUTyUQAj0mbceaSH14mI1EcBjEibHX744eGMM86I/Ycddlj8FBGR6hTAiHSAgwcPxk9dQhIRyUcBjEibcQlJL3EUEamPAhiRDnDU0UeX+0REJA8FMCJtxmWj1197rTwkIiJ5KIARaTMeYvfNLVvCokWLwtixY9UORkQkBwUwIm3GnUcvPP98eOKJJ3QXkohITgpgRDoAgctRRx0VG/SKiEhtCmBEOoBeISAiUh8FMCIdgJoXghjVwIiI5KMARqQDcAlJjXdFRPJTACPSAd70Jv0riojUQ3tNkQ5gF45UCyMiko8CGJE2i+1fyu9CUhsYEZF8FMCIdICD5buQVAMjIpKPAhiRNiNoOfKII8pDIiKShwIYkTbjspHeRi0iUh8FMCJtRg3MEeUamE5tA2PlUhsdEekUCmBEOsCbDjuso4MDH8AoiBGRTqAARqQD6DkwIiL10V5TpM14iePrr78e+7mcdMIJJ8T+TnHssccOq4E57rjjYr+ISDspgBFpk8cffzwsX748bNmyJRx99NHh8MMPD6+88kr47Gc/G/72b/82ft9Oe/bsCStWrAjrbrstlg+01bnlX/4ljn/yySfjOBGRdlAAI9ImBC48/+Xcc8+NL3Kk451I06ZNCy+9/HLYunVrOWV7PPjgg+G5558PF190UaWGiLul3va2t4VXX301PPDAA3GciEg7KIARaREO/gcOHIgd/QcPHgxTLr88nHPOOeFAKWAhgKEW5sorrwyXXXpp/N5P08qO+RKkvHfSpHDxxRdXAhg+L3zXu8LkyZPDa6+9VikfNUciIq00ZlC3FIg03Y033hj2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vPHGOJ47mEjPO48Ml5O4REWjX+5Y4rKWiEi30h5QJIezzz67ErCAoOO++74W7rrrzvDkk0/GceA26r51faVg5Pbwws9fKI/l4X8PxFurv/Wt4bdRb9u6NbadOXDgQPi93/u9+AJIPPTQ92L6b35zc6WmZeg26m+EzZvvD1/4whcqNTgiIt1I70ISyYkn595yyy3xVnHau7QLjXwJmihHK+hdSCLSiRTASFfiZ0+DYX8HUC08OI53G/GGaGo/eDpxq9qiMB9qf2jw/Ja3vCXe0s5zZvI8C4Z0tLEZ6YPvFMCISCdSACNd6fvf/374x3/8x/hclXocc8wx4eWXX47vJeKpua1qh0LjWebLJ++Yot/el1QN6bk1m4bAXKIaCQUwItKJFMBIV+IR/tRo/P7v/355zKGL9yzRNufDH/5weUx9FMCISCdSI17pWq18km07EXzotQMicqhRDYx0pccffzzeyXPOOedktmHh8gttZF588cX4XiIuF3F7NG1Q2vEcFm7R5mnAvIOJy0fUIFEbQjmyykKZ9+zZE58jc80115TH1kc1MCLSiRTASNfiWSvcvkxwkIbGr5///Ofje4x4eB3veuJ5LQsXLhxx2xfmNdJ/OZ4J88UvfjH85V/+ZQygvvzlL8fGubzSIauGhXkdccQRMegaKQUwItKJFMCIZNi7d2+8bfqGG26Iwxy83/ve98YGse3CyzR5CvAVV1wRH4p38803h09/+tPlb5tDAYyIdCK1gRHJcNttt4UPfOADsZ+7jnia7miDl8997nOZb+nOg1cNbNmyJda48I4k7ki69957y9+KiHQPBTAiKf7rv/4rPvnW3mN0zz33xEs1o7Fv3754+ekTn/hErlug05xyyimxBoS7qEBNyLe//e14W7WISDdRACOS4u677648N4WGu9S+XHbZZXF4JAiGrrvuulhz8sMf/jBe9hnp1dvf/u3fDlu3bo39xx57bLjkkktieUVEuokCGOk6tW4p/ta3vhWOO+640NPTE4epfbnyyitj/0jxHqXTTjst3g00c+bMGNDQrmQkeI0Bd0U98MADcZjLXARFBFkiIt1CAYx0nay7jkCtCG1UCDJA4MHbn6dMmRKHR4rLPv/8z/8cFixYEG666aawbNmyyosbR+KDH/xg2Lx5c+znLiMCrDvvvDMOi4h0AwUw0nWqBTD3339/GD9+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";
+
+    const screens = [
+      { key: "intro", title: "Read the question carefully", countsForDemerit: false },
+      { key: "taskDemand", title: "What are you looking for?", countsForDemerit: true },
+      { key: "boilingPoint", title: "Check option 1", countsForDemerit: true },
+      { key: "heatGain", title: "Check option 2", countsForDemerit: true },
+      { key: "stateChange", title: "Check option 4", countsForDemerit: true },
+      { key: "sequence", title: "Build the visible-cloud story", countsForDemerit: false },
+      { key: "whiteCloud", title: "What is the white cloud?", countsForDemerit: true },
+      { key: "judgeAll", title: "Judge all 4 statements", countsForDemerit: true },
+      { key: "retry", title: "Retry the original question", countsForDemerit: true },
+      { key: "transfer", title: "New situation: hot soup", countsForDemerit: true },
+      { key: "finish", title: "Finish", countsForDemerit: false }
+    ];
+
+    const totalChances = Math.ceil(screens.filter(s => s.countsForDemerit).length / 2);
+
+    const state = {
+      screenIndex: 0,
+      chancesLeft: totalChances,
+      autoRead: false,
+      questionPanelOpen: false
+    };
+
+    const app = document.getElementById("app");
+    const progressText = document.getElementById("progressText");
+    const bubbleWrap = document.getElementById("bubbleWrap");
+    const autoReadToggle = document.getElementById("autoReadToggle");
+    const speakBtn = document.getElementById("speakBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const restartNowBtn = document.getElementById("restartNowBtn");
+    const gameOverModal = document.getElementById("gameOverModal");
+
+    autoReadToggle.addEventListener("change", () => {
+      state.autoRead = autoReadToggle.checked;
+      if (state.autoRead) {
+        speakCurrentScreen();
+      } else {
+        stopSpeaking();
+      }
+    });
+
+    speakBtn.addEventListener("click", speakCurrentScreen);
+    restartBtn.addEventListener("click", restartWholeActivity);
+    restartNowBtn.addEventListener("click", restartWholeActivity);
+
+    function stopSpeaking() {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speakCurrentScreen() {
+      stopSpeaking();
+      if (!("speechSynthesis" in window)) return;
+      const texts = [];
+      const title = document.querySelector("[data-read=title]");
+      const instruction = document.querySelector("[data-read=instruction]");
+      const question = document.querySelector("[data-read=question]");
+      const feedback = document.querySelector("[data-read=feedback]");
+      const optionEls = [...document.querySelectorAll("[data-read=option]")];
+
+      [title, instruction, question].forEach(el => {
+        if (el && el.textContent.trim()) texts.push(el.textContent.trim());
+      });
+      optionEls.forEach((el, i) => {
+        const t = el.textContent.trim();
+        if (t) texts.push("Option " + (i + 1) + ". " + t);
+      });
+      if (feedback && feedback.textContent.trim()) texts.push(feedback.textContent.trim());
+
+      const utterance = new SpeechSynthesisUtterance(texts.join(" "));
+      utterance.rate = 0.95;
+      utterance.pitch = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function shuffleArray(input, avoidSolvedOrder = false) {
+      const arr = [...input];
+      function sameOrder(a, b) {
+        return a.length === b.length && a.every((item, i) => item.id === b[i].id);
+      }
+      do {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+      } while (avoidSolvedOrder && sameOrder(arr, input));
+      return arr;
+    }
+
+    function updateTopStrip() {
+      progressText.textContent = `Step ${state.screenIndex + 1} of ${screens.length}`;
+      bubbleWrap.innerHTML = "";
+      for (let i = 0; i < totalChances; i++) {
+        const span = document.createElement("span");
+        span.className = "bubble" + (i >= state.chancesLeft ? " lost" : "");
+        bubbleWrap.appendChild(span);
+      }
+      autoReadToggle.checked = state.autoRead;
+    }
+
+    function useDemerit() {
+      state.chancesLeft -= 1;
+      updateTopStrip();
+      if (state.chancesLeft <= 0) {
+        gameOverModal.classList.add("show");
+      }
+    }
+
+    function restartWholeActivity() {
+      stopSpeaking();
+      gameOverModal.classList.remove("show");
+      state.screenIndex = 0;
+      state.chancesLeft = totalChances;
+      state.questionPanelOpen = false;
+      render();
+    }
+
+    function nextScreen() {
+      if (state.screenIndex < screens.length - 1) {
+        state.screenIndex += 1;
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function laterQuestionPanelHTML() {
+      return `
+        <details class="question-panel" id="questionPanel" ${state.questionPanelOpen ? "open" : ""}>
+          <summary>
+            <span>Open question + source</span>
+            <span aria-hidden="true">▾</span>
+          </summary>
+          <div class="panel-body">
+            <div class="question-box">
+              <div class="question-text" data-read="question">
+                Ali set up the experiment shown below. Which of the following options is <mark>not correct</mark>?
+                <br><br>
+                (1) Water boils at 100°C.<br>
+                (2) Heat is gained during boiling.<br>
+                (3) Steam is the white clouds seen when water boils.<br>
+                (4) When water boils, it changes from a liquid to a gaseous state.
+              </div>
+            </div>
+            <img class="source-image" src="${SOURCE_IMAGE}" alt="Original worksheet question about boiling." />
+            <div class="source-caption">Original worksheet source</div>
+          </div>
+        </details>
+      `;
+    }
+
+    function boilingSVG(stepCount = 0) {
+      const showBubbles = stepCount >= 1;
+      const showVapour = stepCount >= 2;
+      const showCoolAir = stepCount >= 3;
+      const showMist = stepCount >= 4;
+      return `
+        <svg class="boiling-visual" viewBox="0 0 560 360" role="img" aria-label="Boiling water diagram">
+          <defs>
+            <linearGradient id="waterFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#bfe7ff" />
+              <stop offset="100%" stop-color="#7bc8ff" />
+            </linearGradient>
+            <linearGradient id="fireGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffd36b" />
+              <stop offset="100%" stop-color="#ff7f50" />
+            </linearGradient>
+          </defs>
+
+          <rect x="0" y="0" width="560" height="360" rx="24" fill="#f8fbff"></rect>
+
+          <line x1="430" y1="54" x2="430" y2="292" stroke="#7d8fa3" stroke-width="6"></line>
+          <line x1="430" y1="292" x2="500" y2="292" stroke="#7d8fa3" stroke-width="6"></line>
+          <line x1="430" y1="96" x2="350" y2="96" stroke="#7d8fa3" stroke-width="6"></line>
+          <line x1="318" y1="62" x2="318" y2="225" stroke="#7d8fa3" stroke-width="6"></line>
+          <rect x="309" y="46" width="18" height="36" rx="6" fill="#d9e6f2" stroke="#7d8fa3" stroke-width="3"></rect>
+          <rect x="311" y="82" width="14" height="44" rx="4" fill="#f2f9ff" stroke="#7d8fa3" stroke-width="2"></rect>
+
+          <rect x="138" y="116" width="126" height="88" rx="10" fill="white" stroke="#4e6378" stroke-width="4"></rect>
+          <path d="M145 150 H257 V195 H145 Z" fill="url(#waterFill)" opacity="0.96"></path>
+          <path d="M145 150 C170 140, 190 160, 215 150 C230 143, 244 157, 257 150" fill="none" stroke="#4da8dc" stroke-width="3"></path>
+
+          ${showBubbles ? `
+            <circle cx="174" cy="182" r="6" fill="#ffffff" opacity="0.8"></circle>
+            <circle cx="198" cy="168" r="5" fill="#ffffff" opacity="0.8"></circle>
+            <circle cx="226" cy="178" r="7" fill="#ffffff" opacity="0.8"></circle>
+            <circle cx="242" cy="165" r="4.5" fill="#ffffff" opacity="0.8"></circle>
+            <circle cx="210" cy="189" r="4.5" fill="#ffffff" opacity="0.8"></circle>
+          ` : ""}
+
+          <line x1="170" y1="210" x2="148" y2="248" stroke="#666" stroke-width="5"></line>
+          <line x1="230" y1="210" x2="252" y2="248" stroke="#666" stroke-width="5"></line>
+          <line x1="200" y1="210" x2="200" y2="248" stroke="#666" stroke-width="5"></line>
+          <line x1="132" y1="248" x2="270" y2="248" stroke="#666" stroke-width="6"></line>
+
+          <path d="M170 267 C181 241, 193 241, 204 267 C193 257, 181 257, 170 267 Z" fill="url(#fireGrad)"></path>
+          <path d="M206 267 C217 241, 229 241, 240 267 C229 257, 217 257, 206 267 Z" fill="url(#fireGrad)"></path>
+
+          <text x="82" y="170" font-size="25" font-weight="700" fill="#17324d">water</text>
+          <text x="112" y="282" font-size="25" font-weight="700" fill="#17324d">heat</text>
+
+          ${showVapour ? `
+            <path d="M205 114 C198 98, 188 82, 194 67 C199 54, 216 48, 217 31" fill="none" stroke="#9acff3" stroke-width="6" stroke-linecap="round" opacity="0.55"></path>
+            <path d="M223 114 C225 96, 236 83, 231 64 C228 52, 216 43, 222 27" fill="none" stroke="#9acff3" stroke-width="6" stroke-linecap="round" opacity="0.45"></path>
+            <text x="245" y="62" font-size="23" font-weight="700" fill="#2b6cb0">water vapour</text>
+            <text x="267" y="90" font-size="19" font-weight="700" fill="#4a647d">(steam)</text>
+          ` : ""}
+
+          ${showCoolAir ? `
+            <text x="310" y="34" font-size="21" font-weight="800" fill="#4a647d">cooler surrounding air</text>
+            <line x1="316" y1="40" x2="250" y2="60" stroke="#87a5bf" stroke-width="3"></line>
+            <text x="282" y="122" font-size="20" font-weight="800" fill="#4a647d">loses heat</text>
+          ` : ""}
+
+          ${showMist ? `
+            <g opacity="0.92">
+              <circle cx="214" cy="70" r="12" fill="#f8fcff" stroke="#c9d8ea" stroke-width="2"></circle>
+              <circle cx="230" cy="60" r="10" fill="#f8fcff" stroke="#c9d8ea" stroke-width="2"></circle>
+              <circle cx="242" cy="74" r="11" fill="#f8fcff" stroke="#c9d8ea" stroke-width="2"></circle>
+              <circle cx="258" cy="64" r="9" fill="#f8fcff" stroke="#c9d8ea" stroke-width="2"></circle>
+              <circle cx="272" cy="78" r="12" fill="#f8fcff" stroke="#c9d8ea" stroke-width="2"></circle>
+            </g>
+            <text x="292" y="154" font-size="21" font-weight="800" fill="#17324d">condenses into</text>
+            <text x="292" y="180" font-size="21" font-weight="800" fill="#17324d">tiny water droplets</text>
+          ` : ""}
+        </svg>
+      `;
+    }
+
+    function soupSVG() {
+      return `
+        <svg class="soup-visual" viewBox="0 0 520 250" role="img" aria-label="Hot soup with white mist">
+          <rect width="520" height="250" rx="24" fill="#f8fbff"></rect>
+          <ellipse cx="260" cy="165" rx="150" ry="34" fill="#b1582e"></ellipse>
+          <ellipse cx="260" cy="154" rx="160" ry="42" fill="#f2f8ff" stroke="#60798f" stroke-width="6"></ellipse>
+          <ellipse cx="260" cy="160" rx="132" ry="28" fill="#ffcc80"></ellipse>
+          <circle cx="210" cy="150" r="10" fill="#e79a5b"></circle>
+          <circle cx="290" cy="165" r="8" fill="#d77b42"></circle>
+          <circle cx="330" cy="150" r="11" fill="#e79a5b"></circle>
+          <path d="M205 104 C196 85, 201 74, 191 58" fill="none" stroke="#d4e7f9" stroke-width="7" stroke-linecap="round"></path>
+          <path d="M250 112 C258 91, 248 76, 260 58" fill="none" stroke="#d4e7f9" stroke-width="7" stroke-linecap="round"></path>
+          <path d="M310 104 C302 82, 317 72, 306 51" fill="none" stroke="#d4e7f9" stroke-width="7" stroke-linecap="round"></path>
+          <g opacity="0.95">
+            <circle cx="198" cy="48" r="12" fill="#ffffff" stroke="#d0deec" stroke-width="2"></circle>
+            <circle cx="214" cy="39" r="10" fill="#ffffff" stroke="#d0deec" stroke-width="2"></circle>
+            <circle cx="265" cy="42" r="12" fill="#ffffff" stroke="#d0deec" stroke-width="2"></circle>
+            <circle cx="285" cy="34" r="10" fill="#ffffff" stroke="#d0deec" stroke-width="2"></circle>
+            <circle cx="315" cy="48" r="11" fill="#ffffff" stroke="#d0deec" stroke-width="2"></circle>
+          </g>
+          <text x="178" y="220" font-size="24" font-weight="800" fill="#17324d">hot soup</text>
+        </svg>
+      `;
+    }
+
+    function createBaseScreen(title, instruction, innerHtml, opts = {}) {
+      const includePanel = opts.includePanel ?? true;
+      return `
+        ${includePanel ? laterQuestionPanelHTML() : ""}
+        <section class="card">
+          <div class="screen-head">
+            <div class="eyebrow">Interactive practice</div>
+            <h1 class="screen-title" data-read="title">${title}</h1>
+          </div>
+          <div class="instruction" data-read="instruction">${instruction}</div>
+          ${innerHtml}
+        </section>
+      `;
+    }
+
+    function attachQuestionPanelSync() {
+      const panel = document.getElementById("questionPanel");
+      if (!panel) return;
+      panel.addEventListener("toggle", () => {
+        state.questionPanelOpen = panel.open;
+      });
+    }
+
+    function createNav(nextEnabled = false, nextLabel = "Next") {
+      return `
+        <div class="nav-row">
+          <div class="mini-help">Read the feedback before you move on.</div>
+          <button class="btn" id="nextBtn" type="button" ${nextEnabled ? "" : "disabled"}>${nextLabel}</button>
+        </div>
+      `;
+    }
+
+    function setAutoReadLater() {
+      if (state.autoRead) {
+        window.setTimeout(() => {
+          speakCurrentScreen();
+        }, 120);
+      }
+    }
+
+    function attachNextHandler() {
+      const nextBtn = document.getElementById("nextBtn");
+      if (nextBtn) nextBtn.addEventListener("click", nextScreen);
+    }
+
+    function renderIntro() {
+      app.innerHTML = createBaseScreen(
+        "Read the question carefully",
+        "Read the question. Then tap the button when you are ready.",
+        `
+          <div class="main-grid two">
+            <div class="question-box">
+              <div class="question-text" data-read="question">
+                Ali set up the experiment shown below.
+                <br><br>
+                Which of the following options is <mark>not correct</mark>?
+                <br><br>
+                (1) Water boils at 100°C.<br>
+                (2) Heat is gained during boiling.<br>
+                (3) Steam is the white clouds seen when water boils.<br>
+                (4) When water boils, it changes from a liquid to a gaseous state.
+              </div>
+              <div class="mini-help">This question is asking for the one statement that is wrong.</div>
+              <div class="nav-row">
+                <div></div>
+                <button class="btn" id="readyBtn" type="button">I have read it</button>
+              </div>
+            </div>
+            <div class="visual-card center">
+              ${boilingSVG(1)}
+            </div>
+          </div>
+
+          <div class="summary-box" style="margin-top:16px;">
+            <strong>Original worksheet source</strong><br>
+            This stays below the fold so you can still check the original version.
+            <img class="source-image" src="${SOURCE_IMAGE}" alt="Original worksheet question about boiling." style="margin-top:12px;" />
+          </div>
+        `,
+        { includePanel: false }
+      );
+      document.getElementById("readyBtn").addEventListener("click", nextScreen);
+      setAutoReadLater();
+    }
+
+    function renderSingleChoice(config) {
+      const options = shuffleArray(config.options, false);
+      app.innerHTML = createBaseScreen(
+        config.title,
+        config.instruction,
+        `
+          ${config.visualHtml ? `<div class="visual-card center">${config.visualHtml}</div>` : ""}
+          ${config.bodyHtml ? `<div class="question-box">${config.bodyHtml}</div>` : ""}
+          <div class="options-grid" id="optionsWrap">
+            ${options.map((opt) => `
+              <button class="option-btn" type="button" data-read="option" data-id="${opt.id}">
+                ${opt.label}
+              </button>
+            `).join("")}
+          </div>
+          <div class="nav-row">
+            <div class="mini-help">${config.helpText || "Tap one answer. Then tap Check."}</div>
+            <button class="btn warn" id="checkBtn" type="button" disabled>Check</button>
+          </div>
+          <div class="feedback info" data-read="feedback" id="feedbackBox">Choose an answer first.</div>
+          ${createNav(false)}
+        `
+      );
+      attachQuestionPanelSync();
+      const buttons = [...document.querySelectorAll(".option-btn")];
+      const checkBtn = document.getElementById("checkBtn");
+      const feedbackBox = document.getElementById("feedbackBox");
+      const nextBtn = document.getElementById("nextBtn");
+      let selectedId = null;
+      let solved = false;
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (solved) return;
+          selectedId = btn.dataset.id;
+          buttons.forEach(b => b.classList.toggle("selected", b === btn));
+          checkBtn.disabled = false;
+          feedbackBox.textContent = "Now tap Check.";
+          feedbackBox.className = "feedback info";
+        });
+      });
+
+      checkBtn.addEventListener("click", () => {
+        if (!selectedId || solved) return;
+        const choice = config.options.find(opt => opt.id === selectedId);
+        const selectedBtn = buttons.find(btn => btn.dataset.id === selectedId);
+
+        if (choice.correct) {
+          solved = true;
+          selectedBtn.classList.add("correct");
+          feedbackBox.textContent = choice.feedback;
+          feedbackBox.className = "feedback good";
+          nextBtn.disabled = false;
+          checkBtn.disabled = true;
+          buttons.forEach(b => b.disabled = true);
+        } else {
+          selectedBtn.classList.add("wrong");
+          feedbackBox.textContent = choice.feedback;
+          feedbackBox.className = "feedback bad";
+          useDemerit();
+          if (state.chancesLeft > 0) {
+            buttons.forEach(b => {
+              b.disabled = false;
+              if (b !== selectedBtn) b.classList.remove("selected");
+            });
+            selectedBtn.classList.remove("selected");
+            selectedId = null;
+            checkBtn.disabled = true;
+          }
+        }
+      });
+
+      attachNextHandler();
+      setAutoReadLater();
+    }
+
+    function renderSequenceScreen() {
+      const correctOrder = [
+        { id: "boils", label: "Water boils" },
+        { id: "rises", label: "Water vapour rises" },
+        { id: "cool", label: "Vapour touches cooler air" },
+        { id: "droplets", label: "Tiny water droplets form" }
+      ];
+      const bank = shuffleArray(correctOrder, true);
+      app.innerHTML = createBaseScreen(
+        "Build the visible-cloud story",
+        "Tap the steps in order to show what happens above the boiling water.",
+        `
+          <div class="main-grid two">
+            <div>
+              <div class="visual-card center" id="sequenceVisual">${boilingSVG(0)}</div>
+              <div class="feedback info" data-read="feedback" id="feedbackBox">Start with the first thing that happens.</div>
+            </div>
+            <div>
+              <div class="build-area" id="buildArea">
+                <div class="slot" data-slot="0">Step 1</div>
+                <div class="slot" data-slot="1">Step 2</div>
+                <div class="slot" data-slot="2">Step 3</div>
+                <div class="slot" data-slot="3">Step 4</div>
+              </div>
+              <div class="step-bank" id="stepBank">
+                ${bank.map(step => `
+                  <button class="option-btn" type="button" data-id="${step.id}">${step.label}</button>
+                `).join("")}
+              </div>
+            </div>
+          </div>
+          ${createNav(false)}
+        `
+      );
+      attachQuestionPanelSync();
+      const buttons = [...document.querySelectorAll("#stepBank .option-btn")];
+      const slots = [...document.querySelectorAll(".slot")];
+      const feedbackBox = document.getElementById("feedbackBox");
+      const visual = document.getElementById("sequenceVisual");
+      const nextBtn = document.getElementById("nextBtn");
+      let progress = 0;
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const expected = correctOrder[progress];
+          if (btn.dataset.id === expected.id) {
+            slots[progress].classList.add("filled");
+            slots[progress].textContent = expected.label;
+            btn.disabled = true;
+            btn.classList.add("correct");
+            progress += 1;
+            visual.innerHTML = boilingSVG(progress);
+            if (progress < correctOrder.length) {
+              feedbackBox.textContent = "Good. Now tap the next step.";
+              feedbackBox.className = "feedback good";
+            } else {
+              feedbackBox.textContent = "Good. The gas cannot be seen. The white mist appears after the vapour cools and condenses.";
+              feedbackBox.className = "feedback good";
+              nextBtn.disabled = false;
+            }
+          } else {
+            feedbackBox.textContent = progress === 0
+              ? "Start with what happens in the beaker first."
+              : progress === 1
+                ? "After the water boils, the water vapour rises."
+                : progress === 2
+                  ? "Before droplets form, the vapour touches cooler air."
+                  : "Droplets form after the vapour cools.";
+            feedbackBox.className = "feedback bad";
+          }
+        });
+      });
+
+      attachNextHandler();
+      setAutoReadLater();
+    }
+
+    function renderJudgeAll() {
+      const statements = [
+        {
+          num: "(1)",
+          text: "Water boils at 100°C.",
+          correctState: "correct",
+          note: "Water boils at 100°C."
+        },
+        {
+          num: "(2)",
+          text: "Heat is gained during boiling.",
+          correctState: "correct",
+          note: "Water still gains heat during boiling."
+        },
+        {
+          num: "(3)",
+          text: "Steam is the white clouds seen when water boils.",
+          correctState: "notcorrect",
+          note: "Steam is invisible. The white cloud is tiny water droplets."
+        },
+        {
+          num: "(4)",
+          text: "When water boils, it changes from a liquid to a gaseous state.",
+          correctState: "correct",
+          note: "Boiling changes liquid water to a gas."
+        }
+      ];
+      app.innerHTML = createBaseScreen(
+        "Judge all 4 statements",
+        "For each statement, tap Correct or Not correct. Then tap Check all.",
+        `
+          <div class="options-grid" id="judgeWrap">
+            ${statements.map((s, idx) => `
+              <div class="judge-card" data-index="${idx}">
+                <div class="judge-statement">${s.num} ${s.text}</div>
+                <div class="judge-controls">
+                  <button class="option-btn judge-choice" type="button" data-value="correct">Correct</button>
+                  <button class="option-btn judge-choice" type="button" data-value="notcorrect">Not correct</button>
+                </div>
+                <div class="judge-note" id="judgeNote${idx}"></div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="nav-row">
+            <div class="mini-help">Check every statement carefully before you tap Check all.</div>
+            <button class="btn warn" id="checkAllBtn" type="button" disabled>Check all</button>
+          </div>
+          <div class="feedback info" data-read="feedback" id="feedbackBox">Make one choice for each statement.</div>
+          ${createNav(false)}
+        `
+      );
+      attachQuestionPanelSync();
+      const cards = [...document.querySelectorAll(".judge-card")];
+      const checkAllBtn = document.getElementById("checkAllBtn");
+      const feedbackBox = document.getElementById("feedbackBox");
+      const nextBtn = document.getElementById("nextBtn");
+      const selections = new Array(statements.length).fill(null);
+
+      cards.forEach(card => {
+        const index = Number(card.dataset.index);
+        const choices = [...card.querySelectorAll(".judge-choice")];
+        choices.forEach(choice => {
+          choice.addEventListener("click", () => {
+            choices.forEach(c => c.classList.toggle("selected", c === choice));
+            selections[index] = choice.dataset.value;
+            checkAllBtn.disabled = selections.some(v => !v);
+          });
+        });
+      });
+
+      checkAllBtn.addEventListener("click", () => {
+        const allCorrect = statements.every((s, i) => s.correctState === selections[i]);
+        cards.forEach((card, i) => {
+          const note = document.getElementById("judgeNote" + i);
+          const choices = [...card.querySelectorAll(".judge-choice")];
+          choices.forEach(choice => {
+            const isChosen = selections[i] === choice.dataset.value;
+            choice.classList.remove("correct", "wrong");
+            if (choice.dataset.value === statements[i].correctState) choice.classList.add("correct");
+            if (isChosen && choice.dataset.value !== statements[i].correctState) choice.classList.add("wrong");
+          });
+          note.textContent = statements[i].note;
+          note.classList.add("show");
+          note.style.color = statements[i].correctState === selections[i] ? "#20543f" : "#822727";
+        });
+
+        if (allCorrect) {
+          feedbackBox.textContent = "Yes. Only statement (3) is not correct.";
+          feedbackBox.className = "feedback good";
+          nextBtn.disabled = false;
+          checkAllBtn.disabled = true;
+          cards.forEach(card => card.querySelectorAll(".judge-choice").forEach(btn => btn.disabled = true));
+        } else {
+          feedbackBox.textContent = "Some choices are not right yet. Use the notes on each card and check again.";
+          feedbackBox.className = "feedback bad";
+          useDemerit();
+        }
+      });
+
+      attachNextHandler();
+      setAutoReadLater();
+    }
+
+    function renderFinish() {
+      app.innerHTML = createBaseScreen(
+        "Finish",
+        "Tap Finish to see the key idea one last time.",
+        `
+          <div class="completion">
+            <div class="summary-box">
+              <span class="pill">water boils at 100°C</span>
+              <span class="pill">heat is gained during boiling</span>
+              <span class="pill">boiling is liquid to gas</span>
+              <span class="pill">the white mist is tiny water droplets</span>
+            </div>
+            <div class="feedback info" data-read="feedback" id="feedbackBox">Tap Finish when you are ready.</div>
+            <div class="nav-row">
+              <div class="mini-help">This is the last screen.</div>
+              <button class="btn good" id="finishBtn" type="button">Finish</button>
+            </div>
+            <div id="doneArea"></div>
+          </div>
+        `
+      );
+      attachQuestionPanelSync();
+      const finishBtn = document.getElementById("finishBtn");
+      const doneArea = document.getElementById("doneArea");
+      const feedbackBox = document.getElementById("feedbackBox");
+      finishBtn.addEventListener("click", () => {
+        finishBtn.disabled = true;
+        feedbackBox.textContent = "Well done. You checked the question carefully and used the science idea correctly.";
+        feedbackBox.className = "feedback good";
+        doneArea.innerHTML = `
+          <div class="summary-box">
+            <strong>Remember:</strong><br>
+            Steam is water vapour, and it cannot be seen here.<br>
+            The white mist is made of tiny water droplets after condensation.
+            <div class="nav-row" style="margin-top:14px;">
+              <div></div>
+              <button class="btn secondary" id="restartFromEnd" type="button">Start again</button>
+            </div>
+          </div>
+        `;
+        document.getElementById("restartFromEnd").addEventListener("click", restartWholeActivity);
+      });
+      setAutoReadLater();
+    }
+
+    function render() {
+      stopSpeaking();
+      updateTopStrip();
+      switch (screens[state.screenIndex].key) {
+        case "intro":
+          renderIntro();
+          break;
+        case "taskDemand":
+          renderSingleChoice({
+            title: "What are you looking for?",
+            instruction: "Tap one answer. Then tap Check.",
+            bodyHtml: `<div class="question-text">What must you find in this question?</div>`,
+            options: [
+              { id: "correct", label: "The correct statement", correct: false, feedback: "Check the question again. It asks for the statement that is not correct." },
+              { id: "notcorrect", label: "The not correct statement", correct: true, feedback: "Yes. You are looking for the one statement that is scientifically wrong." },
+              { id: "hottest", label: "The hottest part of the setup", correct: false, feedback: "This question is not asking about the hottest part. It asks for the statement that is not correct." }
+            ]
+          });
+          break;
+        case "boilingPoint":
+          renderSingleChoice({
+            title: "Check option 1",
+            instruction: "Tap the true fact about boiling water. Then tap Check.",
+            bodyHtml: `<div class="question-text">Which fact is true?</div>`,
+            options: [
+              { id: "100", label: "Water boils at 100°C.", correct: true, feedback: "Yes. Water boils at 100°C." },
+              { id: "0", label: "Water boils at 0°C.", correct: false, feedback: "Remember the boiling point of water. It is 100°C." },
+              { id: "ice", label: "Water boils only when it becomes ice.", correct: false, feedback: "Ice is the solid state. Boiling is not about becoming ice." }
+            ]
+          });
+          break;
+        case "heatGain":
+          renderSingleChoice({
+            title: "Check option 2",
+            instruction: "During boiling, what happens to heat? Then tap Check.",
+            bodyHtml: `<div class="question-text">Choose the best answer.</div>`,
+            options: [
+              { id: "gain", label: "Water gains heat.", correct: true, feedback: "Yes. Water still gains heat during boiling." },
+              { id: "lose", label: "Water loses heat.", correct: false, feedback: "Boiling happens while water is being heated. It gains heat." },
+              { id: "none", label: "No heat is gained.", correct: false, feedback: "During a change of state like boiling, water is still taking in heat." }
+            ]
+          });
+          break;
+        case "stateChange":
+          renderSingleChoice({
+            title: "Check option 4",
+            instruction: "Boiling changes water from... Then tap Check.",
+            bodyHtml: `<div class="question-text">Choose the correct change of state.</div>`,
+            options: [
+              { id: "l2g", label: "liquid to gas", correct: true, feedback: "Yes. Boiling changes liquid water to a gas." },
+              { id: "g2l", label: "gas to liquid", correct: false, feedback: "Gas to liquid is condensation, not boiling." },
+              { id: "l2s", label: "liquid to solid", correct: false, feedback: "Liquid to solid is freezing, not boiling." }
+            ]
+          });
+          break;
+        case "sequence":
+          renderSequenceScreen();
+          break;
+        case "whiteCloud":
+          renderSingleChoice({
+            title: "What is the white cloud?",
+            instruction: "Tap the best answer. Then tap Check.",
+            visualHtml: boilingSVG(4),
+            options: [
+              { id: "steam", label: "steam that can be seen", correct: false, feedback: "Steam is water vapour, and it cannot be seen here. The visible white cloud forms after cooling." },
+              { id: "droplets", label: "tiny water droplets formed by condensation", correct: true, feedback: "Yes. Steam is the gas. The white cloud is tiny liquid water droplets." },
+              { id: "smoke", label: "smoke from the flame", correct: false, feedback: "This white cloud is not smoke. It forms when water vapour cools and condenses." }
+            ]
+          });
+          break;
+        case "judgeAll":
+          renderJudgeAll();
+          break;
+        case "retry":
+          renderSingleChoice({
+            title: "Retry the original question",
+            instruction: "Tap the not correct option. Then tap Check.",
+            bodyHtml: `
+              <div class="question-text">
+                Which of the following options is <mark>not correct</mark>?
+              </div>
+            `,
+            options: [
+              { id: "1", label: "(1) Water boils at 100°C.", correct: false, feedback: "Option 1 is true. Water boils at 100°C." },
+              { id: "2", label: "(2) Heat is gained during boiling.", correct: false, feedback: "Option 2 is true. Heat is gained during boiling." },
+              { id: "3", label: "(3) Steam is the white clouds seen when water boils.", correct: true, feedback: "Yes. Option 3 is the not correct statement." },
+              { id: "4", label: "(4) When water boils, it changes from a liquid to a gaseous state.", correct: false, feedback: "Option 4 is true. Boiling changes liquid water to gas." }
+            ]
+          });
+          break;
+        case "transfer":
+          renderSingleChoice({
+            title: "New situation: hot soup",
+            instruction: "Read the new situation. Then tap the not correct statement and tap Check.",
+            visualHtml: soupSVG(),
+            bodyHtml: `
+              <div class="question-text">
+                <strong>Water from the hot soup boils.</strong> A white mist can be seen above the bowl.
+                Which statement is <mark>not correct</mark>?
+              </div>
+            `,
+            options: [
+              { id: "mistIsSteam", label: "The white mist is steam.", correct: true, feedback: "Yes. The visible white mist is not steam. It is tiny water droplets formed after condensation." },
+              { id: "vapourRose", label: "Water vapour rose from the hot soup.", correct: false, feedback: "This can be true. Water vapour can rise from the hot soup." },
+              { id: "lostHeat", label: "The water vapour lost heat in the cooler air.", correct: false, feedback: "This can be true. The vapour can lose heat in cooler air." },
+              { id: "dropletsFormed", label: "Tiny water droplets formed in the cooler air.", correct: false, feedback: "This can be true. The visible mist is made of tiny droplets." }
+            ]
+          });
+          break;
+        case "finish":
+          renderFinish();
+          break;
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
