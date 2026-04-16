@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>water_change_in_state_11b</title>
+<style>
+  :root{
+    --bg:#f4fbff;
+    --panel:#ffffff;
+    --panel2:#eef8ff;
+    --line:#cfe6f7;
+    --ink:#12324a;
+    --muted:#4b6b84;
+    --accent:#0b79d0;
+    --good:#157347;
+    --bad:#b42318;
+    --shadow: 0 10px 24px rgba(18,50,74,.10);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(180deg, #f5fbff 0%, #eef8ff 100%);
+    color: var(--ink);
+  }
+  body { display: flex; justify-content: center; padding: 14px; }
+  .app { width: min(1100px, 100%); }
+
+  .topbar {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: grid;
+    gap: 10px;
+  }
+  .topbar-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .brand { font-weight: 800; font-size: 1.05rem; color: var(--accent); }
+  .brand small { color: var(--muted); font-weight: 700; margin-left: 8px; }
+  .control-cluster { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .toggle-wrap {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--panel2);
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 700;
+  }
+  .toggle-wrap input { width: 22px; height: 22px; }
+
+  .small-btn, .next-btn, .check-btn, .restart-btn {
+    appearance: none; border: 0; cursor: pointer;
+    background: var(--accent); color: #fff;
+    padding: 12px 16px; min-height: 48px;
+    border-radius: 16px; font-size: 1rem; font-weight: 800;
+    box-shadow: 0 6px 14px rgba(11,121,208,.18);
+  }
+  .small-btn.secondary, .check-btn.secondary {
+    background: #fff; color: var(--accent); border: 2px solid var(--accent); box-shadow: none;
+  }
+  .small-btn:disabled, .next-btn:disabled, .check-btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+  .demerit-wrap {
+    background: linear-gradient(180deg, #fdfcff 0%, #f8f6ff 100%);
+    border: 2px solid #e3dbff;
+    border-radius: 18px;
+    padding: 10px 12px;
+  }
+  .demerit-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    font-weight: 800; color: #5b46b3; margin-bottom: 8px;
+  }
+  .demerit-track { display: flex; gap: 8px; flex-wrap: wrap; }
+  .life-chip {
+    min-width: 56px; text-align: center; padding: 8px 10px;
+    border-radius: 999px; background: #efeaff; border: 2px solid #d3c5ff;
+    font-weight: 800; color: #5b46b3;
+  }
+  .life-chip.lost {
+    background: #f5f1ff; color: #b0a7d7; border-color: #e3ddf6; text-decoration: line-through;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .screen-head { padding: 18px 20px 8px; border-bottom: 1px solid #edf5fb; }
+  .screen-title {
+    margin: 0; font-size: clamp(1.45rem, 2.4vw, 2rem); line-height: 1.2;
+  }
+  .instruction {
+    margin-top: 10px; display: inline-block;
+    background: #e6f4ff; border: 2px solid #bfe3ff; color: #064b83;
+    border-radius: 18px; padding: 12px 16px;
+    font-size: clamp(1.08rem, 2vw, 1.28rem); font-weight: 800;
+  }
+  .screen-body { padding: 18px 20px 20px; display: grid; gap: 16px; }
+  .main-area { display: grid; gap: 16px; }
+
+  .question-card, .visual-card, .completion-box, .guess-box {
+    background: #fbfeff; border: 2px solid #dbeefa; border-radius: 18px; padding: 16px;
+  }
+  .question-card p, .visual-card p, .completion-box p {
+    margin: 0; font-size: clamp(1.06rem, 1.8vw, 1.18rem); line-height: 1.6;
+  }
+  .hl { background: #fff3ae; padding: 1px 4px; border-radius: 6px; font-weight: 800; }
+  .info-chip, .pill {
+    display: inline-flex; align-items: center; gap: 8px; align-self: start;
+    background: #f4fbff; border: 2px solid #d5ebf8; color: var(--muted);
+    border-radius: 999px; padding: 8px 12px; font-weight: 700;
+  }
+  .pill { background: #ecf7ff; border-color: #cbe8f8; color: var(--accent); font-weight: 800; }
+
+  .choices, .bank, .guess-area { display: grid; gap: 12px; }
+  .choices, .bank { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+  .choice-btn, .bank-btn {
+    width: 100%; text-align: left; min-height: 72px;
+    padding: 14px 16px; border-radius: 18px;
+    border: 2px solid #d9edf9; background: #fff; color: var(--ink);
+    font-size: 1.05rem; font-weight: 800; cursor: pointer;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+  .choice-btn:hover, .bank-btn:hover, .small-btn:hover, .next-btn:hover, .check-btn:hover, .restart-btn:hover {
+    transform: translateY(-1px);
+  }
+  .choice-btn.selected, .bank-btn.selected {
+    background: #e9f6ff; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(11,121,208,.12);
+  }
+  .choice-btn.correct, .bank-btn.correct {
+    border-color: #69c58f; background: #eefaf3;
+  }
+  .choice-btn.wrong, .bank-btn.wrong {
+    border-color: #e39a95; background: #fff1f0;
+  }
+
+  .feedback {
+    min-height: 54px; border-radius: 18px; padding: 14px 16px;
+    font-size: 1.03rem; font-weight: 800; display: none; line-height: 1.45;
+  }
+  .feedback.show { display: block; }
+  .feedback.good { background: #eefaf3; color: var(--good); border: 2px solid #b8e2c8; }
+  .feedback.bad { background: #fff1f0; color: var(--bad); border: 2px solid #f2c4bf; }
+  .feedback.note { background: #fff9e8; color: #935d00; border: 2px solid #f6ddb0; }
+
+  .footer {
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;
+  }
+  .progress { font-weight: 800; color: var(--muted); }
+
+  details.question-panel {
+    background: #f8fcff; border: 2px solid #dbeefa; border-radius: 18px; padding: 10px 14px;
+  }
+  details.question-panel summary {
+    cursor: pointer; font-weight: 800; color: var(--accent); list-style: none;
+  }
+  details.question-panel summary::-webkit-details-marker { display: none; }
+  details.question-panel .inner { padding-top: 12px; line-height: 1.55; }
+
+  .diagram-wrap {
+    display: grid; gap: 16px; grid-template-columns: 1.15fr .85fr; align-items: start;
+  }
+  .diagram-card {
+    background: linear-gradient(180deg, #f7fcff 0%, #eef8ff 100%);
+    border: 2px solid #d8eefb; border-radius: 22px; padding: 16px;
+  }
+  .mini-note { font-size: .98rem; color: var(--muted); line-height: 1.45; }
+  .temperature-scale {
+    position: relative; height: 340px; border-radius: 18px;
+    background: linear-gradient(180deg, #f4fbff 0%, #edf7ff 100%);
+    border: 2px solid #d9edf9; padding: 18px 28px 18px 82px;
+  }
+  .scale-line {
+    position: absolute; left: 56px; top: 26px; bottom: 26px; width: 8px;
+    border-radius: 999px; background: linear-gradient(180deg, #8ed0ff 0%, #72c2f5 100%);
+  }
+  .tick {
+    position: absolute; left: 48px; width: 24px; height: 4px;
+    border-radius: 999px; background: #356a90;
+  }
+  .tick-label {
+    position: absolute; left: 0; transform: translateY(-50%);
+    font-weight: 800; background: #fff; border: 2px solid #d9edf9;
+    border-radius: 12px; padding: 6px 10px;
+  }
+  .zone-tag {
+    position: absolute; left: 92px; right: 22px; border-radius: 14px; padding: 10px 12px;
+    border: 2px solid #d9edf9; background: rgba(255,255,255,.82); font-weight: 800;
+  }
+  .zone-gas { top: 44px; color: #0f5e93; }
+  .zone-unknown { top: 206px; color: #7a4f00; border-style: dashed; background: rgba(255,249,232,.9); }
+  .question-mark-box {
+    position: absolute; left: 96px; right: 22px; bottom: 44px;
+    border-radius: 14px; border: 2px dashed #dcae53; background: #fff9e8;
+    padding: 12px; font-weight: 800; color: #8e5b00;
+  }
+
+  .stack, .slot-stack { display: grid; gap: 12px; }
+  .slot {
+    min-height: 68px; border: 2px dashed #b8d7ee; border-radius: 18px;
+    background: #f7fbfe; padding: 10px 12px; display: flex; align-items: center;
+    font-weight: 800; color: #6183a1;
+  }
+  .slot.filled {
+    border-style: solid; color: var(--ink); background: #eef8ff; border-color: #96c9ea;
+  }
+
+  .sentence {
+    font-size: clamp(1.12rem, 2vw, 1.3rem); line-height: 1.6;
+    background: #f9fdff; border: 2px solid #dbeefa; border-radius: 18px; padding: 16px;
+  }
+  .blank {
+    display: inline-flex; align-items: center; min-width: 120px; min-height: 38px;
+    padding: 4px 10px; margin: 0 4px; border-radius: 12px; cursor: pointer;
+    border: 2px dashed #99c7e5; background: #eef8ff; font-weight: 900; color: #49718f;
+    vertical-align: middle;
+  }
+  .blank.filled { border-style: solid; color: var(--ink); background: #eaf6ff; }
+  .blank.active-slot { box-shadow: 0 0 0 4px rgba(11,121,208,.12); border-color: var(--accent); }
+  .blank.correct { border-color: #69c58f; background: #eefaf3; }
+  .blank.wrong { border-color: #d67e77; background: #fff1f0; }
+
+  .guess-box { display: grid; gap: 14px; }
+  .guess-input-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .guess-input {
+    flex: 1 1 220px; min-height: 52px; border-radius: 14px; border: 2px solid #a8d2ee;
+    font-size: 1.1rem; padding: 10px 12px; font-weight: 700;
+  }
+  .completion-box {
+    background: linear-gradient(180deg, #f5fffa 0%, #eefbf5 100%);
+    border: 2px solid #c7e8d4;
+  }
+  .completion-box h3 { margin: 0; font-size: 1.55rem; color: var(--good); }
+  .tiny-note { color: var(--muted); font-size: .96rem; line-height: 1.45; }
+  .hidden { display: none !important; }
+
+  .gameover {
+    position: fixed; inset: 0; background: rgba(9, 31, 48, .66);
+    display: none; align-items: center; justify-content: center; padding: 18px; z-index: 999;
+  }
+  .gameover.show { display: flex; }
+  .gameover-card {
+    width: min(520px, 100%); background: #fff; border: 2px solid #e3dbff; border-radius: 24px;
+    padding: 24px; box-shadow: 0 16px 34px rgba(0,0,0,.22); display: grid; gap: 14px; text-align: center;
+  }
+  .gameover-card h2 { margin: 0; color: #5b46b3; font-size: 1.8rem; }
+
+  @media (max-width: 860px) {
+    .diagram-wrap { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 780px) {
+    body { padding: 10px; }
+    .screen-head { padding: 16px 16px 8px; }
+    .screen-body { padding: 16px; }
+    .instruction { width: 100%; }
+    .footer { flex-direction: column; align-items: stretch; }
+    .next-btn, .check-btn, .small-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar" aria-label="Top controls">
+    <div class="topbar-row">
+      <div class="brand">Water Change in State <small>Question 11(b)</small></div>
+      <div class="control-cluster">
+        <label class="toggle-wrap">
+          <input id="autoReadToggle" type="checkbox" />
+          Read-aloud on
+        </label>
+        <button id="readScreenBtn" class="small-btn secondary" type="button">🔊 Read screen</button>
+        <button id="restartBtn" class="small-btn secondary" type="button">↺ Restart</button>
+      </div>
+    </div>
+    <div class="demerit-wrap" aria-live="polite">
+      <div class="demerit-title">
+        <span>Careful reading meter</span>
+        <span id="demeritText">6 chances left</span>
+      </div>
+      <div id="demeritTrack" class="demerit-track"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="screen-head">
+      <h1 id="screenTitle" class="screen-title">Loading…</h1>
+      <div id="instruction" class="instruction">Please wait.</div>
+    </div>
+    <div class="screen-body">
+      <div id="mainArea" class="main-area"></div>
+
+      <details id="questionPanel" class="question-panel hidden">
+        <summary>Show the full question again</summary>
+        <div class="inner">
+          <p><strong>Substance T has a boiling point of 24°C.</strong></p>
+          <p>Based on the <strong>given information</strong>, would you be able to tell the state of T at <strong>0°C</strong>? Explain your answer.</p>
+        </div>
+      </details>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+
+      <div class="footer">
+        <div id="progress" class="progress">Screen 1 of 11</div>
+        <div class="control-cluster">
+          <button id="nextBtn" class="next-btn" type="button" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="gameover" class="gameover" role="dialog" aria-modal="true" aria-labelledby="gameoverTitle">
+  <div class="gameover-card">
+    <div class="pill">All chances used</div>
+    <h2 id="gameoverTitle">Let’s restart and try again.</h2>
+    <div class="tiny-note">The whole interactive will restart so you can use only the information that is really given.</div>
+    <button id="gameoverRestart" class="restart-btn" type="button">Restart now</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const totalScreens = 10;
+  const teachingPenaltyScreens = new Set([2,3,4,5,6,7]);
+  const totalLives = 6;
+
+  const appState = {
+    screenIndex: 0,
+    livesLeft: totalLives,
+    autoRead: false,
+    speechEnabled: 'speechSynthesis' in window,
+    blanksSelections: {},
+    guessWordIndex: 0,
+    guessReveal: 1
+  };
+
+  const el = {
+    title: document.getElementById('screenTitle'),
+    instruction: document.getElementById('instruction'),
+    mainArea: document.getElementById('mainArea'),
+    feedback: document.getElementById('feedback'),
+    nextBtn: document.getElementById('nextBtn'),
+    progress: document.getElementById('progress'),
+    readScreenBtn: document.getElementById('readScreenBtn'),
+    restartBtn: document.getElementById('restartBtn'),
+    autoReadToggle: document.getElementById('autoReadToggle'),
+    demeritTrack: document.getElementById('demeritTrack'),
+    demeritText: document.getElementById('demeritText'),
+    questionPanel: document.getElementById('questionPanel'),
+    gameover: document.getElementById('gameover'),
+    gameoverRestart: document.getElementById('gameoverRestart')
+  };
+
+  const questionTextHtml = `
+    <div class="question-card">
+      <p><strong>Substance T has a boiling point of 24°C.</strong></p>
+      <p>Based on the <span class="hl">given information</span>, would you be able to tell the state of T at <span class="hl">0°C</span>? Explain your answer.</p>
+    </div>
+  `;
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#39;");
+  }
+
+  function shuffleArray(source){
+    const arr = source.map(item => ({...item}));
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function shuffleUntilNotSolved(source, isSolvedFn){
+    let tries = 0;
+    let arr = shuffleArray(source);
+    while (tries < 20 && isSolvedFn(arr)) {
+      arr = shuffleArray(source);
+      tries++;
+    }
+    return arr;
+  }
+
+  function setFeedback(kind, text){
+    el.feedback.className = 'feedback show ' + kind;
+    el.feedback.textContent = text;
+    if (appState.autoRead) speakCurrentScreen(text);
+  }
+
+  function clearFeedback(){
+    el.feedback.className = 'feedback';
+    el.feedback.textContent = '';
+  }
+
+  function setNextEnabled(value){
+    el.nextBtn.disabled = !value;
+  }
+
+  function loseLife(){
+    appState.livesLeft -= 1;
+    updateLives();
+    if (appState.livesLeft <= 0) showGameOver();
+  }
+
+  function updateLives(){
+    el.demeritTrack.innerHTML = '';
+    for (let i = 0; i < totalLives; i++){
+      const chip = document.createElement('div');
+      chip.className = 'life-chip' + (i >= appState.livesLeft ? ' lost' : '');
+      chip.textContent = '💧';
+      el.demeritTrack.appendChild(chip);
+    }
+    el.demeritText.textContent = appState.livesLeft === 1 ? '1 chance left' : `${appState.livesLeft} chances left`;
+  }
+
+  function showGameOver(){
+    if (appState.speechEnabled) window.speechSynthesis.cancel();
+    el.gameover.classList.add('show');
+  }
+
+  function hideGameOver(){
+    el.gameover.classList.remove('show');
+  }
+
+  function speakCurrentScreen(extra=''){
+    if (!appState.speechEnabled) return;
+    window.speechSynthesis.cancel();
+    const parts = [];
+    parts.push(el.title.textContent || '');
+    parts.push(el.instruction.textContent || '');
+    const mainText = Array.from(el.mainArea.querySelectorAll('p, button, summary, .slot, .sentence, .mini-note, .tick-label, .zone-tag, .question-mark-box'))
+      .map(node => node.textContent.trim())
+      .filter(Boolean)
+      .join('. ');
+    if (mainText) parts.push(mainText);
+    if (extra) parts.push(extra);
+    const text = parts.join('. ');
+    if (!text.trim()) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    utter.volume = 1;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function openQuestionPanelIfNeeded(){
+    if (appState.screenIndex === 0){
+      el.questionPanel.classList.add('hidden');
+      el.questionPanel.open = false;
+    } else {
+      el.questionPanel.classList.remove('hidden');
+    }
+  }
+
+  function renderScreenBase(title, instruction){
+    el.title.textContent = title;
+    el.instruction.textContent = instruction;
+    el.progress.textContent = `Screen ${appState.screenIndex + 1} of ${totalScreens}`;
+    el.mainArea.innerHTML = '';
+    clearFeedback();
+    setNextEnabled(false);
+    openQuestionPanelIfNeeded();
+  }
+
+  function renderChoiceButtons(options, onClick){
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.type = 'button';
+      btn.textContent = opt.text;
+      btn.dataset.id = opt.id;
+      btn.addEventListener('click', () => onClick(opt, btn, wrap));
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function renderMultiSelectButtons(options, onToggle){
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.type = 'button';
+      btn.textContent = opt.text;
+      btn.dataset.id = opt.id;
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('selected');
+        onToggle(wrap);
+      });
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function markButtonsDisabled(parent){
+    parent.querySelectorAll('button').forEach(btn => btn.disabled = true);
+  }
+
+  function renderSingleCorrectScreen({title, instruction, introHtml='', options, correctId, correctFeedback, wrongFeedback}) {
+    renderScreenBase(title, instruction);
+    if (introHtml) el.mainArea.insertAdjacentHTML('beforeend', introHtml);
+    const shuffled = shuffleArray(options);
+    const buttons = renderChoiceButtons(shuffled, (opt, btn, wrap) => {
+      if (opt.id === correctId) {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', correctFeedback);
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', wrongFeedback);
+        if (teachingPenaltyScreens.has(appState.screenIndex + 1)) loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen1(){
+    renderScreenBase('Read the question', 'Read the question. Then tap “I have read it.”');
+    el.mainArea.innerHTML = `
+      ${questionTextHtml}
+      <div class="info-chip">Notice what information is really given.</div>
+      <button class="small-btn" id="readyBtn" type="button">I have read it</button>
+    `;
+    document.getElementById('readyBtn').addEventListener('click', () => {
+      setFeedback('good', 'Good. Now look carefully at the information that is actually given.');
+      setNextEnabled(true);
+    }, { once: true });
+  }
+
+  function renderScreen2(){
+    renderSingleCorrectScreen({
+      title: 'Find the given information',
+      instruction: 'Tap the information that is given about T.',
+      introHtml: questionTextHtml,
+      options: [
+        {id:'boiling', text:'T has a boiling point of 24°C.'},
+        {id:'melting', text:'T has a melting point of 0°C.'},
+        {id:'freeze', text:'T freezes at 0°C.'},
+        {id:'liquid', text:'T is a liquid at 0°C.'}
+      ],
+      correctId: 'boiling',
+      correctFeedback: 'Yes. Only the boiling point is given.',
+      wrongFeedback: 'Use only the information you were actually given.'
+    });
+  }
+
+  function renderScreen3(){
+    renderSingleCorrectScreen({
+      title: 'Use the boiling point carefully',
+      instruction: 'At 0°C, what do you know for sure from the boiling point?',
+      introHtml: `
+        <div class="question-card">
+          <p><strong>Boiling point of T = 24°C</strong></p>
+          <p><strong>Question temperature = 0°C</strong></p>
+        </div>
+      `,
+      options: [
+        {id:'gas', text:'T is gas.'},
+        {id:'notgas', text:'T is not gas.'},
+        {id:'solid', text:'T must be solid.'},
+        {id:'liquid', text:'T must be liquid.'}
+      ],
+      correctId: 'notgas',
+      correctFeedback: 'Yes. At 0°C, T is below its boiling point, so it is not gas.',
+      wrongFeedback: 'The boiling point lets you rule out gas here. It does not tell the exact lower state.'
+    });
+  }
+
+  function renderScreen4(){
+    renderScreenBase('Spot the missing information', 'Tap what is still missing.');
+    el.mainArea.innerHTML = `
+      <div class="diagram-wrap">
+        <div class="diagram-card">
+          <div class="temperature-scale" aria-label="Temperature diagram with known boiling point and unknown lower boundary">
+            <div class="scale-line"></div>
+            <div class="tick" style="top:72px;"></div>
+            <div class="tick-label" style="top:74px;">24°C</div>
+            <div class="zone-tag zone-gas">Boiling point is known here.</div>
+
+            <div class="tick" style="top:184px;"></div>
+            <div class="tick-label" style="top:186px;">0°C</div>
+            <div class="zone-tag zone-unknown">At 0°C, T is below the boiling point, so it is not gas.</div>
+
+            <div class="question-mark-box">The lower boundary between solid and liquid is still unknown.</div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="visual-card">
+            <p><strong>Known:</strong> Boiling point = 24°C</p>
+            <p><strong>Question:</strong> Exact state at 0°C</p>
+          </div>
+          <div class="mini-note">The diagram does not show a melting/freezing point because that information was not given.</div>
+        </div>
+      </div>
+    `;
+    const options = shuffleArray([
+      {id:'meltfreeze', text:'melting/freezing point'},
+      {id:'boiling', text:'boiling point'},
+      {id:'roomtemp', text:'temperature at 0°C'},
+      {id:'colour', text:'colour of T'}
+    ]);
+    const buttons = renderChoiceButtons(options, (opt, btn, wrap) => {
+      if (opt.id === 'meltfreeze') {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', 'Yes. The melting/freezing point is missing.');
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', 'Look for the information needed to tell solid from liquid.');
+        loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen5(){
+    renderScreenBase('Choose the possible states', 'At 0°C, which states are still possible? Select all. Then tap Check.');
+    el.mainArea.innerHTML = `
+      <div class="visual-card">
+        <p>You already know T is <strong>not gas</strong> at 0°C.</p>
+        <p>Now decide which states are still possible.</p>
+      </div>
+      <div id="multiHolder"></div>
+      <div class="control-cluster">
+        <button id="checkMultiBtn" class="check-btn" type="button" disabled>Check</button>
+      </div>
+    `;
+    const wrap = renderMultiSelectButtons(shuffleArray([
+      {id:'solid', text:'solid'},
+      {id:'liquid', text:'liquid'},
+      {id:'gas', text:'gas'}
+    ]), () => {
+      const selected = wrap.querySelectorAll('.selected').length;
+      document.getElementById('checkMultiBtn').disabled = selected === 0;
+    });
+    document.getElementById('multiHolder').appendChild(wrap);
+
+    document.getElementById('checkMultiBtn').addEventListener('click', () => {
+      const selectedIds = Array.from(wrap.querySelectorAll('.selected')).map(btn => btn.dataset.id).sort();
+      const correct = JSON.stringify(selectedIds) === JSON.stringify(['liquid','solid']);
+      if (correct) {
+        wrap.querySelectorAll('button').forEach(btn => {
+          btn.disabled = true;
+          if (btn.dataset.id === 'solid' || btn.dataset.id === 'liquid') btn.classList.add('correct');
+        });
+        setFeedback('good', 'Yes. Solid and liquid are both still possible.');
+        setNextEnabled(true);
+        document.getElementById('checkMultiBtn').disabled = true;
+      } else {
+        wrap.querySelectorAll('.selected').forEach(btn => btn.classList.add('wrong'));
+        setFeedback('bad', 'You can rule out gas, but you still cannot choose between solid and liquid.');
+        loseLife();
+      }
+    });
+  }
+
+  function renderScreen6(){
+    renderSingleCorrectScreen({
+      title: 'Check the misconception',
+      instruction: 'Choose the wrong idea.',
+      introHtml: `
+        <div class="visual-card">
+          <p>This question is about using only the information that is given.</p>
+        </div>
+      `,
+      options: [
+        {id:'wrong', text:'T must be water, so at 0°C it must be ice.'},
+        {id:'ok1', text:'We only know T is below its boiling point.'},
+        {id:'ok2', text:'The melting/freezing point is not given.'}
+      ],
+      correctId: 'wrong',
+      correctFeedback: 'Correct. The question never says T is water.',
+      wrongFeedback: 'Look for the idea that assumes T is water even though the question never says that.'
+    });
+  }
+
+  function renderScreen8(){
+
+    renderScreenBase('Build the answer', 'Complete the answer. Either order is fine for the paired words. Then tap Check.');
+    const bankItems = shuffleArray([
+      {id:'melting', text:'melting'},
+      {id:'freezing', text:'freezing'},
+      {id:'boiling', text:'boiling'},
+      {id:'solid', text:'solid'},
+      {id:'liquid', text:'liquid'},
+      {id:'gas', text:'gas'}
+    ]);
+    appState.blanksSelections = {b1:null, b2:null, b3:null, b4:null};
+    let activeBlank = 'b1';
+    let attemptCount = 0;
+
+    el.mainArea.innerHTML = `
+      <div class="sentence">
+        No, because the <button class="blank" data-blank="b1" type="button">Blank 1</button> /
+        <button class="blank" data-blank="b2" type="button">Blank 2</button> point of T is not given.
+        At 0°C, T could be a <button class="blank" data-blank="b3" type="button">Blank 3</button> or a
+        <button class="blank" data-blank="b4" type="button">Blank 4</button>.
+      </div>
+      <div class="bank" id="blankBank"></div>
+      <div class="control-cluster">
+        <button id="checkBlankBtn" class="check-btn" type="button" disabled>Check</button>
+        <button id="resetBlankBtn" class="check-btn secondary" type="button">Clear</button>
+      </div>
+    `;
+    const blankEls = Array.from(el.mainArea.querySelectorAll('.blank'));
+    const bank = document.getElementById('blankBank');
+    const checkBtn = document.getElementById('checkBlankBtn');
+
+    function refreshBlankStates(showMarks=false) {
+      blankEls.forEach(btn => {
+        const blankId = btn.dataset.blank;
+        btn.classList.remove('active-slot','correct','wrong','filled');
+        if (activeBlank === blankId) btn.classList.add('active-slot');
+        const val = appState.blanksSelections[blankId];
+        btn.textContent = val ? bankItems.find(x => x.id === val).text : `Blank ${blankId.slice(1)}`;
+        if (val) btn.classList.add('filled');
+        if (showMarks) {
+          const acceptable = {
+            b1: ['melting', 'freezing'],
+            b2: ['melting', 'freezing'],
+            b3: ['solid', 'liquid'],
+            b4: ['solid', 'liquid']
+          };
+          if (acceptable[blankId].includes(val)) btn.classList.add('correct');
+          else btn.classList.add('wrong');
+        }
+      });
+      checkBtn.disabled = !Object.values(appState.blanksSelections).every(Boolean);
+    }
+
+    function refreshBlankBank(){
+      bank.innerHTML = '';
+      bankItems.forEach(item => {
+        const usedSomewhere = Object.values(appState.blanksSelections).includes(item.id);
+        if (!usedSomewhere) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bank-btn';
+          btn.textContent = item.text;
+          btn.addEventListener('click', () => {
+            appState.blanksSelections[activeBlank] = item.id;
+            const order = ['b1','b2','b3','b4'];
+            const nextEmpty = order.find(id => !appState.blanksSelections[id]);
+            activeBlank = nextEmpty || activeBlank;
+            refreshBlankStates();
+            refreshBlankBank();
+          });
+          bank.appendChild(btn);
+        }
+      });
+    }
+
+    blankEls.forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeBlank = btn.dataset.blank;
+        if (appState.blanksSelections[activeBlank]) appState.blanksSelections[activeBlank] = null;
+        refreshBlankStates();
+        refreshBlankBank();
+      });
+    });
+
+    document.getElementById('resetBlankBtn').addEventListener('click', () => {
+      appState.blanksSelections = {b1:null, b2:null, b3:null, b4:null};
+      activeBlank = 'b1';
+      refreshBlankStates();
+      refreshBlankBank();
+      clearFeedback();
+      setNextEnabled(false);
+    });
+
+    checkBtn.addEventListener('click', () => {
+      const firstPair = [appState.blanksSelections.b1, appState.blanksSelections.b2].sort().join('|');
+      const secondPair = [appState.blanksSelections.b3, appState.blanksSelections.b4].sort().join('|');
+      const correct = firstPair === 'freezing|melting' && secondPair === 'liquid|solid';
+
+      if (correct) {
+        refreshBlankStates(true);
+        setFeedback('good', 'Yes. Either order works here. The key idea is that the melting/freezing point is not given, so T could be solid or liquid.');
+        setNextEnabled(true);
+        checkBtn.disabled = true;
+      } else {
+        attemptCount += 1;
+        if (attemptCount === 1) {
+          setFeedback('bad', 'Use the missing point that separates solid and liquid. Also remember that T is not said to be water.');
+        } else {
+          refreshBlankStates(true);
+          setFeedback('bad', 'The key idea is missing. Use melting/freezing point, and do not assume T is water.');
+        }
+        loseLife();
+      }
+    });
+
+    refreshBlankStates();
+    refreshBlankBank();
+  }
+
+  function renderScreen9(){
+    renderScreenBase('Recall the key words', 'Type the missing science word.');
+    const targetWords = [
+      { sentence: 'No, because the {word} / freezing point of T is not given.', word: 'melting' },
+      { sentence: 'No, because the melting / {word} point of T is not given.', word: 'freezing' }
+    ];
+    appState.guessWordIndex = 0;
+    appState.guessReveal = 1;
+
+    el.mainArea.innerHTML = `
+      <div class="guess-area">
+        <div class="guess-box">
+          <div class="pill">Penalty-free retrieval</div>
+          <div id="guessSentence" class="sentence"></div>
+          <div id="guessPrompt" class="tiny-note"></div>
+          <div class="guess-input-row">
+            <input id="guessInput" class="guess-input" type="text" autocomplete="off" />
+            <button id="guessCheckBtn" class="check-btn" type="button">Check</button>
+          </div>
+        </div>
+      </div>
+    `;
+    const sentenceEl = document.getElementById('guessSentence');
+    const promptEl = document.getElementById('guessPrompt');
+    const inputEl = document.getElementById('guessInput');
+    const checkBtn = document.getElementById('guessCheckBtn');
+
+    function renderCurrentGuess(){
+      const current = targetWords[appState.guessWordIndex];
+      const word = current.word;
+      const visible = word.slice(0, appState.guessReveal);
+      const masked = visible + '_'.repeat(Math.max(word.length - visible.length, 0));
+      sentenceEl.innerHTML = escapeHtml(current.sentence.replace('{word}', masked));
+      promptEl.textContent = `First letter shown: ${visible[0].toUpperCase()}.`;
+      inputEl.value = '';
+      inputEl.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const current = targetWords[appState.guessWordIndex];
+      const answer = inputEl.value.trim().toLowerCase();
+      if (answer === current.word) {
+        if (appState.guessWordIndex === targetWords.length - 1) {
+          sentenceEl.innerHTML = 'No, because the <strong>melting</strong> / <strong>freezing</strong> point of T is not given.';
+          setFeedback('good', 'Well done. You recalled the key science words.');
+          setNextEnabled(true);
+          checkBtn.disabled = true;
+          promptEl.textContent = 'You will use the same idea in one short transfer question.';
+        } else {
+          setFeedback('good', `Yes. ${current.word} is correct.`);
+          appState.guessWordIndex += 1;
+          appState.guessReveal = 1;
+          renderCurrentGuess();
+        }
+      } else {
+        appState.guessReveal = Math.min(current.word.length, appState.guessReveal + 1);
+        renderCurrentGuess();
+        setFeedback('note', 'Try again. One more letter has been shown.');
+      }
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkBtn.click();
+    });
+
+    renderCurrentGuess();
+  }
+
+  function renderScreen10(){
+    renderSingleCorrectScreen({
+      title: 'Try a new one',
+      instruction: 'Choose the better answer.',
+      introHtml: `
+        <div class="question-card">
+          <p><strong>Substance Q has a boiling point of 40°C.</strong></p>
+          <p>Based on this information alone, can you tell whether Q is solid or liquid at 10°C?</p>
+        </div>
+      `,
+      options: [
+        {id:'wrong', text:'Yes, Q must be liquid.'},
+        {id:'right', text:'No, because the melting/freezing point is not given.'}
+      ],
+      correctId: 'right',
+      correctFeedback: 'Yes. You used the same reasoning in a new question.',
+      wrongFeedback: 'The boiling point alone still does not separate solid from liquid.'
+    });
+  }
+
+  function renderScreen11(){
+    renderScreenBase('You are done', 'Tap “Done” to finish.');
+    el.mainArea.innerHTML = `
+      <div class="completion-box">
+        <div class="pill">Finished</div>
+        <h3>You used the given information carefully.</h3>
+        <p>You ruled out gas, noticed the missing melting/freezing point, and explained why the exact state cannot be told.</p>
+        <button id="doneBtn" class="small-btn" type="button">Done</button>
+      </div>
+    `;
+    document.getElementById('doneBtn').addEventListener('click', () => {
+      setFeedback('good', 'Great work. You have completed this interactive.');
+      setNextEnabled(false);
+    });
+  }
+
+  const renderers = [
+    renderScreen1,
+    renderScreen2,
+    renderScreen3,
+    renderScreen4,
+    renderScreen5,
+    renderScreen6,
+    renderScreen8,
+    renderScreen9,
+    renderScreen10,
+    renderScreen11
+  ];
+
+  function renderCurrentScreen(){
+    renderers[appState.screenIndex]();
+    if (appState.autoRead) speakCurrentScreen();
+  }
+
+  function restartAll(){
+    if (appState.speechEnabled) window.speechSynthesis.cancel();
+    appState.screenIndex = 0;
+    appState.livesLeft = totalLives;
+    appState.blanksSelections = {};
+    clearFeedback();
+    hideGameOver();
+    updateLives();
+    renderCurrentScreen();
+  }
+
+  el.nextBtn.addEventListener('click', () => {
+    if (el.nextBtn.disabled) return;
+    if (appState.screenIndex < totalScreens - 1) {
+      appState.screenIndex += 1;
+      renderCurrentScreen();
+    }
+  });
+
+  el.readScreenBtn.addEventListener('click', () => speakCurrentScreen());
+  el.restartBtn.addEventListener('click', restartAll);
+  el.gameoverRestart.addEventListener('click', restartAll);
+
+  el.autoReadToggle.addEventListener('change', (e) => {
+    appState.autoRead = e.target.checked;
+    if (!appState.autoRead && appState.speechEnabled) window.speechSynthesis.cancel();
+    if (appState.autoRead) speakCurrentScreen();
+  });
+
+  if (!appState.speechEnabled) {
+    el.readScreenBtn.disabled = true;
+    el.autoReadToggle.disabled = true;
+  }
+
+  updateLives();
+  renderCurrentScreen();
+})();
+</script>
+</body>
+</html>

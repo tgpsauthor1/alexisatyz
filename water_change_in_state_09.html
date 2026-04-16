@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Water Change in State 09</title>
+<style>
+  :root {
+    --bg: #f4fbff;
+    --panel: #ffffff;
+    --panel-2: #eef8ff;
+    --ink: #18314f;
+    --muted: #4c647d;
+    --line: #c7def0;
+    --accent: #1f7db8;
+    --accent-2: #64b5de;
+    --ok: #1b8d5a;
+    --bad: #c44e4e;
+    --warn: #cc8a17;
+    --solid: #8fb7d8;
+    --liquid: #69c5dc;
+    --gas: #ffd27a;
+    --shadow: 0 12px 26px rgba(18, 68, 109, 0.10);
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background: linear-gradient(180deg, #eaf7ff 0%, #f8fdff 100%); color: var(--ink); }
+  body { min-height: 100vh; }
+  .app {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 14px 14px 26px;
+  }
+  .topbar {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .topcard {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 12px 14px;
+  }
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .title {
+    font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+    font-weight: 700;
+  }
+  .subtle {
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  button {
+    font: inherit;
+    border: none;
+    border-radius: 16px;
+    padding: 12px 16px;
+    cursor: pointer;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    min-height: 50px;
+    box-shadow: 0 6px 16px rgba(31, 125, 184, 0.2);
+  }
+  button.secondary {
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--line);
+    box-shadow: none;
+  }
+  button.ghost {
+    background: #edf7ff;
+    color: var(--ink);
+    border: 2px solid var(--line);
+    box-shadow: none;
+  }
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .demerit-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .demerit-left {
+    display: grid;
+    gap: 4px;
+  }
+  .demerit-title {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .ice-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .ice {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    border: 2px solid #8ecae6;
+    background: linear-gradient(180deg, #dff6ff 0%, #bfe8ff 100%);
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    transition: 0.2s ease;
+  }
+  .ice.lost {
+    background: linear-gradient(180deg, #ffe3bf 0%, #ffd29d 100%);
+    border-color: #ffb156;
+    opacity: 0.6;
+    transform: translateY(2px) rotate(-4deg);
+  }
+  .screen {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: clamp(16px, 3vw, 24px);
+  }
+  .progress {
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 0.96rem;
+  }
+  .instruction {
+    font-size: clamp(1.45rem, 4vw, 2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 14px;
+  }
+  .helper {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .question-block {
+    background: #f6fbff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    display: grid;
+    gap: 12px;
+  }
+  .question-text {
+    font-size: clamp(1.02rem, 2.7vw, 1.15rem);
+    line-height: 1.55;
+  }
+  mark {
+    background: #fff3a6;
+    padding: 0 4px;
+    border-radius: 6px;
+  }
+  .source-img {
+    width: min(100%, 520px);
+    border-radius: 16px;
+    border: 2px solid var(--line);
+    background: white;
+    display: block;
+  }
+  .card-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    margin-top: 10px;
+  }
+  .choice {
+    background: #ffffff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    min-height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    transition: 0.18s ease;
+    box-shadow: 0 4px 10px rgba(24, 49, 79, 0.04);
+  }
+  .choice:hover {
+    transform: translateY(-1px);
+  }
+  .choice.selected {
+    border-color: var(--accent);
+    background: #dff2ff;
+    box-shadow: 0 8px 18px rgba(31, 125, 184, 0.14);
+  }
+  .choice.correct {
+    border-color: var(--ok);
+    background: #e7f9ef;
+  }
+  .choice.incorrect {
+    border-color: var(--bad);
+    background: #ffeded;
+  }
+  .panel {
+    background: var(--panel-2);
+    border: 2px solid var(--line);
+    border-radius: 20px;
+    padding: 14px;
+    margin-top: 8px;
+  }
+  .state-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid var(--line);
+    margin-top: 12px;
+  }
+  .state-seg {
+    padding: 18px 12px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.05rem;
+  }
+  .solid { background: var(--solid); }
+  .liquid { background: var(--liquid); }
+  .gas { background: var(--gas); }
+  .drop-zone-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(110px, 1fr));
+    margin-top: 14px;
+  }
+  .zone {
+    background: #ffffff;
+    border: 2px dashed var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    min-height: 96px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    font-weight: 700;
+  }
+  .chip-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+  }
+  .chip {
+    min-width: 110px;
+    padding: 14px 16px;
+    background: white;
+    border: 2px solid var(--line);
+    color: var(--ink);
+    border-radius: 16px;
+    font-weight: 800;
+  }
+  .chip.selected {
+    border-color: var(--accent);
+    background: #e7f5ff;
+  }
+  .chip.placed {
+    opacity: 0.45;
+  }
+  .row-card {
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+  }
+  .row-card strong { font-size: 1rem; }
+  .row-card small { color: var(--muted); }
+  .feedback {
+    margin-top: 14px;
+    min-height: 58px;
+    border-radius: 16px;
+    padding: 12px 14px;
+    border: 2px solid transparent;
+    background: #f8fbff;
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .feedback.good {
+    background: #eaf8f0;
+    color: #13583a;
+    border-color: #b3e2c8;
+  }
+  .feedback.bad {
+    background: #fff0f0;
+    color: #7d2f2f;
+    border-color: #f0b9b9;
+  }
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  details {
+    margin-top: 16px;
+    background: #f7fbff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 0 14px 14px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 800;
+    padding: 14px 0;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  .table-mini {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .cell {
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .pill {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #ebf7ff;
+    border: 2px solid var(--line);
+    font-size: 0.92rem;
+    font-weight: 800;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 31, 55, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .modal {
+    width: min(92vw, 560px);
+    background: white;
+    border-radius: 24px;
+    padding: 24px;
+    border: 2px solid var(--line);
+    box-shadow: 0 18px 34px rgba(0,0,0,0.18);
+    text-align: center;
+  }
+  .modal h2 { margin-top: 0; font-size: 1.8rem; }
+  .modal p { font-size: 1.06rem; line-height: 1.5; }
+  .two-col {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: 1fr 1fr;
+  }
+  .big-center {
+    display: grid;
+    place-items: center;
+    padding: 6px 0;
+  }
+  .summary-box {
+    background: #f3fbff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    line-height: 1.55;
+    font-weight: 700;
+  }
+
+  .organiser {
+    margin: 10px 0 16px;
+    background: #f7fcff;
+  }
+  .organiser-title {
+    font-size: 1.02rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .organiser-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+  }
+  .organiser-card {
+    background: #ffffff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 14px;
+    display: grid;
+    gap: 8px;
+    min-height: 118px;
+  }
+  .organiser-card strong {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+  .organiser-card span {
+    color: var(--muted);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .organiser-solid { background: #eef6fc; }
+  .organiser-liquid { background: #eefbfd; }
+  .organiser-gas { background: #fff8ea; }
+  .step-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .step-chip {
+    background: white;
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 800;
+  }
+  @media (max-width: 700px) {
+    .two-col, .table-row, .organiser-grid { grid-template-columns: 1fr; }
+    .drop-zone-grid { grid-template-columns: 1fr; }
+    .title-row { align-items: flex-start; }
+    .screen { padding: 16px; }
+    .instruction { font-size: 1.45rem; }
+    .choice { min-height: 74px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<div class="overlay" id="gameOverOverlay" aria-hidden="true">
+  <div class="modal">
+    <h2>All 3 ice cubes melted.</h2>
+    <p>That means too many rushed checks. The whole interactive will restart in <span id="restartCount">3</span> seconds.</p>
+    <p><strong>Tip:</strong> Read both clues. Then compare each temperature with both points.</p>
+  </div>
+</div>
+
+<script>
+const SOURCE_IMG = "data:image/png;base64,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";
+const MAX_DEMERITS = 3;
+
+const state = {
+  screen: 0,
+  demerits: 0,
+  readAloudOn: false,
+  questionPanelOpen: false,
+  sourcePanelOpen: false,
+  screenState: {},
+  restartTimer: null
+};
+
+const screens = [
+  {
+    id: "intro",
+    progress: "Screen 1 of 10",
+    instruction: "Read the question. Then tap Start.",
+    helper: "Look at the two temperature clues and the word possible.",
+    renderMain: renderIntro,
+    nextLabel: "Start"
+  },
+  {
+    id: "clues",
+    progress: "Screen 2 of 10",
+    instruction: "Tap the two clues that tell you what state R must be in.",
+    helper: "Choose both correct clue cards. Then tap Check.",
+    renderMain: renderClueScreen,
+    check: checkClues
+  },
+  {
+    id: "liquidRule",
+    progress: "Screen 3 of 10",
+    instruction: "Tap where a liquid temperature belongs.",
+    helper: "Use the organiser. A liquid temperature must go in the correct part.",
+    renderMain: () => renderStateRule("liquid"),
+    check: () => checkRule("liquid")
+  },
+  {
+    id: "gasRule",
+    progress: "Screen 4 of 10",
+    instruction: "Tap where a gas temperature belongs.",
+    helper: "Use the organiser. A gas temperature must go in the correct part.",
+    renderMain: () => renderStateRule("gas"),
+    check: () => checkRule("gas")
+  },
+  {
+    id: "placeTemps",
+    progress: "Screen 5 of 10",
+    instruction: "Place both temperatures for this row.",
+    helper: "This row has melting point 120°C and boiling point 450°C.",
+    renderMain: renderPlaceTemps,
+    check: checkPlaceTemps
+  },
+  {
+    id: "eliminate160",
+    progress: "Screen 6 of 10",
+    instruction: "Tap all rows where 160°C is less than the melting point.",
+    helper: "In those rows, R would be a solid at 160°C, so the row cannot be correct. Then tap Check.",
+    renderMain: renderEliminate160,
+    check: checkEliminate160
+  },
+  {
+    id: "fail480",
+    progress: "Screen 7 of 10",
+    instruction: "Tap the last wrong row. In that row, 480°C is still less than the boiling point.",
+    helper: "Only row 1 and row 2 are left. If 480°C is less than the boiling point, R is not a gas yet.",
+    renderMain: renderFail480,
+    check: checkFail480
+  },
+  {
+    id: "retry",
+    progress: "Screen 8 of 10",
+    instruction: "Now choose the possible row.",
+    helper: "Use the same method on the original question.",
+    renderMain: renderRetry,
+    check: checkRetry
+  },
+  {
+    id: "transfer",
+    progress: "Screen 9 of 10",
+    instruction: "Try one more like this.",
+    helper: "Use both clues again. One temperature must be between. The other must be more than the boiling point.",
+    renderMain: renderTransfer,
+    check: checkTransfer
+  },
+  {
+    id: "done",
+    progress: "Screen 10 of 10",
+    instruction: "Finish.",
+    helper: "You are done.",
+    renderMain: renderDone
+  }
+];
+
+const teachingScreenIds = new Set(["clues","liquidRule","gasRule","placeTemps","eliminate160","fail480"]);
+
+function initScreenState() {
+  state.screenState = {
+    clues: { selected: [], checked: false, passed: false, feedback: "" },
+    liquidRule: { selected: null, checked: false, passed: false, feedback: "" },
+    gasRule: { selected: null, checked: false, passed: false, feedback: "" },
+    placeTemps: { activeChip: null, placements: { t160: null, t480: null }, checked: false, passed: false, feedback: "" },
+    eliminate160: { selected: [], checked: false, passed: false, feedback: "" },
+    fail480: { selected: null, checked: false, passed: false, feedback: "" },
+    retry: {
+      selected: null, checked: false, passed: false, feedback: "",
+      options: shuffleRows([
+        {id:"r1", mp:120, bp:450, correct:true},
+        {id:"r2", mp:120, bp:500, correct:false},
+        {id:"r3", mp:200, bp:450, correct:false},
+        {id:"r4", mp:200, bp:500, correct:false}
+      ], "r1")
+    },
+    transfer: {
+      selected: null, checked: false, passed: false, feedback: "",
+      options: shuffleRows([
+        {id:"tA", mp:100, bp:250, correct:false},
+        {id:"tB", mp:150, bp:300, correct:true},
+        {id:"tC", mp:150, bp:350, correct:false},
+        {id:"tD", mp:200, bp:350, correct:false}
+      ], "tB")
+    }
+  };
+}
+
+function shuffleRows(arr, correctId) {
+  let copy = arr.map(x => ({...x}));
+  do {
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+  } while (copy.findIndex(x => x.id === correctId) === 0);
+  return copy;
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+
+function renderOrganizer() {
+  const currentId = screens[state.screen].id;
+  if (currentId === "done") return "";
+  return `
+    <div class="panel organiser">
+      <div class="organiser-title">Quick organiser</div>
+      <div class="organiser-grid">
+        <div class="organiser-card organiser-solid">
+          <strong>Less than melting point</strong>
+          <span>State = solid</span>
+        </div>
+        <div class="organiser-card organiser-liquid">
+          <strong>Between melting point and boiling point</strong>
+          <span>State = liquid</span>
+        </div>
+        <div class="organiser-card organiser-gas">
+          <strong>More than boiling point</strong>
+          <span>State = gas</span>
+        </div>
+      </div>
+      <div class="step-row" aria-label="How to check a row">
+        <div class="step-chip">1. Check 160°C</div>
+        <div class="step-chip">2. Check 480°C</div>
+        <div class="step-chip">3. Keep the row only if both fit</div>
+      </div>
+    </div>
+  `;
+}
+
+function appHtml(inner) {
+  return `
+    <div class="topbar">
+      <div class="topcard">
+        <div class="title-row">
+          <div>
+            <div class="title">Water Change in State 09</div>
+            <div class="subtle">Use the organiser. Compare each temperature with both points.</div>
+          </div>
+          <div class="controls">
+            <button class="secondary" id="toggleRead">${state.readAloudOn ? "Read-aloud: On" : "Read-aloud: Off"}</button>
+            <button class="ghost" id="speakNow">Read this screen</button>
+          </div>
+        </div>
+      </div>
+      <div class="topcard">
+        <div class="demerit-wrap">
+          <div class="demerit-left">
+            <div class="demerit-title">Keep your ice cubes cold.</div>
+            <div class="subtle">A wrong checked answer on the teaching screens melts 1 ice cube.</div>
+          </div>
+          <div class="ice-row" aria-label="Demerit counter">
+            ${[0,1,2].map(i => `<div class="ice ${i < state.demerits ? "lost" : ""}">${i < state.demerits ? "💧" : "🧊"}</div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+    ${inner}
+  `;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  const s = screens[state.screen];
+  const body = `
+    <div class="screen">
+      <div class="progress">${escapeHtml(s.progress)}</div>
+      <div class="instruction">${escapeHtml(s.instruction)}</div>
+      <div class="helper">${escapeHtml(s.helper || "")}</div>
+      ${renderOrganizer()}
+      ${s.renderMain()}
+      ${renderPanels()}
+      <div class="nav">
+        <button class="secondary" id="backBtn" ${state.screen === 0 ? "disabled" : ""}>Back</button>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          ${s.check ? `<button class="secondary" id="checkBtn">${getCheckLabel(s.id)}</button>` : ""}
+          <button id="nextBtn" ${canGoNext() ? "" : "disabled"}>${s.nextLabel || (state.screen === screens.length - 1 ? "Done" : "Next")}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  app.innerHTML = appHtml(body);
+  bindGlobalControls();
+  bindScreenControls();
+  restoreDetailsState();
+  if (state.readAloudOn) speakCurrentScreen();
+}
+
+function getCheckLabel(id) {
+  return "Check";
+}
+
+function renderPanels() {
+  if (state.screen === 0) return "";
+  return `
+    <details id="questionPanel">
+      <summary>Show full question</summary>
+      <div class="question-block">
+        <div class="question-text">
+          Substance R is a <mark>liquid at 160°C</mark> and a <mark>gas at 480°C</mark>.<br>
+          Which of the following is <mark>possible</mark>?
+        </div>
+      </div>
+    </details>
+    <details id="sourcePanel">
+      <summary>Show source visual</summary>
+      <img class="source-img" src="${SOURCE_IMG}" alt="Original question source visual">
+    </details>
+  `;
+}
+
+function restoreDetailsState() {
+  const q = document.getElementById("questionPanel");
+  const s = document.getElementById("sourcePanel");
+  if (q) {
+    q.open = !!state.questionPanelOpen;
+    q.addEventListener("toggle", () => { state.questionPanelOpen = q.open; });
+  }
+  if (s) {
+    s.open = !!state.sourcePanelOpen;
+    s.addEventListener("toggle", () => { state.sourcePanelOpen = s.open; });
+  }
+}
+
+function bindGlobalControls() {
+  const toggle = document.getElementById("toggleRead");
+  const speakNow = document.getElementById("speakNow");
+  toggle.addEventListener("click", () => {
+    state.readAloudOn = !state.readAloudOn;
+    if (!state.readAloudOn) window.speechSynthesis.cancel();
+    render();
+  });
+  speakNow.addEventListener("click", () => speakCurrentScreen());
+
+  const back = document.getElementById("backBtn");
+  if (back) back.addEventListener("click", () => {
+    if (state.screen > 0) {
+      state.screen--;
+      render();
+    }
+  });
+
+  const next = document.getElementById("nextBtn");
+  next.addEventListener("click", () => {
+    if (!canGoNext()) return;
+    if (state.screen < screens.length - 1) {
+      state.screen++;
+      render();
+    }
+  });
+
+  const s = screens[state.screen];
+  const check = document.getElementById("checkBtn");
+  if (check && s.check) {
+    check.addEventListener("click", () => s.check());
+  }
+}
+
+function speakCurrentScreen() {
+  const s = screens[state.screen];
+  let text = s.instruction + ". ";
+  if (s.helper) text += s.helper + ". ";
+  const feedback = getFeedbackText();
+  if (feedback) text += "Feedback: " + feedback + ". ";
+  if (state.screen === 0) {
+    text += "Substance R is a liquid at 160 degrees Celsius and a gas at 480 degrees Celsius. Which of the following is possible?";
+  }
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.95;
+  utt.pitch = 1;
+  window.speechSynthesis.speak(utt);
+}
+
+function canGoNext() {
+  const s = screens[state.screen];
+  if (s.id === "intro") return true;
+  if (s.id === "done") return false;
+  const st = state.screenState[s.id];
+  return !!(st && st.passed);
+}
+
+function getFeedbackText() {
+  const s = screens[state.screen];
+  const st = state.screenState[s.id];
+  return st && st.feedback ? st.feedback : "";
+}
+
+function markDemeritIfNeeded(screenId) {
+  if (!teachingScreenIds.has(screenId)) return;
+  state.demerits += 1;
+  if (state.demerits >= MAX_DEMERITS) triggerGameOver();
+}
+
+function triggerGameOver() {
+  const overlay = document.getElementById("gameOverOverlay");
+  const count = document.getElementById("restartCount");
+  let n = 3;
+  overlay.classList.add("show");
+  count.textContent = String(n);
+  if (state.restartTimer) clearInterval(state.restartTimer);
+  state.restartTimer = setInterval(() => {
+    n -= 1;
+    count.textContent = String(Math.max(n, 0));
+    if (n <= 0) {
+      clearInterval(state.restartTimer);
+      state.restartTimer = null;
+      overlay.classList.remove("show");
+      restartAll();
+    }
+  }, 1000);
+}
+
+function restartAll() {
+  window.speechSynthesis.cancel();
+  state.screen = 0;
+  state.demerits = 0;
+  state.questionPanelOpen = false;
+  state.sourcePanelOpen = false;
+  initScreenState();
+  render();
+}
+
+function renderFeedback(screenId) {
+  const st = state.screenState[screenId];
+  const cls = st.checked ? (st.passed ? "good" : "bad") : "";
+  const defaultText = screenId === "intro" ? "" : "Choose or place your answer, then tap Check.";
+  return `<div class="feedback ${cls}">${st.feedback ? escapeHtml(st.feedback) : defaultText}</div>`;
+}
+
+function renderIntro() {
+  return `
+    <div class="question-block">
+      <div class="question-text">
+        Substance R is a <mark>liquid at 160°C</mark> and a <mark>gas at 480°C</mark>.<br>
+        Which of the following is <mark>possible</mark>?
+      </div>
+      <img class="source-img" src="${SOURCE_IMG}" alt="Original exam question screenshot">
+    </div>
+    <div class="panel" style="margin-top:16px;">
+      <span class="pill">What to notice first</span>
+      <div style="margin-top:10px; line-height:1.55;">
+        There are <strong>two clues</strong>: one tells you where 160°C must sit, and one tells you where 480°C must sit. Use the quick organiser on every screen to help you.
+      </div>
+    </div>
+  `;
+}
+
+function renderClueScreen() {
+  const st = state.screenState.clues;
+  const options = [
+    {id:"c1", text:"R is a liquid at 160°C"},
+    {id:"c2", text:"R is a gas at 480°C"},
+    {id:"c3", text:"2018"},
+    {id:"c4", text:"Which of the following is possible?"}
+  ];
+  return `
+    <div class="card-grid">
+      ${options.map(o => `
+        <button class="choice ${st.selected.includes(o.id) ? "selected" : ""}" data-choice="${o.id}">
+          ${escapeHtml(o.text)}
+        </button>
+      `).join("")}
+    </div>
+    ${renderFeedback("clues")}
+  `;
+}
+
+function checkClues() {
+  const st = state.screenState.clues;
+  st.checked = true;
+  const picked = [...st.selected].sort().join(",");
+  st.passed = picked === ["c1","c2"].sort().join(",");
+  st.feedback = st.passed
+    ? "Yes. You must use both clues."
+    : "Find the two clues that tell you a temperature and a state.";
+  if (!st.passed) markDemeritIfNeeded("clues");
+  render();
+}
+
+function renderStateRule(which) {
+  const st = state.screenState[which + "Rule"];
+  const labels = [
+    {id:"left", text:"less than melting point"},
+    {id:"middle", text:"between melting point and boiling point"},
+    {id:"right", text:"more than boiling point"}
+  ];
+  return `
+    <div class="state-bar" aria-hidden="true">
+      <div class="state-seg solid">Solid</div>
+      <div class="state-seg liquid">Liquid</div>
+      <div class="state-seg gas">Gas</div>
+    </div>
+    <div class="card-grid">
+      ${labels.map(l => `
+        <button class="choice ${st.selected === l.id ? "selected" : ""}" data-choice="${l.id}">${escapeHtml(l.text)}</button>
+      `).join("")}
+    </div>
+    ${renderFeedback(which + "Rule")}
+  `;
+}
+
+function checkRule(which) {
+  const st = state.screenState[which + "Rule"];
+  st.checked = true;
+  const correct = which === "liquid" ? "middle" : "right";
+  st.passed = st.selected === correct;
+  st.feedback = st.passed
+    ? (which === "liquid" ? "Yes. Liquid means between the two points." : "Yes. Gas means more than the boiling point.")
+    : (which === "liquid" ? "A liquid is not less than the melting point and not more than the boiling point." : "Gas must be more than the boiling point.");
+  if (!st.passed) markDemeritIfNeeded(which + "Rule");
+  render();
+}
+
+function renderPlaceTemps() {
+  const st = state.screenState.placeTemps;
+  const active = st.activeChip;
+  const zones = [
+    {id:"left", title:"Less than 120°C", note:"less than the melting point"},
+    {id:"middle", title:"Between 120°C and 450°C", note:"between the two points"},
+    {id:"right", title:"More than 450°C", note:"more than the boiling point"}
+  ];
+  return `
+    <div class="panel">
+      <div class="table-mini">
+        <div class="table-row">
+          <div class="cell">Melting point = <strong>120°C</strong></div>
+          <div class="cell">Boiling point = <strong>450°C</strong></div>
+        </div>
+      </div>
+      <div class="chip-row">
+        <button class="chip ${active === "t160" ? "selected" : ""} ${st.placements.t160 ? "placed" : ""}" data-chip="t160">160°C</button>
+        <button class="chip ${active === "t480" ? "selected" : ""} ${st.placements.t480 ? "placed" : ""}" data-chip="t480">480°C</button>
+      </div>
+      <div class="helper" style="margin-bottom:8px;">Tap a temperature chip. Then tap the zone where it belongs.</div>
+      <div class="drop-zone-grid">
+        ${zones.map(z => `
+          <button class="zone" data-zone="${z.id}">
+            <div>
+              <div style="font-weight:800;">${escapeHtml(z.title)}</div>
+              <div style="font-size:0.94rem; color:var(--muted); margin-top:4px;">${escapeHtml(z.note)}</div>
+              <div style="margin-top:8px; font-size:1.1rem;">${[
+                st.placements.t160 === z.id ? "160°C" : "",
+                st.placements.t480 === z.id ? "480°C" : ""
+              ].filter(Boolean).join("  •  ") || "Tap to place"}</div>
+            </div>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+    ${renderFeedback("placeTemps")}
+  `;
+}
+
+function checkPlaceTemps() {
+  const st = state.screenState.placeTemps;
+  st.checked = true;
+  st.passed = st.placements.t160 === "middle" && st.placements.t480 === "right";
+  st.feedback = st.passed
+    ? "Good. 160°C gives a liquid and 480°C gives a gas. This row is possible."
+    : "Check each temperature against both boundaries.";
+  if (!st.passed) markDemeritIfNeeded("placeTemps");
+  render();
+}
+
+function renderEliminate160() {
+  const st = state.screenState.eliminate160;
+  const rows = [
+    {id:"r1", label:"Row 1", mp:120, bp:450},
+    {id:"r2", label:"Row 2", mp:120, bp:500},
+    {id:"r3", label:"Row 3", mp:200, bp:450},
+    {id:"r4", label:"Row 4", mp:200, bp:500}
+  ];
+  return `
+    <div class="card-grid">
+      ${rows.map(r => `
+        <button class="row-card choice ${st.selected.includes(r.id) ? "selected" : ""}" data-row="${r.id}">
+          <strong>${escapeHtml(r.label)}</strong>
+          <small>Melting point: ${r.mp}°C</small>
+          <small>Boiling point: ${r.bp}°C</small>
+        </button>
+      `).join("")}
+    </div>
+    ${renderFeedback("eliminate160")}
+  `;
+}
+
+function checkEliminate160() {
+  const st = state.screenState.eliminate160;
+  st.checked = true;
+  const picked = [...st.selected].sort().join(",");
+  st.passed = picked === ["r3","r4"].sort().join(",");
+  st.feedback = st.passed
+    ? "Yes. 160°C is less than 200°C, so those rows would give a solid."
+    : "Look for rows where 160°C is still less than the melting point.";
+  if (!st.passed) markDemeritIfNeeded("eliminate160");
+  render();
+}
+
+function renderFail480() {
+  const st = state.screenState.fail480;
+  const rows = [
+    {id:"r1", mp:120, bp:450, text:"160°C is between 120°C and 450°C. 480°C is more than 450°C."},
+    {id:"r2", mp:120, bp:500, text:"160°C is between 120°C and 500°C. 480°C is below 500°C."}
+  ];
+  return `
+    <div class="two-col">
+      ${rows.map(r => `
+        <button class="row-card choice ${st.selected === r.id ? "selected" : ""}" data-choice="${r.id}">
+          <strong>Melting point ${r.mp}°C, boiling point ${r.bp}°C</strong>
+  <div style="font-weight:700; line-height:1.5;">${escapeHtml(r.text)}</div>
+        </button>
+      `).join("")}
+    </div>
+    ${renderFeedback("fail480")}
+  `;
+}
+
+function checkFail480() {
+  const st = state.screenState.fail480;
+  st.checked = true;
+  st.passed = st.selected === "r2";
+  st.feedback = st.passed
+    ? "Yes. 480°C is still less than 500°C, so R would still be liquid there."
+    : "Ask: is 480°C already more than the boiling point?";
+  if (!st.passed) markDemeritIfNeeded("fail480");
+  render();
+}
+
+function renderRetry() {
+  const st = state.screenState.retry;
+  return `
+    <div class="card-grid">
+      ${st.options.map(o => `
+        <button class="row-card choice ${st.selected === o.id ? "selected" : ""}" data-choice="${o.id}">
+          <strong>Melting point: ${o.mp}°C</strong>
+          <strong>Boiling point: ${o.bp}°C</strong>
+        </button>
+      `).join("")}
+    </div>
+    ${renderFeedback("retry")}
+  `;
+}
+
+function checkRetry() {
+  const st = state.screenState.retry;
+  st.checked = true;
+  const chosen = st.options.find(o => o.id === st.selected);
+  st.passed = !!chosen && chosen.correct;
+  st.feedback = st.passed
+    ? "Correct. Only one row fits both clues."
+    : "Check one row at a time: 160°C first, then 480°C.";
+  render();
+}
+
+function renderTransfer() {
+  const st = state.screenState.transfer;
+  return `
+    <div class="question-block">
+      <div class="question-text">
+        Substance T is a <mark>liquid at 180°C</mark> and a <mark>gas at 320°C</mark>.<br>
+        Which row is possible?
+      </div>
+    </div>
+    <div class="card-grid" style="margin-top:14px;">
+      ${st.options.map(o => `
+        <button class="row-card choice ${st.selected === o.id ? "selected" : ""}" data-choice="${o.id}">
+          <strong>Melting point: ${o.mp}°C</strong>
+          <strong>Boiling point: ${o.bp}°C</strong>
+        </button>
+      `).join("")}
+    </div>
+    ${renderFeedback("transfer")}
+  `;
+}
+
+function checkTransfer() {
+  const st = state.screenState.transfer;
+  st.checked = true;
+  const chosen = st.options.find(o => o.id === st.selected);
+  st.passed = !!chosen && chosen.correct;
+  st.feedback = st.passed
+    ? "Yes. 150 < 180 < 300 and 320 > 300."
+    : "Use both clues. One temperature must be between. The other must be more than the boiling point.";
+  render();
+}
+
+function renderDone() {
+  return `
+    <div class="summary-box">
+      <div style="font-size:1.18rem; font-weight:800; margin-bottom:8px;">Strong method</div>
+      <div>1. Read both clues.</div>
+      <div>2. Check whether the first temperature is <strong>between</strong> the melting point and boiling point.</div>
+      <div>3. Check whether the second temperature is <strong>above</strong> the boiling point.</div>
+      <div>4. Eliminate rows that fail.</div>
+    </div>
+    <div class="big-center" style="margin-top:16px;">
+      <span class="pill">Interactive complete</span>
+    </div>
+  `;
+}
+
+function bindScreenControls() {
+  const s = screens[state.screen];
+  switch(s.id) {
+    case "clues":
+      document.querySelectorAll("[data-choice]").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.choice;
+        const st = state.screenState.clues;
+        if (st.selected.includes(id)) {
+          st.selected = st.selected.filter(x => x !== id);
+        } else if (st.selected.length < 2) {
+          st.selected.push(id);
+        }
+        render();
+      }));
+      break;
+    case "liquidRule":
+    case "gasRule":
+      document.querySelectorAll("[data-choice]").forEach(btn => btn.addEventListener("click", () => {
+        state.screenState[s.id].selected = btn.dataset.choice;
+        render();
+      }));
+      break;
+    case "placeTemps":
+      document.querySelectorAll("[data-chip]").forEach(btn => btn.addEventListener("click", () => {
+        const st = state.screenState.placeTemps;
+        const id = btn.dataset.chip;
+        if (st.placements[id]) st.placements[id] = null;
+        st.activeChip = id;
+        render();
+      }));
+      document.querySelectorAll("[data-zone]").forEach(btn => btn.addEventListener("click", () => {
+        const zone = btn.dataset.zone;
+        const st = state.screenState.placeTemps;
+        if (!st.activeChip) return;
+        st.placements[st.activeChip] = zone;
+        const other = st.activeChip === "t160" ? "t480" : "t160";
+        st.activeChip = st.placements[other] ? null : other;
+        render();
+      }));
+      break;
+    case "eliminate160":
+      document.querySelectorAll("[data-row]").forEach(btn => btn.addEventListener("click", () => {
+        const id = btn.dataset.row;
+        const st = state.screenState.eliminate160;
+        if (st.selected.includes(id)) {
+          st.selected = st.selected.filter(x => x !== id);
+        } else {
+          st.selected.push(id);
+        }
+        render();
+      }));
+      break;
+    case "fail480":
+    case "retry":
+    case "transfer":
+      document.querySelectorAll("[data-choice]").forEach(btn => btn.addEventListener("click", () => {
+        state.screenState[s.id].selected = btn.dataset.choice;
+        render();
+      }));
+      break;
+  }
+}
+
+initScreenState();
+render();
+</script>
+</body>
+</html>

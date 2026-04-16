@@ -1,0 +1,1912 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Change in State 12</title>
+  <style>
+    :root{
+      --bg1:#eef7ff;
+      --bg2:#dff2ff;
+      --ink:#13324b;
+      --muted:#4f6b81;
+      --primary:#167ac6;
+      --primary-dark:#0f5a93;
+      --accent:#27b0d6;
+      --green:#1f9c67;
+      --red:#d9534f;
+      --amber:#f0a43a;
+      --card:#ffffff;
+      --panel:#f6fbff;
+      --shadow:0 12px 34px rgba(16,63,98,.14);
+      --border:2px solid #b8dbef;
+      --radius:22px;
+      --topbar-h:82px;
+      --maxw:980px;
+      --font: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, #ffffff 0 12%, transparent 13%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+    }
+    .app{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:18px 18px 28px;
+    }
+    .top-strip{
+      width:100%;
+      background:rgba(255,255,255,.9);
+      border:var(--border);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:10px 14px;
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px 18px;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .tracker-block{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .tracker-label{
+      font-weight:800;
+      color:var(--primary-dark);
+      font-size:1rem;
+    }
+    .drop-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .drop{
+      width:20px;
+      height:28px;
+      position:relative;
+      transform:rotate(45deg);
+      background:linear-gradient(180deg,#7fd9ff,#2fa4e7);
+      border-radius:50% 50% 50% 0;
+      border:2px solid #1783c8;
+      box-shadow:0 4px 0 rgba(0,0,0,.04);
+    }
+    .drop.empty{
+      background:linear-gradient(180deg,#f4f6f8,#dfe7ee);
+      border-color:#a5b6c3;
+      opacity:.75;
+      filter:saturate(.2);
+    }
+    .drop::after{
+      content:"";
+      position:absolute;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:rgba(255,255,255,.6);
+      top:4px;
+      left:4px;
+    }
+    .tracker-note{
+      color:var(--muted);
+      font-size:.94rem;
+      font-weight:700;
+    }
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:800;
+      color:var(--primary-dark);
+      background:#eff8ff;
+      border:2px solid #c8e5f5;
+      padding:8px 12px;
+      border-radius:999px;
+    }
+    .switch{
+      width:52px;
+      height:30px;
+      border-radius:999px;
+      background:#c7d3dd;
+      position:relative;
+      border:none;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .switch::after{
+      content:"";
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      background:white;
+      position:absolute;
+      top:4px;
+      left:4px;
+      transition:.2s ease;
+      box-shadow:0 2px 5px rgba(0,0,0,.2);
+    }
+    .switch.on{background:#22b07d}
+    .switch.on::after{left:26px}
+    .small-btn{
+      border:none;
+      background:#eef7ff;
+      color:var(--primary-dark);
+      font-weight:800;
+      padding:11px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-size:.98rem;
+      border:2px solid #cae3f1;
+      transition:.2s ease;
+      min-height:46px;
+    }
+    .small-btn:hover,.small-btn:focus-visible{background:#dff0ff; outline:none}
+    .main-card{
+      background:var(--card);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      border:var(--border);
+      padding:20px 20px 16px;
+      min-height:660px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .screen-top{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .step-pill{
+      align-self:flex-start;
+      background:#ecf7ff;
+      color:var(--primary-dark);
+      font-weight:800;
+      padding:8px 12px;
+      border-radius:999px;
+      border:2px solid #c6e6f9;
+      font-size:.95rem;
+    }
+    .instruction{
+      font-size:clamp(1.55rem, 2.8vw, 2.15rem);
+      line-height:1.15;
+      font-weight:900;
+      color:#0f3455;
+      margin:0;
+    }
+    .subtext{
+      font-size:1.05rem;
+      color:var(--muted);
+      line-height:1.5;
+      margin:0;
+    }
+    .work-area{
+      display:grid;
+      gap:14px;
+      align-content:start;
+    }
+    .panel{
+      background:var(--panel);
+      border-radius:22px;
+      border:2px solid #d4e8f6;
+      padding:16px;
+    }
+    .question-box{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:16px;
+      align-items:start;
+    }
+    .question-stem{
+      background:white;
+      border:2px solid #dbeaf6;
+      border-radius:18px;
+      padding:16px;
+      line-height:1.55;
+      font-size:1.08rem;
+    }
+    .question-stem mark{
+      background:#fff3a9;
+      padding:0 .18em;
+      border-radius:6px;
+    }
+    .question-lines{
+      margin-top:10px;
+      display:grid;
+      gap:10px;
+    }
+    .answer-lines{
+      height:58px;
+      border-bottom:2px solid #bfd4e4;
+      opacity:.85;
+    }
+    .visual-card{
+      background:white;
+      border:2px solid #dbeaf6;
+      border-radius:18px;
+      padding:10px;
+    }
+    .visual-caption{
+      text-align:center;
+      color:var(--muted);
+      font-size:.95rem;
+      font-weight:700;
+      margin-top:8px;
+    }
+    .scene-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+      align-items:start;
+    }
+    .scene{
+      background:#fbfeff;
+      border:2px solid #dbeaf6;
+      border-radius:18px;
+      padding:8px;
+      display:grid;
+      gap:8px;
+      justify-items:center;
+      min-height:220px;
+    }
+    .scene-label{
+      font-weight:800;
+      font-size:.95rem;
+      color:var(--primary-dark);
+      text-align:center;
+    }
+    .scene svg{width:100%; height:auto; max-width:230px}
+    .options{
+      display:grid;
+      gap:12px;
+    }
+    .options.two-col{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+    .option{
+      width:100%;
+      text-align:left;
+      background:white;
+      border:2px solid #cfe3f2;
+      border-radius:18px;
+      padding:16px;
+      font-size:1.07rem;
+      line-height:1.35;
+      font-weight:800;
+      color:var(--ink);
+      cursor:pointer;
+      min-height:72px;
+      transition:.18s ease;
+    }
+    .option:hover,.option:focus-visible{
+      transform:translateY(-1px);
+      background:#f2faff;
+      border-color:#78b7df;
+      outline:none;
+    }
+    .option.selected{
+      border-color:var(--primary);
+      background:#e7f6ff;
+      box-shadow:0 0 0 3px rgba(22,122,198,.12);
+    }
+    .option.correct{
+      border-color:var(--green);
+      background:#e8fff3;
+    }
+    .option.wrong{
+      border-color:var(--red);
+      background:#fff1f1;
+    }
+    .option:disabled{
+      cursor:default;
+      opacity:1;
+    }
+    .action-row{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 18px;
+      min-height:54px;
+      font-size:1.04rem;
+      font-weight:900;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    .btn.primary{
+      background:linear-gradient(180deg, #1d98de, #167ac6);
+      color:white;
+      box-shadow:0 8px 18px rgba(22,122,198,.25);
+    }
+    .btn.primary:hover,.btn.primary:focus-visible{filter:brightness(1.03); outline:none}
+    .btn.primary:disabled{
+      background:#c6d5df;
+      box-shadow:none;
+      cursor:not-allowed;
+      color:#eef4f8;
+    }
+    .btn.secondary{
+      background:#eef7ff;
+      color:var(--primary-dark);
+      border:2px solid #c6e2f1;
+    }
+    .feedback{
+      min-height:70px;
+      border-radius:18px;
+      padding:14px 16px;
+      font-weight:800;
+      line-height:1.45;
+      font-size:1rem;
+      display:flex;
+      align-items:center;
+      border:2px solid #d8e8f3;
+      background:#f8fbfe;
+      color:var(--muted);
+    }
+    .feedback.good{
+      background:#ebfff4;
+      border-color:#8ad0ac;
+      color:#10633c;
+    }
+    .feedback.bad{
+      background:#fff4f4;
+      border-color:#f0a09d;
+      color:#8d2e2a;
+    }
+    details.question-panel{
+      background:#f8fbfe;
+      border:2px solid #d8e8f3;
+      border-radius:18px;
+      padding:0;
+      overflow:hidden;
+    }
+    details.question-panel > summary{
+      list-style:none;
+      padding:14px 16px;
+      cursor:pointer;
+      font-weight:900;
+      color:var(--primary-dark);
+      background:#eef7ff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    details.question-panel > summary::-webkit-details-marker{display:none}
+    .summary-tag{
+      background:#fff;
+      border:2px solid #cae6f7;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:.9rem;
+    }
+    .question-panel-body{
+      padding:16px;
+      display:grid;
+      gap:12px;
+    }
+    .compact-question{
+      display:grid;
+      gap:10px;
+    }
+    .mini-visual{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:white;
+      border:2px solid #dbeaf6;
+      border-radius:16px;
+      padding:8px;
+    }
+    .diagram-wrap{
+      display:grid;
+      grid-template-columns:.95fr 1.05fr;
+      gap:16px;
+      align-items:center;
+    }
+    .diagram-side-note{
+      font-size:1rem;
+      color:var(--muted);
+      line-height:1.45;
+      font-weight:700;
+    }
+    .statement-row{
+      display:grid;
+      gap:12px;
+    }
+    .check-row{
+      display:flex;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+    }
+    .order-wrap{
+      display:grid;
+      gap:16px;
+    }
+    .slots{
+      display:grid;
+      gap:10px;
+    }
+    .slot{
+      min-height:58px;
+      border:2px dashed #99c5e1;
+      background:#f7fbff;
+      border-radius:16px;
+      padding:10px 14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      color:#5b7488;
+      cursor:pointer;
+    }
+    .slot.filled{
+      border-style:solid;
+      border-color:#78b7df;
+      background:white;
+      color:var(--ink);
+    }
+    .slot-num{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#eaf6ff;
+      color:var(--primary-dark);
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .bank{
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    .chip{
+      border:2px solid #cfe3f2;
+      background:white;
+      border-radius:16px;
+      padding:12px 14px;
+      font-weight:800;
+      font-size:1rem;
+      cursor:pointer;
+      min-height:54px;
+      text-align:left;
+    }
+    .chip:hover,.chip:focus-visible{background:#eff8ff; border-color:#78b7df; outline:none}
+    .chip.used{display:none}
+    .fill-wrap{
+      display:grid;
+      gap:16px;
+    }
+    .sentence-frame{
+      background:white;
+      border:2px solid #dbeaf6;
+      border-radius:18px;
+      padding:16px;
+      font-size:1.14rem;
+      line-height:1.8;
+      font-weight:800;
+    }
+    .blank{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:132px;
+      min-height:44px;
+      border-bottom:3px solid #7db4d8;
+      margin:0 4px;
+      padding:0 6px;
+      border-radius:8px 8px 4px 4px;
+      background:#f7fbff;
+      color:#365a75;
+      cursor:pointer;
+      text-align:center;
+      vertical-align:middle;
+    }
+    .blank.active{
+      outline:4px solid rgba(39,176,214,.18);
+      border-bottom-color:#1da2cc;
+      background:#ecfbff;
+    }
+    .blank.correct{
+      background:#ebfff4;
+      border-bottom-color:#22a36a;
+    }
+    .blank.wrong{
+      background:#fff2f2;
+      border-bottom-color:#d9534f;
+    }
+    .hint-box{
+      font-size:1rem;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .guess-wrap{
+      display:grid;
+      gap:16px;
+    }
+    .guess-sentence{
+      background:white;
+      border:2px solid #dbeaf6;
+      border-radius:18px;
+      padding:16px;
+      font-size:1.12rem;
+      line-height:1.75;
+      font-weight:800;
+    }
+    .guess-current{
+      background:#eefaff;
+      border:2px solid #97d9ee;
+      border-radius:14px;
+      padding:14px;
+      display:grid;
+      gap:10px;
+      align-items:start;
+    }
+    .guess-prompt{
+      font-weight:900;
+      color:#0f3455;
+      font-size:1.08rem;
+    }
+    .guess-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    input.guess-input{
+      min-height:52px;
+      border-radius:14px;
+      border:2px solid #b7d7ea;
+      padding:10px 14px;
+      font-size:1.05rem;
+      font-weight:800;
+      min-width:220px;
+    }
+    .reveal{
+      color:#0f5a93;
+      font-weight:900;
+      font-size:1rem;
+    }
+    .complete-card{
+      background:linear-gradient(180deg,#f0fbff,#e6fff6);
+      border:2px solid #bde9d0;
+      border-radius:22px;
+      padding:18px;
+      display:grid;
+      gap:12px;
+      text-align:center;
+    }
+    .big-emoji{font-size:3rem}
+    .hidden{display:none !important}
+    .sr-only{
+      position:absolute!important; width:1px; height:1px; padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
+    .center{display:flex; justify-content:center; align-items:center;}
+    .mini-note{
+      font-size:.94rem;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .heat-legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px 16px;
+      color:var(--muted);
+      font-weight:800;
+      font-size:.95rem;
+    }
+    .legend-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .legend-dot{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      display:inline-block;
+    }
+    .legend-dot.orange{background:#ff9a3c}
+    .legend-dot.blue{background:#38a8e6}
+    .legend-dot.gray{background:#8fb1c8}
+    .gameover{
+      position:fixed;
+      inset:0;
+      background:rgba(12,39,62,.56);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:20;
+    }
+    .gameover.show{display:flex}
+    .gameover-card{
+      width:min(92vw, 460px);
+      background:white;
+      border-radius:28px;
+      box-shadow:0 16px 38px rgba(0,0,0,.22);
+      border:3px solid #d7e8f4;
+      padding:24px;
+      text-align:center;
+      display:grid;
+      gap:12px;
+    }
+    .countdown{
+      font-size:1.02rem;
+      color:var(--muted);
+      font-weight:800;
+    }
+
+    @media (max-width: 900px){
+      .question-box, .diagram-wrap{grid-template-columns:1fr}
+      .options.two-col, .bank{grid-template-columns:1fr}
+      .scene-grid{grid-template-columns:1fr}
+      .main-card{min-height:unset}
+    }
+    @media (max-width: 640px){
+      .app{padding:10px 10px 18px}
+      .main-card{padding:16px 14px 14px; border-radius:22px}
+      .top-strip{padding:10px}
+      .instruction{font-size:1.42rem}
+      .option{font-size:1rem}
+      .scene{min-height:unset}
+      input.guess-input{min-width:160px; width:100%}
+    }
+
+    /* SVG animation helpers */
+    .float-steam{animation:floatSteam 2.6s linear infinite}
+    .float-steam.delay1{animation-delay:.7s}
+    .float-steam.delay2{animation-delay:1.3s}
+    .heat-flow{animation:heatPulse 1.6s ease-in-out infinite}
+    .drop-rise{animation:dropRise 2.4s linear infinite}
+    .drop-rise.delay1{animation-delay:.8s}
+    .drop-rise.delay2{animation-delay:1.4s}
+    .body-cool{animation:bodyCool 2.4s ease-in-out infinite}
+    .wind-swish{animation:windMove 1.9s linear infinite}
+    @keyframes floatSteam{
+      0%{transform:translateY(2px); opacity:.2}
+      30%{opacity:.8}
+      100%{transform:translateY(-16px); opacity:0}
+    }
+    @keyframes heatPulse{
+      0%{opacity:.2; transform:translateX(0)}
+      50%{opacity:1; transform:translateX(3px)}
+      100%{opacity:.2; transform:translateX(7px)}
+    }
+    @keyframes dropRise{
+      0%{opacity:0; transform:translateY(12px)}
+      25%{opacity:1}
+      100%{opacity:0; transform:translateY(-26px)}
+    }
+    @keyframes bodyCool{
+      0%{opacity:.0}
+      40%{opacity:.32}
+      80%{opacity:.45}
+      100%{opacity:0}
+    }
+    @keyframes windMove{
+      0%{transform:translateX(-6px); opacity:.2}
+      50%{opacity:.85}
+      100%{transform:translateX(10px); opacity:.15}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="top-strip" aria-label="Demerit and audio controls">
+      <div class="tracker-block">
+        <div class="tracker-label">Careful reading water drops</div>
+        <div id="dropRow" class="drop-row" aria-live="polite"></div>
+        <div id="trackerNote" class="tracker-note"></div>
+      </div>
+      <div class="controls">
+        <div class="toggle">
+          <span>Auto read-aloud</span>
+          <button id="autoReadToggle" class="switch" type="button" aria-pressed="false" aria-label="Toggle auto read-aloud"></button>
+          <span id="autoReadText">Off</span>
+        </div>
+        <button id="readNowBtn" class="small-btn" type="button">🔈 Read this screen</button>
+      </div>
+    </div>
+
+    <main class="main-card" aria-live="polite">
+      <div id="screenRoot"></div>
+    </main>
+  </div>
+
+  <div id="gameOver" class="gameover" role="alertdialog" aria-modal="true" aria-labelledby="gameOverTitle">
+    <div class="gameover-card">
+      <div class="big-emoji">💧💧💧</div>
+      <h2 id="gameOverTitle" class="instruction" style="font-size:1.7rem; margin:0;">All the water drops are gone.</h2>
+      <p class="subtext" style="margin:0;">The whole interactive will restart so you can try again carefully.</p>
+      <div id="countdown" class="countdown">Restarting...</div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const questionText = [
+        "Wenhao went for a swim. When he came out of the water, he felt cold.",
+        "At that moment, a strong wind blew, and he felt even colder.",
+        "Explain why he felt colder when a strong wind blew."
+      ];
+
+      const screenOrder = [
+        "intro",
+        "change",
+        "wet-clue",
+        "process",
+        "heat-source",
+        "animation",
+        "body-effect",
+        "wind-effect",
+        "chain",
+        "mark1",
+        "mark2",
+        "guess",
+        "transfer",
+        "complete"
+      ];
+
+      const teachingScreens = new Set([
+        "change",
+        "wet-clue",
+        "process",
+        "heat-source",
+        "animation",
+        "body-effect",
+        "wind-effect",
+        "chain",
+        "mark1",
+        "mark2"
+      ]);
+
+      const totalTeachingChecks = 10;
+      const initialDemerits = Math.ceil(totalTeachingChecks / 2);
+
+      const appState = {
+        screenIndex: 0,
+        autoRead: false,
+        questionPanelOpen: false,
+        spokenFeedback: "",
+        demeritsLeft: initialDemerits,
+        gameOverTimer: null,
+        globalCorrectPositionCounts: [0,0,0,0],
+        screenData: {}
+      };
+
+      const screenRoot = document.getElementById("screenRoot");
+      const dropRow = document.getElementById("dropRow");
+      const trackerNote = document.getElementById("trackerNote");
+      const gameOverEl = document.getElementById("gameOver");
+      const countdownEl = document.getElementById("countdown");
+      const autoReadToggle = document.getElementById("autoReadToggle");
+      const autoReadText = document.getElementById("autoReadText");
+      const readNowBtn = document.getElementById("readNowBtn");
+
+      const synth = window.speechSynthesis || null;
+
+      autoReadToggle.addEventListener("click", () => {
+        appState.autoRead = !appState.autoRead;
+        autoReadToggle.classList.toggle("on", appState.autoRead);
+        autoReadToggle.setAttribute("aria-pressed", String(appState.autoRead));
+        autoReadText.textContent = appState.autoRead ? "On" : "Off";
+        if (appState.autoRead) readCurrentScreen();
+        else cancelSpeech();
+      });
+
+      readNowBtn.addEventListener("click", () => readCurrentScreen());
+
+      function cancelSpeech(){
+        if(synth) synth.cancel();
+      }
+
+      function readCurrentScreen(){
+        if(!synth) return;
+        cancelSpeech();
+        const text = getScreenReadText();
+        if(!text) return;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.92;
+        utter.pitch = 1.0;
+        synth.speak(utter);
+      }
+
+      function escapeHtml(str){
+        return String(str)
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#39;");
+      }
+
+      function choiceCorrectPosition(length){
+        let counts = appState.globalCorrectPositionCounts.slice(0, length);
+        let minCount = Math.min(...counts);
+        let candidates = [];
+        counts.forEach((v,i)=>{ if(v === minCount) candidates.push(i); });
+        return candidates[Math.floor(Math.random()*candidates.length)];
+      }
+
+      function shuffleArray(arr){
+        const copy = arr.slice();
+        for(let i=copy.length-1;i>0;i--){
+          const j=Math.floor(Math.random()*(i+1));
+          [copy[i],copy[j]]=[copy[j],copy[i]];
+        }
+        return copy;
+      }
+
+      function prepareSingleOptions(key, options, correctId){
+        if(appState.screenData[key]?.options) return appState.screenData[key].options;
+        const correct = options.find(o => o.id === correctId);
+        const distractors = shuffleArray(options.filter(o => o.id !== correctId));
+        const correctPos = choiceCorrectPosition(options.length);
+        const arranged = [];
+        let d = 0;
+        for(let i=0;i<options.length;i++){
+          if(i === correctPos) arranged.push(correct);
+          else arranged.push(distractors[d++]);
+        }
+        appState.globalCorrectPositionCounts[correctPos] += 1;
+        appState.screenData[key] = { ...(appState.screenData[key]||{}), options: arranged, solved: false, wrongChecks: 0 };
+        return arranged;
+      }
+
+      function prepareShuffledBank(key, items){
+        if(appState.screenData[key]?.bank) return appState.screenData[key].bank;
+        let bank = shuffleArray(items);
+        if(items.length > 1 && bank.every((item, index) => item.id === items[index].id)){
+          bank = shuffleArray(items);
+        }
+        appState.screenData[key] = { ...(appState.screenData[key]||{}), bank, solved: false, wrongChecks: 0 };
+        return bank;
+      }
+
+      function increaseDemerit(){
+        appState.demeritsLeft -= 1;
+        renderTracker();
+        if(appState.demeritsLeft <= 0){
+          startGameOver();
+        }
+      }
+
+      function startGameOver(){
+        cancelSpeech();
+        let seconds = 2;
+        gameOverEl.classList.add("show");
+        countdownEl.textContent = `Restarting in ${seconds}...`;
+        clearInterval(appState.gameOverTimer);
+        appState.gameOverTimer = setInterval(() => {
+          seconds -= 1;
+          if(seconds > 0){
+            countdownEl.textContent = `Restarting in ${seconds}...`;
+          } else {
+            clearInterval(appState.gameOverTimer);
+            restartAll();
+          }
+        }, 900);
+      }
+
+      function restartAll(){
+        cancelSpeech();
+        gameOverEl.classList.remove("show");
+        appState.screenIndex = 0;
+        appState.questionPanelOpen = false;
+        appState.demeritsLeft = initialDemerits;
+        appState.screenData = {};
+        appState.globalCorrectPositionCounts = [0,0,0,0];
+        renderTracker();
+        renderScreen();
+      }
+
+      function renderTracker(){
+        dropRow.innerHTML = "";
+        for(let i=0;i<initialDemerits;i++){
+          const d = document.createElement("div");
+          d.className = "drop" + (i >= appState.demeritsLeft ? " empty" : "");
+          d.setAttribute("aria-hidden","true");
+          dropRow.appendChild(d);
+        }
+        trackerNote.textContent = `${appState.demeritsLeft} of ${initialDemerits} left. Wrong checks on the teaching screens use 1 drop.`;
+      }
+
+      function nextScreen(){
+        if(appState.screenIndex < screenOrder.length - 1){
+          appState.screenIndex += 1;
+          renderScreen();
+        }
+      }
+
+      function prevScreen(){
+        if(appState.screenIndex > 0){
+          appState.screenIndex -= 1;
+          renderScreen();
+        }
+      }
+
+      function currentKey(){
+        return screenOrder[appState.screenIndex];
+      }
+
+      function stepLabel(){
+        return `Step ${appState.screenIndex + 1} of ${screenOrder.length}`;
+      }
+
+      function questionPanelHtml(){
+        const openAttr = appState.questionPanelOpen ? "open" : "";
+        return `
+          <details class="question-panel" id="questionPanel" ${openAttr}>
+            <summary>
+              <span>Show the question and diagram</span>
+              <span class="summary-tag">${appState.questionPanelOpen ? "Open" : "Tap to open"}</span>
+            </summary>
+            <div class="question-panel-body">
+              <div class="compact-question">
+                <div class="question-stem">
+                  <div><strong>Wenhao went for a swim.</strong> When he came out of the water, he felt cold.</div>
+                  <div style="margin-top:10px;"><strong>At that moment, a strong wind blew</strong>, and he felt <strong>even colder</strong>.</div>
+                  <div style="margin-top:10px;"><strong>Explain why he felt colder when a strong wind blew.</strong></div>
+                </div>
+                <div class="mini-visual">${sceneStripSvg()}</div>
+              </div>
+            </div>
+          </details>
+        `;
+      }
+
+      function attachQuestionPanelListener(){
+        const panel = document.getElementById("questionPanel");
+        if(panel){
+          panel.addEventListener("toggle", () => {
+            appState.questionPanelOpen = panel.open;
+          });
+        }
+      }
+
+      function layout(innerHtml, options = {}){
+        const { showQuestionPanel = currentKey() !== "intro" && currentKey() !== "complete", feedbackClass = "" } = options;
+        const feedback = options.feedback || "Choose or build your answer. Then look at the feedback here.";
+        const nextDisabled = options.nextDisabled ? "disabled" : "";
+        const backDisabled = appState.screenIndex === 0 ? "disabled" : "";
+        screenRoot.innerHTML = `
+          <div class="screen-top">
+            <div class="step-pill">${stepLabel()}</div>
+            <h1 class="instruction">${options.instruction || ""}</h1>
+            ${options.subtext ? `<p class="subtext">${options.subtext}</p>` : ""}
+          </div>
+          <div class="work-area">
+            ${innerHtml}
+            ${showQuestionPanel ? questionPanelHtml() : ""}
+            <div id="feedback" class="feedback ${feedbackClass}">${feedback}</div>
+            <div class="action-row">
+              <button id="backBtn" class="btn secondary" type="button" ${backDisabled}>Back</button>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                ${options.extraAction || ""}
+                <button id="nextBtn" class="btn primary" type="button" ${nextDisabled}>${options.nextLabel || "Next"}</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById("backBtn").addEventListener("click", prevScreen);
+        document.getElementById("nextBtn").addEventListener("click", nextScreen);
+        attachQuestionPanelListener();
+        window.scrollTo({top:0, behavior:"smooth"});
+        if(appState.autoRead) setTimeout(readCurrentScreen, 120);
+      }
+
+      function setFeedback(text, type="neutral"){
+        const box = document.getElementById("feedback");
+        if(!box) return;
+        box.className = `feedback ${type === "good" ? "good" : type === "bad" ? "bad" : ""}`;
+        box.textContent = text;
+        appState.spokenFeedback = text;
+        if(appState.autoRead) setTimeout(readCurrentScreen, 40);
+      }
+
+      function unlockNext(){
+        const nextBtn = document.getElementById("nextBtn");
+        if(nextBtn) nextBtn.disabled = false;
+      }
+
+      function selectSingle(key, selectedId, correctId, goodText, badText){
+        const data = appState.screenData[key];
+        if(data.solved) return;
+        const buttons = Array.from(document.querySelectorAll(".option"));
+        buttons.forEach(btn => btn.disabled = false);
+        buttons.forEach(btn => {
+          const isSelected = btn.dataset.id === selectedId;
+          btn.classList.toggle("selected", isSelected);
+        });
+        if(selectedId === correctId){
+          data.solved = true;
+          const chosen = document.querySelector(`.option[data-id="${selectedId}"]`);
+          if(chosen) chosen.classList.add("correct");
+          buttons.forEach(btn => btn.disabled = true);
+          setFeedback(goodText, "good");
+          unlockNext();
+        } else {
+          data.wrongChecks += 1;
+          const chosen = document.querySelector(`.option[data-id="${selectedId}"]`);
+          if(chosen){
+            chosen.classList.add("wrong");
+            setTimeout(() => chosen.classList.remove("wrong"), 700);
+          }
+          if(teachingScreens.has(key)) increaseDemerit();
+          setFeedback(badText, "bad");
+        }
+      }
+
+      function getScreenReadText(){
+        const instruction = document.querySelector(".instruction")?.innerText || "";
+        const sub = document.querySelector(".subtext")?.innerText || "";
+        const work = Array.from(document.querySelectorAll(".option, .slot, .blank, .chip, .guess-prompt, .sentence-frame, .question-stem, .diagram-side-note, .visual-caption, .scene-label"))
+          .map(el => el.innerText.trim())
+          .filter(Boolean)
+          .join(". ");
+        const feedback = document.getElementById("feedback")?.innerText || "";
+        return [instruction, sub, work, feedback].filter(Boolean).join(". ");
+      }
+
+      function basePersonSvg(opts = {}){
+        const wet = opts.wet ? "wet" : "";
+        const wind = opts.wind ? "wind" : "";
+        const steam = opts.steam ? "steam" : "";
+        const title = opts.title || "";
+        return `
+          <svg viewBox="0 0 220 210" role="img" aria-label="${escapeHtml(title)}">
+            <defs>
+              <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f5c7a6"/>
+                <stop offset="100%" stop-color="#e9b18c"/>
+              </linearGradient>
+              <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8fe4ff"/>
+                <stop offset="100%" stop-color="#3da7e0"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="220" height="210" rx="18" fill="#fbfeff"/>
+            <ellipse cx="110" cy="186" rx="72" ry="10" fill="#d8ebf7"/>
+            ${wind ? `
+              <g stroke="#7ab9df" stroke-width="4" fill="none" stroke-linecap="round">
+                <path class="wind-swish" d="M10 68 C 45 56, 62 56, 88 64" />
+                <path class="wind-swish" style="animation-delay:.35s" d="M0 91 C 35 79, 64 79, 102 90" />
+                <path class="wind-swish" style="animation-delay:.7s" d="M18 117 C 46 104, 66 106, 97 116" />
+              </g>` : ""}
+            <g transform="translate(0,0)">
+              <circle cx="112" cy="48" r="18" fill="url(#skinGrad)" />
+              <path d="M94 39 C98 18, 127 20, 128 42 C117 34,106 34,94 39Z" fill="#25374d"/>
+              <rect x="97" y="66" width="30" height="52" rx="16" fill="url(#skinGrad)"/>
+              <path d="M96 106 Q112 114 128 106 L130 122 Q112 130 94 122 Z" fill="#1d72c9"/>
+              <path d="M99 108 Q112 113 125 108" fill="none" stroke="#0f4e90" stroke-width="2" opacity=".45"/>
+              <path d="M106 122 L101 136" stroke="#1d72c9" stroke-width="7" stroke-linecap="round"/>
+              <path d="M118 122 L123 136" stroke="#1d72c9" stroke-width="7" stroke-linecap="round"/>
+              <line x1="103" y1="81" x2="78" y2="107" stroke="url(#skinGrad)" stroke-width="11" stroke-linecap="round"/>
+              <line x1="121" y1="81" x2="145" y2="107" stroke="url(#skinGrad)" stroke-width="11" stroke-linecap="round"/>
+              <line x1="108" y1="118" x2="91" y2="160" stroke="url(#skinGrad)" stroke-width="12" stroke-linecap="round"/>
+              <line x1="118" y1="118" x2="132" y2="159" stroke="url(#skinGrad)" stroke-width="12" stroke-linecap="round"/>
+              <path d="M98 93 Q112 101 126 93" fill="none" stroke="#d1906f" stroke-width="3" opacity=".35"/>
+              <circle cx="106" cy="49" r="2.1" fill="#334"/>
+              <circle cx="118" cy="49" r="2.1" fill="#334"/>
+              <path d="M106 58 Q112 62 118 58" stroke="#805b52" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </g>
+            ${wet ? `
+              <g fill="url(#waterGrad)" opacity=".95">
+                <circle cx="84" cy="111" r="4"/>
+                <circle cx="145" cy="112" r="4"/>
+                <circle cx="99" cy="132" r="4"/>
+                <circle cx="124" cy="136" r="4"/>
+                <circle cx="90" cy="154" r="4"/>
+                <circle cx="133" cy="152" r="4"/>
+              </g>` : ""}
+            ${steam ? `
+              <g fill="#72c7f2">
+                <circle class="drop-rise" cx="84" cy="110" r="4"></circle>
+                <circle class="drop-rise delay1" cx="108" cy="126" r="4"></circle>
+                <circle class="drop-rise delay2" cx="134" cy="112" r="4"></circle>
+              </g>
+              <g stroke="#f8a44e" stroke-width="4" fill="none" stroke-linecap="round">
+                <path class="heat-flow" d="M72 118 C82 114, 86 108, 95 103"></path>
+                <path class="heat-flow" style="animation-delay:.4s" d="M123 112 C133 108, 138 104, 147 100"></path>
+              </g>
+              <ellipse class="body-cool" cx="112" cy="95" rx="46" ry="64" fill="#4db5ea"></ellipse>` : ""}
+            <g stroke="#80c6eb" stroke-width="4" fill="none" stroke-linecap="round" opacity=".9">
+              <path class="${wet ? 'float-steam' : ''}" d="M72 36 C76 28, 68 23, 74 14"></path>
+              <path class="${wet ? 'float-steam delay1' : ''}" d="M111 32 C117 24, 107 18, 114 10"></path>
+              <path class="${wet ? 'float-steam delay2' : ''}" d="M149 38 C153 30, 145 24, 150 15"></path>
+            </g>
+          </svg>
+        `;
+      }
+
+      function sceneStripSvg(){
+        return `
+          <div class="scene-grid">
+            <div class="scene">
+              ${basePersonSvg({title:"Dry before swimming"})}
+              <div class="scene-label">Body dry before swimming</div>
+            </div>
+            <div class="scene">
+              ${basePersonSvg({wet:true, title:"Wet after swimming"})}
+              <div class="scene-label">Body wet after swimming</div>
+            </div>
+            <div class="scene">
+              ${basePersonSvg({wet:true, wind:true, title:"Strong wind after swimming"})}
+              <div class="scene-label">Strong wind blew</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function animationSvg(){
+        return `
+          <svg viewBox="0 0 460 250" role="img" aria-label="Heat moves from Wenhao's body to the water. The water evaporates. He feels colder.">
+            <rect x="0" y="0" width="460" height="250" rx="24" fill="#ffffff"/>
+            <rect x="18" y="18" width="424" height="214" rx="20" fill="#f9fdff" stroke="#dbeaf6" stroke-width="2"/>
+            <g transform="translate(182,20)">
+              <circle cx="52" cy="34" r="20" fill="#efb88e"/>
+              <path d="M34 24 C38 6, 71 8, 72 28 C59 19, 46 19, 34 24Z" fill="#24364a"/>
+              <rect x="34" y="56" width="36" height="66" rx="18" fill="#efb88e"/>
+              <path d="M33 108 Q52 117 71 108 L73 126 Q52 135 31 126 Z" fill="#1d72c9"/>
+              <path d="M37 110 Q52 116 67 110" fill="none" stroke="#0f4e90" stroke-width="2" opacity=".45"/>
+              <path d="M45 126 L39 143" stroke="#1d72c9" stroke-width="7" stroke-linecap="round"/>
+              <path d="M59 126 L65 143" stroke="#1d72c9" stroke-width="7" stroke-linecap="round"/>
+              <line x1="42" y1="74" x2="15" y2="98" stroke="#efb88e" stroke-width="12" stroke-linecap="round"/>
+              <line x1="62" y1="74" x2="89" y2="98" stroke="#efb88e" stroke-width="12" stroke-linecap="round"/>
+              <line x1="47" y1="122" x2="28" y2="176" stroke="#efb88e" stroke-width="12" stroke-linecap="round"/>
+              <line x1="58" y1="122" x2="76" y2="176" stroke="#efb88e" stroke-width="12" stroke-linecap="round"/>
+              <circle cx="46" cy="35" r="2.2" fill="#334"/>
+              <circle cx="58" cy="35" r="2.2" fill="#334"/>
+              <path d="M46 45 Q52 49 58 45" stroke="#805b52" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <g fill="#48afe4">
+                <circle cx="18" cy="101" r="5"/>
+                <circle cx="86" cy="104" r="5"/>
+                <circle cx="37" cy="133" r="5"/>
+                <circle cx="70" cy="137" r="5"/>
+              </g>
+              <g stroke="#ff9a3c" stroke-width="4.2" fill="none" stroke-linecap="round">
+                <path class="heat-flow" d="M5 113 C18 108, 24 100, 32 95"></path>
+                <path class="heat-flow" style="animation-delay:.28s" d="M82 115 C71 111, 66 104, 61 98"></path>
+                <path class="heat-flow" style="animation-delay:.6s" d="M38 149 C44 143, 48 136, 49 126"></path>
+                <path class="heat-flow" style="animation-delay:.9s" d="M67 152 C61 145, 58 139, 56 129"></path>
+              </g>
+              <g fill="#6dc9f2">
+                <circle class="drop-rise" cx="20" cy="100" r="4"/>
+                <circle class="drop-rise delay1" cx="42" cy="132" r="4"/>
+                <circle class="drop-rise delay2" cx="72" cy="108" r="4"/>
+                <circle class="drop-rise" style="animation-delay:1.4s" cx="58" cy="140" r="4"/>
+              </g>
+              <ellipse class="body-cool" cx="52" cy="92" rx="48" ry="70" fill="#50b7ea"></ellipse>
+            </g>
+            <g stroke="#7ab9df" stroke-width="5" fill="none" stroke-linecap="round">
+              <path class="wind-swish" d="M40 86 C 100 66, 144 67, 188 84" />
+              <path class="wind-swish" style="animation-delay:.35s" d="M22 118 C 95 98, 132 98, 182 118" />
+              <path class="wind-swish" style="animation-delay:.7s" d="M34 152 C 96 132, 138 134, 186 148" />
+            </g>
+            <text x="40" y="48" font-size="20" font-weight="800" fill="#0f5a93">strong wind</text>
+            <text x="285" y="45" font-size="20" font-weight="800" fill="#0f5a93">water evaporates</text>
+            <text x="294" y="72" font-size="18" font-weight="800" fill="#4f6b81">heat moves from body to water</text>
+            <text x="300" y="200" font-size="20" font-weight="900" fill="#14653d">body loses heat → feels colder</text>
+            <g stroke="#72c7f2" stroke-width="4" fill="none" stroke-linecap="round">
+              <path class="float-steam" d="M302 123 C306 115, 298 111, 303 102"></path>
+              <path class="float-steam delay1" d="M332 113 C338 104, 328 98, 336 89"></path>
+              <path class="float-steam delay2" d="M360 128 C366 120, 356 114, 362 104"></path>
+            </g>
+            <g stroke="#ff9a3c" stroke-width="4" fill="none" stroke-linecap="round">
+              <path class="heat-flow" d="M266 110 C286 108, 296 108, 314 107"></path>
+              <path class="heat-flow" style="animation-delay:.5s" d="M266 132 C286 132, 302 132, 320 132"></path>
+            </g>
+          </svg>
+        `;
+      }
+
+      function renderIntro(){
+        layout(`
+          <div class="panel question-box">
+            <div class="question-stem">
+              <div style="font-weight:900; font-size:1.08rem; margin-bottom:10px;">Read the full question first.</div>
+              <div><strong>Wenhao went for a swim.</strong> When he came out of the water, he felt cold.</div>
+              <div style="margin-top:12px;">At that moment, a <mark>strong wind blew</mark>, and he felt <mark>even colder</mark>.</div>
+              <div style="margin-top:12px;"><mark>Explain why</mark> he felt colder when a strong wind blew.</div>
+              <div style="margin-top:12px;">His body was <mark>wet after swimming</mark>.</div>
+              <div class="question-lines">
+                <div class="answer-lines"></div>
+                <div class="answer-lines"></div>
+              </div>
+            </div>
+            <div class="visual-card">
+              ${sceneStripSvg()}
+              <div class="visual-caption">The question gives two important clues: his body is wet, and a strong wind blew.</div>
+            </div>
+          </div>
+        `, {
+          instruction: "Read the question. Then tap to start.",
+          subtext: "Do not answer yet. First, notice what changed and what clue is already given.",
+          feedback: "Tap Next when you have read the question.",
+          feedbackClass: "",
+          nextDisabled: false,
+          nextLabel: "I have read it"
+        });
+      }
+
+      function renderSingleChoiceScreen(config){
+        const { key, instruction, subtext, options, correctId, goodText, badText, visualHtml } = config;
+        const arranged = prepareSingleOptions(key, options, correctId);
+        layout(`
+          ${visualHtml || ""}
+          <div class="options ${arranged.length === 4 ? 'two-col' : ''}">
+            ${arranged.map(opt => `<button type="button" class="option" data-id="${opt.id}">${escapeHtml(opt.text)}</button>`).join("")}
+          </div>
+        `, {
+          instruction,
+          subtext,
+          feedback: "Tap one answer.",
+          nextDisabled: !(appState.screenData[key]?.solved),
+          feedbackClass: appState.screenData[key]?.solved ? "good" : ""
+        });
+        document.querySelectorAll(".option").forEach(btn => {
+          if(appState.screenData[key]?.solved){
+            btn.disabled = true;
+            if(btn.dataset.id === correctId) btn.classList.add("correct");
+          }
+          btn.addEventListener("click", () => {
+            selectSingle(key, btn.dataset.id, correctId, goodText, badText);
+          });
+        });
+        if(appState.screenData[key]?.solved){
+          setTimeout(() => setFeedback(goodText, "good"), 0);
+        }
+      }
+
+      function renderAnimationScreen(){
+        const key = "animation";
+        if(!appState.screenData[key]) appState.screenData[key] = { selected: new Set(), solved:false, wrongChecks:0 };
+        const state = appState.screenData[key];
+        const options = prepareShuffledBank(key+"_opts", [
+          {id:"gain", text:"The water gains heat."},
+          {id:"evap", text:"The water evaporates."},
+          {id:"bodygain", text:"The body gains heat."},
+          {id:"windcold", text:"The wind adds coldness straight into the water."}
+        ]);
+        layout(`
+          <div class="panel diagram-wrap">
+            <div class="visual-card">${animationSvg()}</div>
+            <div class="diagram-side-note">
+              <div style="font-size:1.12rem; font-weight:900; color:#0f3455; margin-bottom:10px;">Watch the science idea.</div>
+              <div>The orange arrows show <strong>heat moving from the body to the water</strong>.</div>
+              <div style="margin-top:10px;">The blue drops rise because the water <strong>evaporates into water vapour</strong>.</div>
+              <div style="margin-top:10px;">When heat leaves the body, the body <strong>loses heat</strong> and feels colder.</div>
+              <div class="heat-legend" style="margin-top:12px;">
+                <span class="legend-pill"><span class="legend-dot orange"></span> heat transfer</span>
+                <span class="legend-pill"><span class="legend-dot blue"></span> evaporating water</span>
+                <span class="legend-pill"><span class="legend-dot gray"></span> cooling effect</span>
+              </div>
+            </div>
+          </div>
+          <div class="statement-row">
+            <div class="subtext" style="font-size:1rem;">Choose the <strong>two</strong> true statements.</div>
+            <div class="options two-col">
+              ${options.map(opt => `<button type="button" class="option ${state.selected.has(opt.id) ? 'selected' : ''}" data-id="${opt.id}">${escapeHtml(opt.text)}</button>`).join("")}
+            </div>
+          </div>
+        `, {
+          instruction: "Watch. Then choose the two true statements.",
+          subtext: "Choose two. Then tap Check.",
+          feedback: state.solved ? "Yes. Water gains heat and evaporates." : "Choose two statements, then tap Check.",
+          feedbackClass: state.solved ? "good" : "",
+          extraAction: `<button id="checkBtn" class="btn secondary" type="button">Check</button>`,
+          nextDisabled: !state.solved
+        });
+        document.querySelectorAll(".option").forEach(btn => {
+          if(state.solved){
+            btn.disabled = true;
+            if(btn.dataset.id === "gain" || btn.dataset.id === "evap") btn.classList.add("correct");
+            else btn.classList.add("wrong");
+          }
+          btn.addEventListener("click", () => {
+            if(state.solved) return;
+            const id = btn.dataset.id;
+            if(state.selected.has(id)) state.selected.delete(id);
+            else state.selected.add(id);
+            btn.classList.toggle("selected", state.selected.has(id));
+          });
+        });
+        const checkBtn = document.getElementById("checkBtn");
+        checkBtn.addEventListener("click", () => {
+          if(state.solved) return;
+          const chosen = Array.from(state.selected).sort().join("|");
+          const correct = ["evap","gain"].sort().join("|");
+          if(chosen === correct){
+            state.solved = true;
+            document.querySelectorAll(".option").forEach(btn => {
+              btn.disabled = true;
+              if(btn.dataset.id === "gain" || btn.dataset.id === "evap") btn.classList.add("correct");
+            });
+            setFeedback("Yes. Water gains heat and evaporates.", "good");
+            unlockNext();
+          } else {
+            state.wrongChecks += 1;
+            increaseDemerit();
+            setFeedback("Watch the arrows and the water carefully. Choose the two statements that match the animation.", "bad");
+            document.querySelectorAll(".option").forEach(btn => {
+              const id = btn.dataset.id;
+              if(state.selected.has(id) && !(id === "gain" || id === "evap")) btn.classList.add("wrong");
+              else btn.classList.remove("wrong");
+            });
+          }
+        });
+      }
+
+      function renderChainScreen(){
+        const key = "chain";
+        if(!appState.screenData[key]){
+          const correct = [
+            {id:"windrate", text:"Strong wind increases the rate of evaporation."},
+            {id:"faster", text:"The water evaporates faster."},
+            {id:"moreheat", text:"More heat is removed from his body."},
+            {id:"colder", text:"He feels even colder."}
+          ];
+          let bank = shuffleArray(correct);
+          while(bank.every((item, index) => item.id === correct[index].id)){
+            bank = shuffleArray(correct);
+          }
+          appState.screenData[key] = { bank, placed: [null,null,null,null], correct, solved:false, wrongChecks:0 };
+        }
+        const state = appState.screenData[key];
+        layout(`
+          <div class="order-wrap">
+            <div class="subtext" style="font-size:1rem;">Build the order. If you change your mind, tap a filled box to put that step back.</div>
+            <div class="slots">
+              ${state.placed.map((item, idx) => `
+                <button type="button" class="slot ${item ? 'filled' : ''}" data-slot="${idx}">
+                  <span class="slot-num">${idx+1}</span>
+                  <span>${item ? escapeHtml(item.text) : 'Tap a step from the bank below.'}</span>
+                </button>
+              `).join("")}
+            </div>
+            <div class="bank">
+              ${state.bank.map(item => `
+                <button type="button" class="chip ${state.placed.some(p => p && p.id === item.id) ? 'used' : ''}" data-id="${item.id}">
+                  ${escapeHtml(item.text)}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `, {
+          instruction: "Build the best order to explain why he felt even colder.",
+          subtext: "Start with what the wind changes. Then follow what happens next.",
+          feedback: state.solved ? "Yes. Faster evaporation causes more heat loss." : "Build the full chain. Then tap Check.",
+          feedbackClass: state.solved ? "good" : "",
+          extraAction: `<button id="checkBtn" class="btn secondary" type="button">Check</button>`,
+          nextDisabled: !state.solved
+        });
+
+        document.querySelectorAll(".chip").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if(state.solved || btn.classList.contains("used")) return;
+            const nextSlot = state.placed.findIndex(v => v === null);
+            if(nextSlot === -1) return;
+            const chosen = state.bank.find(item => item.id === btn.dataset.id);
+            state.placed[nextSlot] = chosen;
+            renderChainScreen();
+          });
+        });
+        document.querySelectorAll(".slot").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if(state.solved) return;
+            const idx = Number(btn.dataset.slot);
+            if(state.placed[idx]){
+              const removed = state.placed[idx];
+              state.placed[idx] = null;
+              for(let i=idx+1;i<state.placed.length;i++){
+                const move = state.placed[i];
+                state.placed[i-1] = move;
+              }
+              state.placed[state.placed.length - 1] = null;
+              renderChainScreen();
+            }
+          });
+        });
+        document.getElementById("checkBtn").addEventListener("click", () => {
+          if(state.solved) return;
+          if(state.placed.some(item => !item)){
+            setFeedback("Fill all four steps first.", "bad");
+            return;
+          }
+          const good = state.placed.every((item, idx) => item.id === state.correct[idx].id);
+          if(good){
+            state.solved = true;
+            setFeedback("Yes. Faster evaporation causes more heat loss.", "good");
+            unlockNext();
+          } else {
+            state.wrongChecks += 1;
+            increaseDemerit();
+            setFeedback("Start with what the wind changes. Then follow the heat loss effect.", "bad");
+          }
+        });
+      }
+
+      function renderFillScreen(config){
+        const { key, instruction, subtext, parts, bankItems, sentenceHtmlBuilder, goodText, hintText } = config;
+        if(!appState.screenData[key]){
+          let bank = shuffleArray(bankItems);
+          appState.screenData[key] = {
+            activeBlank: 0,
+            values: Array(parts.length).fill(null),
+            bank,
+            solved:false,
+            wrongChecks:0,
+            showExact:false
+          };
+        }
+        const state = appState.screenData[key];
+        const sentence = sentenceHtmlBuilder(state.values, state.activeBlank, state.showExact);
+        layout(`
+          <div class="fill-wrap">
+            <div class="sentence-frame">${sentence}</div>
+            <div class="hint-box">${state.wrongChecks === 0 ? "Tap a blank. Then tap a word from the bank." : hintText(state)}</div>
+            <div class="bank">
+              ${state.bank.map(item => `
+                <button type="button" class="chip ${state.values.includes(item.id) ? 'used' : ''}" data-id="${item.id}">
+                  ${escapeHtml(item.text)}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        `, {
+          instruction,
+          subtext,
+          feedback: state.solved ? goodText : "Fill all the blanks. Then tap Check.",
+          feedbackClass: state.solved ? "good" : "",
+          extraAction: `<button id="checkBtn" class="btn secondary" type="button">Check</button>`,
+          nextDisabled: !state.solved
+        });
+
+        document.querySelectorAll(".blank").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if(state.solved) return;
+            const idx = Number(btn.dataset.blank);
+            state.activeBlank = idx;
+            renderFillScreen(config);
+          });
+        });
+        document.querySelectorAll(".chip").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if(state.solved || btn.classList.contains("used")) return;
+            state.values[state.activeBlank] = btn.dataset.id;
+            const nextBlank = state.values.findIndex(v => v === null);
+            if(nextBlank !== -1) state.activeBlank = nextBlank;
+            renderFillScreen(config);
+          });
+        });
+        document.getElementById("checkBtn").addEventListener("click", () => {
+          if(state.solved) return;
+          if(state.values.some(v => v === null)){
+            setFeedback("Fill every blank first.", "bad");
+            return;
+          }
+          const isGood = parts.every((part, idx) => state.values[idx] === part.correctId);
+          if(isGood){
+            state.solved = true;
+            setFeedback(goodText, "good");
+            unlockNext();
+          } else {
+            state.wrongChecks += 1;
+            state.showExact = state.wrongChecks > 1;
+            increaseDemerit();
+            const clueText = state.wrongChecks === 1 ? config.generalClue : config.exactClue;
+            renderFillScreen(config);
+            setTimeout(() => setFeedback(clueText, "bad"), 20);
+          }
+        });
+      }
+
+      function blankHtml(index, valueId, label, activeIdx, showExact, correctId){
+        const text = valueId ? escapeHtml(label(valueId)) : "_____";
+        let classes = "blank";
+        if(index === activeIdx) classes += " active";
+        if(showExact && valueId){
+          classes += valueId === correctId ? " correct" : " wrong";
+        }
+        return `<button type="button" class="${classes}" data-blank="${index}">${text}</button>`;
+      }
+
+      function renderGuessScreen(){
+        const key = "guess";
+        const words = [
+          {id:"heat", answer:"heat", clue:"This word means energy that leaves his body."},
+          {id:"evaporates", answer:"evaporates", clue:"This word tells how liquid water changes to water vapour."},
+          {id:"evaporation", answer:"evaporation", clue:"This is the process that the wind makes faster."},
+          {id:"colder", answer:"colder", clue:"This comparison word shows how he feels after more heat is removed."}
+        ];
+        if(!appState.screenData[key]){
+          appState.screenData[key] = {
+            current:0,
+            reveals:[1,1,1,1],
+            solvedWords:Array(words.length).fill(false),
+            attempts:Array(words.length).fill(0),
+            values:Array(words.length).fill("")
+          };
+        }
+        const state = appState.screenData[key];
+        const currentWord = words[state.current];
+        const builtSentence = `
+          The water on his body gains <strong>${state.solvedWords[0] ? words[0].answer : "_".repeat(Math.max(words[0].answer.length, 4))}</strong>
+          from his body and <strong>${state.solvedWords[1] ? words[1].answer : "_".repeat(Math.max(words[1].answer.length, 4))}</strong>
+          to form water vapour. The strong wind increases the rate of <strong>${state.solvedWords[2] ? words[2].answer : "_".repeat(Math.max(words[2].answer.length, 4))}</strong>,
+          so more heat is removed from his body and he feels <strong>${state.solvedWords[3] ? words[3].answer : "_".repeat(Math.max(words[3].answer.length, 4))}</strong>.
+        `;
+        const fullSolved = state.solvedWords.every(Boolean);
+        const revealed = currentWord ? currentWord.answer.slice(0, state.reveals[state.current]) + "_".repeat(Math.max(0, currentWord.answer.length - state.reveals[state.current])) : "";
+        layout(`
+          <div class="guess-wrap">
+            <div class="guess-sentence">${builtSentence}</div>
+            ${fullSolved ? `
+              <div class="panel">
+                <div class="guess-prompt">Full answer:</div>
+                <div class="subtext" style="color:#173851; font-size:1.08rem; margin-top:8px;">
+                  The water on his body gains <strong>heat</strong> from his body and <strong>evaporates</strong> to form water vapour.
+                  The strong wind increases the rate of <strong>evaporation</strong>, so more heat is removed from his body and he feels <strong>colder</strong>.
+                </div>
+              </div>
+            ` : `
+              <div class="guess-current">
+                <div class="guess-prompt">Type the hidden science word.</div>
+                <div>${escapeHtml(currentWord.clue)}</div>
+                <div class="reveal">First letters shown: <strong>${revealed}</strong></div>
+                <div class="guess-row">
+                  <input id="guessInput" class="guess-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the word here" />
+                  <button id="checkGuessBtn" class="btn secondary" type="button">Check word</button>
+                </div>
+                <div class="mini-note">Wrong tries here do not use any water drops.</div>
+              </div>
+            `}
+          </div>
+        `, {
+          instruction: "Type the hidden science words.",
+          subtext: "This part is for retrieval. Wrong tries here do not use any demerits.",
+          feedback: fullSolved ? "Well done. You rebuilt the key science words." : "Type the current hidden word.",
+          feedbackClass: fullSolved ? "good" : "",
+          nextDisabled: !fullSolved
+        });
+
+        if(!fullSolved){
+          const input = document.getElementById("guessInput");
+          const checkBtn = document.getElementById("checkGuessBtn");
+          input.focus();
+          function checkGuess(){
+            const guess = input.value.trim().toLowerCase();
+            const answer = currentWord.answer.toLowerCase();
+            if(!guess){
+              setFeedback("Type the word first.", "bad");
+              return;
+            }
+            if(guess === answer){
+              state.solvedWords[state.current] = true;
+              state.values[state.current] = currentWord.answer;
+              if(state.current < words.length - 1){
+                state.current += 1;
+              }
+              renderGuessScreen();
+              setTimeout(() => setFeedback(`Yes. ${currentWord.answer} is correct.`, "good"), 20);
+            } else {
+              state.attempts[state.current] += 1;
+              state.reveals[state.current] = Math.min(currentWord.answer.length, state.reveals[state.current] + 1);
+              renderGuessScreen();
+              setTimeout(() => setFeedback(`Not yet. More letters are now shown: ${currentWord.answer.slice(0, state.reveals[state.current])}${"_".repeat(Math.max(0, currentWord.answer.length - state.reveals[state.current]))}`, "bad"), 20);
+            }
+          }
+          checkBtn.addEventListener("click", checkGuess);
+          input.addEventListener("keydown", (e) => {
+            if(e.key === "Enter") checkGuess();
+          });
+        }
+      }
+
+      function renderTransferScreen(){
+        const key = "transfer";
+        const options = prepareSingleOptions(key, [
+          {id:"correct", text:"The moving air increases the rate of evaporation, so more heat is taken from Ali’s skin."},
+          {id:"windcold", text:"The fan blows coldness into Ali’s body, so he feels colder."},
+          {id:"waterstays", text:"The fan keeps the water on Ali’s skin, so he feels colder."},
+          {id:"bodygain", text:"The fan helps Ali’s body gain heat, so he feels colder."}
+        ], "correct");
+        layout(`
+          <div class="panel">
+            <div class="subtext" style="font-size:1.05rem; color:#173851;">
+              Ali comes out of a pool with <strong>wet skin</strong>. A <strong>fan</strong> is turned on. Why does he feel colder?
+            </div>
+          </div>
+          <div class="options two-col">
+            ${options.map(opt => `<button type="button" class="option" data-id="${opt.id}">${escapeHtml(opt.text)}</button>`).join("")}
+          </div>
+        `, {
+          instruction: "Choose the best explanation in a new situation.",
+          subtext: "Use the same science idea. No demerits are used on this transfer question.",
+          feedback: appState.screenData[key]?.solved ? "Yes. Same science in a new situation." : "Tap the best explanation.",
+          feedbackClass: appState.screenData[key]?.solved ? "good" : "",
+          nextDisabled: !(appState.screenData[key]?.solved)
+        });
+        document.querySelectorAll(".option").forEach(btn => {
+          if(appState.screenData[key]?.solved){
+            btn.disabled = true;
+            if(btn.dataset.id === "correct") btn.classList.add("correct");
+          }
+          btn.addEventListener("click", () => {
+            if(appState.screenData[key]?.solved) return;
+            if(btn.dataset.id === "correct"){
+              appState.screenData[key].solved = true;
+              btn.classList.add("correct");
+              document.querySelectorAll(".option").forEach(b => b.disabled = true);
+              setFeedback("Yes. Same science in a new situation.", "good");
+              unlockNext();
+            } else {
+              btn.classList.add("wrong");
+              setTimeout(() => btn.classList.remove("wrong"), 700);
+              setFeedback("Look for evaporation and heat loss, not just 'wind is cold.'", "bad");
+            }
+          });
+        });
+      }
+
+      function renderComplete(){
+        layout(`
+          <div class="complete-card">
+            <div class="big-emoji">🌬️💧</div>
+            <div style="font-size:1.5rem; font-weight:900; color:#0f3455;">Great job.</div>
+            <div class="subtext" style="font-size:1.08rem; color:#173851;">
+              You used evaporation and heat loss to explain why strong wind makes a wet body feel even colder.
+            </div>
+            <div class="panel" style="text-align:left;">
+              <div style="font-weight:900; margin-bottom:10px;">Key idea to remember</div>
+              <div class="subtext" style="margin:0;">
+                Water on the skin gains heat from the body and evaporates. When wind increases the rate of evaporation,
+                more heat is removed from the body, so the person feels colder.
+              </div>
+            </div>
+          </div>
+        `, {
+          instruction: "You are done.",
+          subtext: "You built the explanation step by step.",
+          feedback: "Tap Finish to end.",
+          nextDisabled: false,
+          nextLabel: "Finish",
+          showQuestionPanel: false
+        });
+        document.getElementById("nextBtn").addEventListener("click", () => {
+          setFeedback("This interactive is complete.", "good");
+        });
+      }
+
+      function renderScreen(){
+        cancelSpeech();
+        appState.spokenFeedback = "";
+        const key = currentKey();
+        if((key !== "guess" && key !== "transfer") && !appState.screenData[key]){
+          appState.screenData[key] = { solved:false, wrongChecks:0 };
+        }
+        switch(key){
+          case "intro":
+            renderIntro();
+            break;
+          case "change":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap what changed before he felt even colder.",
+              subtext: "Find the new condition.",
+              options: [
+                {id:"wet", text:"His body became wet."},
+                {id:"wind", text:"A strong wind blew."},
+                {id:"swim", text:"He went for a swim."},
+                {id:"out", text:"He came out of the water."}
+              ],
+              correctId:"wind",
+              goodText:"Yes. That is the new condition.",
+              badText:"Look for what happened at that moment.",
+            });
+            break;
+          case "wet-clue":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap the clue that matters before the wind blows.",
+              subtext: "Use the clue that is already given.",
+              options: [
+                {id:"dry", text:"His body is dry."},
+                {id:"wet", text:"His body is wet."},
+                {id:"still", text:"He is standing still."},
+                {id:"deep", text:"The water is deep."}
+              ],
+              correctId:"wet",
+              goodText:"Yes. Water on his body is important.",
+              badText:"Look at his body after swimming."
+            });
+            break;
+          case "process":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap what can happen to the water on his body.",
+              subtext: "Think about change of state.",
+              options: [
+                {id:"evap", text:"It evaporates into water vapour."},
+                {id:"freeze", text:"It freezes on his skin."},
+                {id:"solid", text:"It turns into solid droplets."},
+                {id:"disappear", text:"It disappears without any change."}
+              ],
+              correctId:"evap",
+              goodText:"Yes. The water can evaporate.",
+              badText:"Think about liquid water changing into water vapour."
+            });
+            break;
+          case "heat-source":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap where the water gets heat from.",
+              subtext: "Think about what is warmer than the water on his skin.",
+              options: [
+                {id:"body", text:"His body."},
+                {id:"ground", text:"The ground."},
+                {id:"towel", text:"A towel."},
+                {id:"wind", text:"The wind only."}
+              ],
+              correctId:"body",
+              goodText:"Yes. The water gains heat from his body.",
+              badText:"Which part is warmer than the water on his skin?",
+              visualHtml: `
+                <div class="panel diagram-wrap">
+                  <div class="visual-card">${basePersonSvg({wet:true, title:"Wenhao with water on his body"})}</div>
+                  <div class="diagram-side-note">
+                    <div style="font-size:1.12rem; font-weight:900; color:#0f3455; margin-bottom:10px;">Use the diagram.</div>
+                    <div>The blue drops show <strong>water on his body</strong>.</div>
+                    <div style="margin-top:10px;">For evaporation to happen, the water must gain <strong>heat</strong>.</div>
+                    <div style="margin-top:10px;">Tap where that heat comes from.</div>
+                  </div>
+                </div>
+              `
+            });
+            break;
+          case "animation":
+            renderAnimationScreen();
+            break;
+          case "body-effect":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap what happens to his body when the water gains heat from it.",
+              subtext: "Think about where the heat goes.",
+              options: [
+                {id:"lose", text:"His body loses heat."},
+                {id:"gain", text:"His body gains heat."},
+                {id:"dry", text:"His body becomes dry first."},
+                {id:"makewater", text:"His body makes more water."}
+              ],
+              correctId:"lose",
+              goodText:"Yes. Losing heat makes him feel colder.",
+              badText:"If heat leaves his body, does it gain or lose heat?"
+            });
+            break;
+          case "wind-effect":
+            renderSingleChoiceScreen({
+              key,
+              instruction: "Tap what the strong wind changes.",
+              subtext: "This is the comparison step in the question.",
+              options: [
+                {id:"rate", text:"It increases the rate of evaporation."},
+                {id:"ice", text:"It turns water into ice."},
+                {id:"heatup", text:"It heats up his body."},
+                {id:"newwater", text:"It creates new water on his skin."}
+              ],
+              correctId:"rate",
+              goodText:"Yes. The water evaporates faster.",
+              badText:"Think about how wind affects evaporation."
+            });
+            break;
+          case "chain":
+            renderChainScreen();
+            break;
+          case "mark1":
+            renderFillScreen({
+              key,
+              instruction: "Fill the blanks for the first science idea.",
+              subtext: "Build the first mark.",
+              parts: [
+                {correctId:"heat"},
+                {correctId:"evaporates"}
+              ],
+              bankItems: [
+                {id:"heat", text:"heat"},
+                {id:"evaporates", text:"evaporates"},
+                {id:"cold", text:"cold"},
+                {id:"drips", text:"drips"}
+              ],
+              sentenceHtmlBuilder: (values, active, showExact) => `
+                The water on his body gains
+                ${blankHtml(0, values[0], id => ({heat:"heat", evaporates:"evaporates", cold:"cold", drips:"drips"}[id]), active, showExact, "heat")}
+                from his body and
+                ${blankHtml(1, values[1], id => ({heat:"heat", evaporates:"evaporates", cold:"cold", drips:"drips"}[id]), active, showExact, "evaporates")}
+                to form water vapour.
+              `,
+              goodText:"Good. That is the first mark.",
+              generalClue:"One word is about energy. One word is about change of state.",
+              exactClue:"Check each blank. One blank needs the energy word. The other needs the change-of-state word.",
+              hintText: (state) => state.wrongChecks === 1
+                ? "General clue: one word is about energy. One word is about change of state."
+                : "Some blanks are now marked to help you fix them."
+            });
+            break;
+          case "mark2":
+            renderFillScreen({
+              key,
+              instruction: "Fill the blanks for the second science idea.",
+              subtext: "Build the second mark.",
+              parts: [
+                {correctId:"evaporation"},
+                {correctId:"colder"}
+              ],
+              bankItems: [
+                {id:"evaporation", text:"evaporation"},
+                {id:"colder", text:"colder"},
+                {id:"freezing", text:"freezing"},
+                {id:"drier", text:"drier"}
+              ],
+              sentenceHtmlBuilder: (values, active, showExact) => `
+                The strong wind increases the rate of
+                ${blankHtml(0, values[0], id => ({evaporation:"evaporation", colder:"colder", freezing:"freezing", drier:"drier"}[id]), active, showExact, "evaporation")},
+                so more heat is removed from his body and he feels
+                ${blankHtml(1, values[1], id => ({evaporation:"evaporation", colder:"colder", freezing:"freezing", drier:"drier"}[id]), active, showExact, "colder")}.
+              `,
+              goodText:"Good. That is why he felt even colder.",
+              generalClue:"Use the process made faster by wind, then the feeling caused by more heat loss.",
+              exactClue:"Check each blank. The first needs the process name. The second needs the comparison word.",
+              hintText: (state) => state.wrongChecks === 1
+                ? "General clue: use the process made faster by wind, then the result."
+                : "Some blanks are now marked to help you fix them."
+            });
+            break;
+          case "guess":
+            renderGuessScreen();
+            break;
+          case "transfer":
+            if(!appState.screenData[key]) appState.screenData[key] = { solved:false, wrongChecks:0 };
+            renderTransferScreen();
+            break;
+          case "complete":
+            renderComplete();
+            break;
+        }
+      }
+
+      renderTracker();
+      renderScreen();
+    })();
+  </script>
+</body>
+</html>

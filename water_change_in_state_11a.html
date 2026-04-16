@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>water_change_in_state_11a</title>
+<style>
+  :root{
+    --bg:#f4fbff;
+    --panel:#ffffff;
+    --panel2:#eef8ff;
+    --line:#cfe6f7;
+    --ink:#12324a;
+    --muted:#4b6b84;
+    --accent:#0b79d0;
+    --accent2:#15a0f0;
+    --good:#157347;
+    --bad:#b42318;
+    --warn:#d97706;
+    --chip:#dff3ff;
+    --shadow: 0 10px 24px rgba(18,50,74,.10);
+    --radius: 22px;
+    --gas:#7d5cff;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #f5fbff 0%, #eef8ff 100%);
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100%;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+    padding: 14px;
+  }
+
+  .app {
+    width: min(1100px, 100%);
+  }
+
+  .topbar {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .topbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+
+  .brand small {
+    color: var(--muted);
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .control-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel2);
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .toggle-wrap input {
+    width: 22px;
+    height: 22px;
+  }
+
+  .small-btn, .next-btn, .check-btn, .restart-btn {
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 16px;
+    min-height: 48px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 800;
+    box-shadow: 0 6px 14px rgba(11,121,208,.18);
+  }
+
+  .small-btn.secondary,
+  .check-btn.secondary {
+    background: #fff;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    box-shadow: none;
+  }
+
+  .small-btn:disabled, .next-btn:disabled, .check-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .demerit-wrap {
+    background: linear-gradient(180deg, #fdfcff 0%, #f8f6ff 100%);
+    border: 2px solid #e3dbff;
+    border-radius: 18px;
+    padding: 10px 12px;
+  }
+
+  .demerit-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-weight: 800;
+    color: #5b46b3;
+    margin-bottom: 8px;
+  }
+
+  .demerit-track {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .life-chip {
+    min-width: 56px;
+    text-align: center;
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: #efeaff;
+    border: 2px solid #d3c5ff;
+    font-weight: 800;
+    color: #5b46b3;
+  }
+
+  .life-chip.lost {
+    background: #f5f1ff;
+    color: #b0a7d7;
+    border-color: #e3ddf6;
+    text-decoration: line-through;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .screen-head {
+    padding: 18px 20px 8px;
+    border-bottom: 1px solid #edf5fb;
+  }
+
+  .screen-title {
+    margin: 0;
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .instruction {
+    margin-top: 10px;
+    display: inline-block;
+    background: #e6f4ff;
+    border: 2px solid #bfe3ff;
+    color: #064b83;
+    border-radius: 18px;
+    padding: 12px 16px;
+    font-size: clamp(1.08rem, 2vw, 1.28rem);
+    font-weight: 800;
+  }
+
+  .screen-body {
+    padding: 18px 20px 20px;
+    display: grid;
+    gap: 16px;
+  }
+
+  .main-area {
+    display: grid;
+    gap: 16px;
+  }
+
+  .question-card {
+    background: #fbfeff;
+    border: 2px solid #dbeefa;
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .question-card p {
+    margin: 0;
+    font-size: clamp(1.06rem, 1.8vw, 1.18rem);
+    line-height: 1.6;
+  }
+
+  .hl {
+    background: #fff3ae;
+    padding: 1px 4px;
+    border-radius: 6px;
+    font-weight: 800;
+  }
+
+  .info-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: start;
+    background: #f4fbff;
+    border: 2px solid #d5ebf8;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 700;
+  }
+
+  .choices, .bank, .slots, .guess-area, .compare-cards {
+    display: grid;
+    gap: 12px;
+  }
+
+  .choices {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .choice-btn, .bank-btn, .slot-btn, .compare-btn {
+    width: 100%;
+    text-align: left;
+    min-height: 72px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 2px solid #d9edf9;
+    background: #fff;
+    color: var(--ink);
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .08s ease, border-color .15s ease, background .15s ease;
+  }
+
+  .choice-btn:hover, .bank-btn:hover, .slot-btn:hover, .compare-btn:hover,
+  .small-btn:hover, .next-btn:hover, .check-btn:hover, .restart-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .choice-btn.selected, .bank-btn.selected, .slot-btn.active-slot, .compare-btn.selected {
+    background: #e9f6ff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(11,121,208,.12);
+  }
+
+  .choice-btn.correct, .bank-btn.correct, .compare-btn.correct {
+    border-color: #69c58f;
+    background: #eefaf3;
+  }
+
+  .choice-btn.wrong, .bank-btn.wrong, .compare-btn.wrong {
+    border-color: #e39a95;
+    background: #fff1f0;
+  }
+
+  .feedback {
+    min-height: 54px;
+    border-radius: 18px;
+    padding: 14px 16px;
+    font-size: 1.03rem;
+    font-weight: 800;
+    display: none;
+    line-height: 1.45;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.good {
+    background: #eefaf3;
+    color: var(--good);
+    border: 2px solid #b8e2c8;
+  }
+  .feedback.bad {
+    background: #fff1f0;
+    color: var(--bad);
+    border: 2px solid #f2c4bf;
+  }
+  .feedback.note {
+    background: #fff9e8;
+    color: #935d00;
+    border: 2px solid #f6ddb0;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .progress {
+    font-weight: 800;
+    color: var(--muted);
+  }
+
+  details.question-panel {
+    background: #f8fcff;
+    border: 2px solid #dbeefa;
+    border-radius: 18px;
+    padding: 10px 14px;
+  }
+
+  details.question-panel summary {
+    cursor: pointer;
+    font-weight: 800;
+    color: var(--accent);
+    list-style: none;
+  }
+  details.question-panel summary::-webkit-details-marker { display:none; }
+  details.question-panel .inner {
+    padding-top: 12px;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  .visual-card {
+    background: linear-gradient(180deg, #f7fcff 0%, #eef8ff 100%);
+    border: 2px solid #d8eefb;
+    border-radius: 22px;
+    padding: 16px;
+  }
+
+  .compare-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .container-box {
+    background: #fff;
+    border: 2px solid #d7ebf8;
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  .container-label {
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .svg-wrap {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f6fbff 0%, #edf7ff 100%);
+    border: 2px solid #dceef9;
+  }
+
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .pair-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .chain-wrap {
+    display: grid;
+    gap: 14px;
+  }
+
+  .slots {
+    grid-template-columns: 1fr;
+  }
+
+  .slot {
+    min-height: 68px;
+    border: 2px dashed #b8d7ee;
+    border-radius: 18px;
+    background: #f7fbfe;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    color: #6183a1;
+  }
+
+  .slot.filled {
+    border-style: solid;
+    color: var(--ink);
+    background: #eef8ff;
+    border-color: #96c9ea;
+  }
+
+  .bank {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .blank-row {
+    display: grid;
+    gap: 12px;
+  }
+
+  .sentence {
+    font-size: clamp(1.12rem, 2vw, 1.3rem);
+    line-height: 1.6;
+    background: #f9fdff;
+    border: 2px solid #dbeefa;
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .blank {
+    display: inline-flex;
+    align-items: center;
+    min-width: 120px;
+    min-height: 38px;
+    padding: 4px 10px;
+    margin: 0 4px;
+    border-radius: 12px;
+    border: 2px dashed #99c7e5;
+    background: #eef8ff;
+    font-weight: 900;
+    color: #49718f;
+    vertical-align: middle;
+  }
+
+  .blank.filled {
+    border-style: solid;
+    color: var(--ink);
+    background: #eaf6ff;
+  }
+
+  .blank.correct {
+    border-color: #69c58f;
+    background: #eefaf3;
+  }
+
+  .blank.wrong {
+    border-color: #d67e77;
+    background: #fff1f0;
+  }
+
+  .guess-box {
+    background: #f9fdff;
+    border: 2px solid #dbeefa;
+    border-radius: 18px;
+    padding: 16px;
+    display: grid;
+    gap: 14px;
+  }
+
+  .guess-word {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: .08em;
+  }
+
+  .guess-input-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .guess-input {
+    flex: 1 1 220px;
+    min-height: 52px;
+    border-radius: 14px;
+    border: 2px solid #a8d2ee;
+    font-size: 1.1rem;
+    padding: 10px 12px;
+    font-weight: 700;
+  }
+
+  .completion-box {
+    display: grid;
+    gap: 14px;
+    background: linear-gradient(180deg, #f5fffa 0%, #eefbf5 100%);
+    border: 2px solid #c7e8d4;
+    border-radius: 22px;
+    padding: 20px;
+  }
+
+  .completion-box h3 {
+    margin: 0;
+    font-size: 1.55rem;
+    color: var(--good);
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #ecf7ff;
+    border: 2px solid #cbe8f8;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .hidden { display: none !important; }
+
+  .gameover {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 31, 48, .66);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    z-index: 999;
+  }
+
+  .gameover.show { display: flex; }
+
+  .gameover-card {
+    width: min(520px, 100%);
+    background: #fff;
+    border: 2px solid #e3dbff;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 16px 34px rgba(0,0,0,.22);
+    display: grid;
+    gap: 14px;
+    text-align: center;
+  }
+
+  .gameover-card h2 {
+    margin: 0;
+    color: #5b46b3;
+    font-size: 1.8rem;
+  }
+
+  .tiny-note {
+    color: var(--muted);
+    font-size: .96rem;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 780px) {
+    body { padding: 10px; }
+    .screen-head { padding: 16px 16px 8px; }
+    .screen-body { padding: 16px; }
+    .instruction { width: 100%; }
+    .footer { flex-direction: column; align-items: stretch; }
+    .next-btn, .check-btn, .small-btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar" aria-label="Top controls">
+    <div class="topbar-row">
+      <div class="brand">Water Change in State <small>Question 11(a)</small></div>
+      <div class="control-cluster">
+        <label class="toggle-wrap">
+          <input id="autoReadToggle" type="checkbox" />
+          Read-aloud on
+        </label>
+        <button id="readScreenBtn" class="small-btn secondary" type="button">🔊 Read screen</button>
+        <button id="restartBtn" class="small-btn secondary" type="button">↺ Restart</button>
+      </div>
+    </div>
+    <div class="demerit-wrap" aria-live="polite">
+      <div class="demerit-title">
+        <span>Careful reading meter</span>
+        <span id="demeritText">6 chances left</span>
+      </div>
+      <div id="demeritTrack" class="demerit-track"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="screen-head">
+      <h1 id="screenTitle" class="screen-title">Loading…</h1>
+      <div id="instruction" class="instruction">Please wait.</div>
+    </div>
+    <div class="screen-body">
+      <div id="mainArea" class="main-area"></div>
+
+      <details id="questionPanel" class="question-panel hidden">
+        <summary>Show the full question again</summary>
+        <div class="inner">
+          <p><strong>Substance T has a boiling point of 24°C.</strong></p>
+          <p>Give a reason why, in a room at 30°C, T is stored in a sealed container.</p>
+        </div>
+      </details>
+
+      <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+
+      <div class="footer">
+        <div id="progress" class="progress">Screen 1 of 12</div>
+        <div class="control-cluster">
+          <button id="nextBtn" class="next-btn" type="button" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="gameover" class="gameover" role="dialog" aria-modal="true" aria-labelledby="gameoverTitle">
+  <div class="gameover-card">
+    <div class="pill">All chances used</div>
+    <h2 id="gameoverTitle">Let’s restart and try again.</h2>
+    <div class="tiny-note">The whole interactive will start again so you can read each clue more carefully.</div>
+    <button id="gameoverRestart" class="restart-btn" type="button">Restart now</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const totalScreens = 12;
+  const teachingPenaltyScreens = new Set([2,3,4,5,6,7,8,9]);
+  const totalLives = 6;
+
+  const appState = {
+    screenIndex: 0,
+    livesLeft: totalLives,
+    autoRead: false,
+    speechEnabled: 'speechSynthesis' in window,
+    currentCleanup: null,
+    answeredCorrectly: false,
+    blanksSelections: {},
+    guessWordIndex: 0,
+    guessReveal: 1
+  };
+
+  const el = {
+    title: document.getElementById('screenTitle'),
+    instruction: document.getElementById('instruction'),
+    mainArea: document.getElementById('mainArea'),
+    feedback: document.getElementById('feedback'),
+    nextBtn: document.getElementById('nextBtn'),
+    progress: document.getElementById('progress'),
+    readScreenBtn: document.getElementById('readScreenBtn'),
+    restartBtn: document.getElementById('restartBtn'),
+    autoReadToggle: document.getElementById('autoReadToggle'),
+    demeritTrack: document.getElementById('demeritTrack'),
+    demeritText: document.getElementById('demeritText'),
+    questionPanel: document.getElementById('questionPanel'),
+    gameover: document.getElementById('gameover'),
+    gameoverRestart: document.getElementById('gameoverRestart')
+  };
+
+  const questionTextHtml = `
+    <div class="question-card">
+      <p><strong>Substance T has a boiling point of 24°C.</strong></p>
+      <p>Give a reason why, in a room at <span class="hl">30°C</span>, T is stored in a <span class="hl">sealed container</span>.</p>
+    </div>
+  `;
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'","&#39;");
+  }
+
+  function shuffleArray(source){
+    const arr = source.map(item => ({...item}));
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function shuffleUntilNotSolved(source, isSolvedFn){
+    let tries = 0;
+    let arr = shuffleArray(source);
+    while (tries < 20 && isSolvedFn(arr)) {
+      arr = shuffleArray(source);
+      tries++;
+    }
+    return arr;
+  }
+
+  function setFeedback(kind, text){
+    el.feedback.className = 'feedback show ' + kind;
+    el.feedback.textContent = text;
+    if (appState.autoRead) speakCurrentScreen(text);
+  }
+
+  function clearFeedback(){
+    el.feedback.className = 'feedback';
+    el.feedback.textContent = '';
+  }
+
+  function setNextEnabled(value){
+    el.nextBtn.disabled = !value;
+  }
+
+  function loseLife(){
+    appState.livesLeft -= 1;
+    updateLives();
+    if (appState.livesLeft <= 0){
+      showGameOver();
+    }
+  }
+
+  function updateLives(){
+    el.demeritTrack.innerHTML = '';
+    for (let i = 0; i < totalLives; i++){
+      const chip = document.createElement('div');
+      chip.className = 'life-chip' + (i >= appState.livesLeft ? ' lost' : '');
+      chip.textContent = '💧';
+      el.demeritTrack.appendChild(chip);
+    }
+    el.demeritText.textContent = appState.livesLeft === 1
+      ? '1 chance left'
+      : `${appState.livesLeft} chances left`;
+  }
+
+  function showGameOver(){
+    if (appState.speechEnabled) window.speechSynthesis.cancel();
+    el.gameover.classList.add('show');
+  }
+
+  function hideGameOver(){
+    el.gameover.classList.remove('show');
+  }
+
+  function speakCurrentScreen(extra=''){
+    if (!appState.speechEnabled) return;
+    window.speechSynthesis.cancel();
+    const parts = [];
+    parts.push(el.title.textContent || '');
+    parts.push(el.instruction.textContent || '');
+
+    const mainText = Array.from(el.mainArea.querySelectorAll('p, button, .slot, .guess-word, .container-label, .pill, summary, label, .sentence'))
+      .map(node => node.textContent.trim())
+      .filter(Boolean)
+      .join('. ');
+    if (mainText) parts.push(mainText);
+    if (extra) parts.push(extra);
+
+    const text = parts.join('. ');
+    if (!text.trim()) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.pitch = 1;
+    utter.volume = 1;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function openQuestionPanelIfNeeded(){
+    if (appState.screenIndex === 0){
+      el.questionPanel.classList.add('hidden');
+      el.questionPanel.open = false;
+    } else {
+      el.questionPanel.classList.remove('hidden');
+    }
+  }
+
+  function makeInfoChip(text){
+    return `<div class="info-chip">${escapeHtml(text)}</div>`;
+  }
+
+  function renderScreenBase(title, instruction){
+    el.title.textContent = title;
+    el.instruction.textContent = instruction;
+    el.progress.textContent = `Screen ${appState.screenIndex + 1} of ${totalScreens}`;
+    el.mainArea.innerHTML = '';
+    clearFeedback();
+    setNextEnabled(false);
+    openQuestionPanelIfNeeded();
+  }
+
+  function renderChoiceButtons(options, onClick){
+    const wrap = document.createElement('div');
+    wrap.className = 'choices';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.type = 'button';
+      btn.dataset.id = opt.id;
+      btn.textContent = opt.text;
+      btn.addEventListener('click', () => onClick(opt, btn, wrap));
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function markButtonsDisabled(parent){
+    parent.querySelectorAll('button').forEach(btn => btn.disabled = true);
+  }
+
+  function renderScreen1(){
+    renderScreenBase('Read the question', 'Read the question. Then tap “I have read it.”');
+    el.mainArea.innerHTML = `
+      ${questionTextHtml}
+      ${makeInfoChip('Tap once when you are ready to begin.')}
+      <button class="small-btn" id="readyBtn" type="button">I have read it</button>
+    `;
+    document.getElementById('readyBtn').addEventListener('click', () => {
+      setFeedback('good', 'Good. Now you can work out T’s state first.');
+      setNextEnabled(true);
+    }, { once: true });
+  }
+
+  function renderSingleCorrectScreen({title, instruction, introHtml='', options, correctId, correctFeedback, wrongFeedback}) {
+    renderScreenBase(title, instruction);
+    if (introHtml) {
+      el.mainArea.insertAdjacentHTML('beforeend', introHtml);
+    }
+    const shuffled = shuffleArray(options);
+    const buttons = renderChoiceButtons(shuffled, (opt, btn, wrap) => {
+      if (opt.id === correctId) {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', correctFeedback);
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', wrongFeedback);
+        if (teachingPenaltyScreens.has(appState.screenIndex + 1)) loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen2(){
+    renderSingleCorrectScreen({
+      title: 'Spot the useful clue',
+      instruction: 'Tap the clue that helps you work out T’s state.',
+      introHtml: questionTextHtml,
+      options: [
+        {id:'temp', text:'30°C'},
+        {id:'sealed', text:'sealed container'},
+        {id:'reason', text:'Give a reason'},
+        {id:'stored', text:'stored'}
+      ],
+      correctId: 'temp',
+      correctFeedback: 'Yes. Work out T’s state first.',
+      wrongFeedback: 'Look again for the temperature clue.'
+    });
+  }
+
+  function renderScreen3(){
+    renderSingleCorrectScreen({
+      title: 'Compare the temperatures',
+      instruction: 'Choose the true comparison.',
+      introHtml: `
+        <div class="question-card">
+          <p><strong>T boils at 24°C.</strong></p>
+          <p>The room is at <strong>30°C</strong>.</p>
+        </div>
+      `,
+      options: [
+        {id:'lower', text:'30°C is lower than 24°C.'},
+        {id:'same', text:'30°C is the same as 24°C.'},
+        {id:'higher', text:'30°C is higher than 24°C.'}
+      ],
+      correctId: 'higher',
+      correctFeedback: 'Yes. The room is hotter than T’s boiling point.',
+      wrongFeedback: 'Compare the two numbers carefully.'
+    });
+  }
+
+  function renderScreen4(){
+    renderSingleCorrectScreen({
+      title: 'Decide what happens to T',
+      instruction: 'At 30°C, what happens to T?',
+      introHtml: `
+        <div class="question-card">
+          <p><strong>T has a boiling point of 24°C.</strong></p>
+          <p>The room is at <strong>30°C</strong>.</p>
+        </div>
+      `,
+      options: [
+        {id:'liquid', text:'It stays as a liquid.'},
+        {id:'gas', text:'It boils and becomes a gas.'},
+        {id:'solid', text:'It freezes.'}
+      ],
+      correctId: 'gas',
+      correctFeedback: 'Yes. T is above its boiling point, so it becomes a gas.',
+      wrongFeedback: 'Think about what happens when the temperature is above the boiling point.'
+    });
+  }
+
+  function openContainerSvg(){
+    return `
+      <div class="container-box">
+        <div class="container-label">Open container</div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 360 240" aria-label="Open container with coloured gas escaping">
+            <defs>
+              <linearGradient id="liq1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#90d2ff"/>
+                <stop offset="100%" stop-color="#5fb4ef"/>
+              </linearGradient>
+            </defs>
+            <rect x="88" y="48" width="184" height="150" fill="#ffffff" stroke="#5f84a2" stroke-width="5" rx="8"/>
+            <rect x="100" y="132" width="160" height="56" fill="url(#liq1)" opacity=".35"/>
+            <circle cx="132" cy="118" r="10" fill="var(--gas)" opacity=".75">
+              <animate attributeName="cy" values="118;86;54;34" dur="3.2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".78;.78;.62;0" dur="3.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="166" cy="112" r="12" fill="var(--gas)" opacity=".72">
+              <animate attributeName="cy" values="112;84;50;28" dur="3.5s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="166;174;190;214" dur="3.5s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".72;.7;.55;0" dur="3.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="206" cy="120" r="11" fill="var(--gas)" opacity=".78">
+              <animate attributeName="cy" values="120;90;56;26" dur="3.1s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="206;204;196;184" dur="3.1s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".78;.76;.54;0" dur="3.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="232" cy="110" r="9" fill="var(--gas)" opacity=".74">
+              <animate attributeName="cy" values="110;82;46;18" dur="3.3s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="232;240;258;288" dur="3.3s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".74;.72;.5;0" dur="3.3s" repeatCount="indefinite"/>
+            </circle>
+            <path d="M118 124 L86 92" stroke="var(--gas)" stroke-width="4" stroke-linecap="round" opacity=".8">
+              <animate attributeName="opacity" values=".1;.65;.1" dur="2.4s" repeatCount="indefinite"/>
+            </path>
+            <path d="M244 116 L286 82" stroke="var(--gas)" stroke-width="4" stroke-linecap="round" opacity=".8">
+              <animate attributeName="opacity" values=".1;.65;.1" dur="2.2s" repeatCount="indefinite"/>
+            </path>
+            <text x="180" y="220" text-anchor="middle" font-size="18" fill="#4f7089" font-weight="700">Gas can escape.</text>
+          </svg>
+        </div>
+      </div>
+    `;
+  }
+
+  function sealedContainerSvg(){
+    return `
+      <div class="container-box">
+        <div class="container-label">Sealed container</div>
+        <div class="svg-wrap">
+          <svg viewBox="0 0 360 240" aria-label="Sealed container with coloured gas kept inside">
+            <defs>
+              <linearGradient id="liq2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#90d2ff"/>
+                <stop offset="100%" stop-color="#5fb4ef"/>
+              </linearGradient>
+            </defs>
+            <rect x="88" y="48" width="184" height="150" fill="#ffffff" stroke="#5f84a2" stroke-width="5" rx="8"/>
+            <rect x="86" y="38" width="188" height="18" fill="#86a6c0" stroke="#5f84a2" stroke-width="4" rx="6"/>
+            <rect x="100" y="132" width="160" height="56" fill="url(#liq2)" opacity=".28"/>
+            <circle cx="132" cy="112" r="10" fill="var(--gas)" opacity=".76">
+              <animate attributeName="cy" values="112;86;96;112" dur="3.1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="170" cy="104" r="12" fill="var(--gas)" opacity=".72">
+              <animate attributeName="cy" values="104;76;92;104" dur="3.5s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="170;182;190;170" dur="3.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="214" cy="110" r="11" fill="var(--gas)" opacity=".78">
+              <animate attributeName="cy" values="110;80;94;110" dur="3.2s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="214;202;196;214" dur="3.2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="236" cy="96" r="9" fill="var(--gas)" opacity=".74">
+              <animate attributeName="cy" values="96;70;84;96" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="cx" values="236;246;238;236" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <text x="180" y="220" text-anchor="middle" font-size="18" fill="#4f7089" font-weight="700">Gas stays inside.</text>
+          </svg>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderScreen5(){
+    renderScreenBase('Watch the open container', 'Watch. Then choose what may happen if the container is open.');
+    el.mainArea.innerHTML = `
+      <div class="visual-card">
+        <div class="compare-grid">${openContainerSvg()}</div>
+      </div>
+    `;
+    const options = shuffleArray([
+      {id:'escape', text:'The gas escapes from the container.'},
+      {id:'noform', text:'The gas cannot form.'},
+      {id:'solid', text:'The gas turns into a solid because the container is open.'}
+    ]);
+    const buttons = renderChoiceButtons(options, (opt, btn, wrap) => {
+      if (opt.id === 'escape') {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', 'Yes. Gas can escape from an open container.');
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', 'Watch what happens to the coloured gas in the open container.');
+        loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen6(){
+    renderScreenBase('Compare open and sealed', 'Now choose why the container is sealed.');
+    el.mainArea.innerHTML = `
+      <div class="visual-card">
+        <div class="compare-grid">
+          ${openContainerSvg()}
+          ${sealedContainerSvg()}
+        </div>
+      </div>
+    `;
+    const options = shuffleArray([
+      {id:'stopboil', text:'It is sealed to stop T from boiling.'},
+      {id:'stopescape', text:'It is sealed to stop the gas from escaping.'}
+    ]);
+    const buttons = renderChoiceButtons(options, (opt, btn, wrap) => {
+      if (opt.id === 'stopescape') {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', 'Yes. Sealing keeps the gas in the container.');
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', 'Sealing does not stop boiling here. It stops the gas from escaping.');
+        loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen7(){
+    renderScreenBase('Check the wrong idea', 'Choose the wrong science idea.');
+    const options = shuffleArray([
+      {id:'true1', text:'At 30°C, T becomes a gas.'},
+      {id:'true2', text:'Sealing stops the gas from escaping.'},
+      {id:'wrong', text:'Sealing stops T from boiling.'}
+    ]);
+    el.mainArea.innerHTML = `
+      ${makeInfoChip('One statement is the common mistake.')}
+    `;
+    const buttons = renderChoiceButtons(options, (opt, btn, wrap) => {
+      if (opt.id === 'wrong') {
+        btn.classList.add('correct');
+        markButtonsDisabled(wrap);
+        setFeedback('good', 'Correct. Sealing does not stop boiling.');
+        setNextEnabled(true);
+      } else {
+        btn.classList.add('wrong');
+        setFeedback('bad', 'Look for the statement that mixes up boiling with escaping.');
+        loseLife();
+      }
+    });
+    el.mainArea.appendChild(buttons);
+  }
+
+  function renderScreen8(){
+    renderScreenBase('Build the reason chain', 'Build the reason in order. Then tap Check.');
+    const parts = [
+      {id:'p1', text:'At 30°C, T has boiled and become a gas'},
+      {id:'p2', text:'The gas may escape'},
+      {id:'p3', text:'So T is stored in a sealed container'}
+    ];
+    const shuffled = shuffleUntilNotSolved(parts, arr => arr.every((x, i) => x.id === parts[i].id));
+
+    el.mainArea.innerHTML = `
+      <div class="chain-wrap">
+        <div class="slots">
+          <div class="slot" data-slot="0">Step 1</div>
+          <div class="slot" data-slot="1">Step 2</div>
+          <div class="slot" data-slot="2">Step 3</div>
+        </div>
+        <div class="bank" id="chainBank"></div>
+        <div class="control-cluster">
+          <button id="checkChainBtn" class="check-btn" type="button" disabled>Check</button>
+          <button id="clearChainBtn" class="check-btn secondary" type="button">Clear</button>
+        </div>
+      </div>
+    `;
+    const slotEls = Array.from(el.mainArea.querySelectorAll('.slot'));
+    const bank = document.getElementById('chainBank');
+    const checkBtn = document.getElementById('checkChainBtn');
+    const placed = [];
+
+    function refreshBank() {
+      bank.innerHTML = '';
+      shuffled.forEach(part => {
+        if (!placed.includes(part.id)) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bank-btn';
+          btn.textContent = part.text;
+          btn.addEventListener('click', () => {
+            const targetIndex = placed.length;
+            placed.push(part.id);
+            slotEls[targetIndex].textContent = part.text;
+            slotEls[targetIndex].classList.add('filled');
+            refreshBank();
+          });
+          bank.appendChild(btn);
+        }
+      });
+      checkBtn.disabled = placed.length !== parts.length;
+    }
+
+    slotEls.forEach((slot, index) => {
+      slot.addEventListener('click', () => {
+        if (!slot.classList.contains('filled')) return;
+        placed.splice(index, 1);
+        for (let i = index; i < slotEls.length; i++) {
+          const id = placed[i];
+          if (id) {
+            const part = parts.find(p => p.id === id);
+            slotEls[i].textContent = part.text;
+            slotEls[i].classList.add('filled');
+          } else {
+            slotEls[i].textContent = `Step ${i + 1}`;
+            slotEls[i].classList.remove('filled');
+          }
+        }
+        refreshBank();
+      });
+    });
+
+    document.getElementById('clearChainBtn').addEventListener('click', () => {
+      placed.length = 0;
+      slotEls.forEach((slot, i) => {
+        slot.textContent = `Step ${i + 1}`;
+        slot.classList.remove('filled');
+      });
+      refreshBank();
+      clearFeedback();
+      setNextEnabled(false);
+    });
+
+    checkBtn.addEventListener('click', () => {
+      const correct = ['p1','p2','p3'].every((id, idx) => placed[idx] === id);
+      if (correct) {
+        setFeedback('good', 'Yes. That chain explains why sealing is needed.');
+        setNextEnabled(true);
+        checkBtn.disabled = true;
+      } else {
+        setFeedback('bad', 'Start with what happens to T at 30°C. End with why sealing is needed.');
+        loseLife();
+      }
+    });
+
+    refreshBank();
+  }
+
+  function renderScreen9(){
+    renderScreenBase('Complete the reason', 'Complete the reason. Then tap Check.');
+    const bankItems = shuffleUntilNotSolved([
+      {id:'boiled', text:'boiled'},
+      {id:'melted', text:'melted'},
+      {id:'gas', text:'gas'},
+      {id:'liquid', text:'liquid'},
+      {id:'escaping', text:'escaping'},
+      {id:'cooling', text:'cooling'}
+    ], () => false);
+
+    appState.blanksSelections = {b1:null,b2:null,b3:null};
+    let attemptCount = 0;
+
+    el.mainArea.innerHTML = `
+      <div class="blank-row">
+        <div class="sentence">
+          At 30°C, T has <button class="blank" data-blank="b1" type="button">Blank 1</button> and become a
+          <button class="blank" data-blank="b2" type="button">Blank 2</button>.
+          The sealed container prevents it from <button class="blank" data-blank="b3" type="button">Blank 3</button>.
+        </div>
+        <div class="bank" id="blankBank"></div>
+        <div class="control-cluster">
+          <button id="checkBlankBtn" class="check-btn" type="button" disabled>Check</button>
+          <button id="resetBlankBtn" class="check-btn secondary" type="button">Clear</button>
+        </div>
+      </div>
+    `;
+
+    const blankEls = Array.from(el.mainArea.querySelectorAll('.blank'));
+    const bank = document.getElementById('blankBank');
+    const checkBtn = document.getElementById('checkBlankBtn');
+    let activeBlank = 'b1';
+
+    function refreshBlankStates(showMarks=false) {
+      blankEls.forEach(btn => {
+        const blankId = btn.dataset.blank;
+        btn.classList.remove('active-slot','correct','wrong');
+        if (activeBlank === blankId) btn.classList.add('active-slot');
+        const val = appState.blanksSelections[blankId];
+        btn.textContent = val ? bankItems.find(x => x.id === val).text : `Blank ${blankId.slice(1)}`;
+        if (val) btn.classList.add('filled');
+        else btn.classList.remove('filled');
+        if (showMarks) {
+          const correctMap = {b1:'boiled', b2:'gas', b3:'escaping'};
+          if (val === correctMap[blankId]) btn.classList.add('correct');
+          else btn.classList.add('wrong');
+        }
+      });
+      checkBtn.disabled = !(appState.blanksSelections.b1 && appState.blanksSelections.b2 && appState.blanksSelections.b3);
+    }
+
+    function refreshBlankBank() {
+      bank.innerHTML = '';
+      bankItems.forEach(item => {
+        const usedSomewhere = Object.values(appState.blanksSelections).includes(item.id);
+        if (!usedSomewhere) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'bank-btn';
+          btn.textContent = item.text;
+          btn.addEventListener('click', () => {
+            appState.blanksSelections[activeBlank] = item.id;
+            const nextOrder = ['b1','b2','b3'];
+            const nextEmpty = nextOrder.find(id => !appState.blanksSelections[id]);
+            activeBlank = nextEmpty || activeBlank;
+            refreshBlankStates();
+            refreshBlankBank();
+          });
+          bank.appendChild(btn);
+        }
+      });
+    }
+
+    blankEls.forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeBlank = btn.dataset.blank;
+        if (appState.blanksSelections[activeBlank]) {
+          appState.blanksSelections[activeBlank] = null;
+        }
+        refreshBlankStates();
+        refreshBlankBank();
+      });
+    });
+
+    document.getElementById('resetBlankBtn').addEventListener('click', () => {
+      appState.blanksSelections = {b1:null,b2:null,b3:null};
+      activeBlank = 'b1';
+      refreshBlankStates();
+      refreshBlankBank();
+      clearFeedback();
+      setNextEnabled(false);
+    });
+
+    checkBtn.addEventListener('click', () => {
+      const correct = appState.blanksSelections.b1 === 'boiled'
+        && appState.blanksSelections.b2 === 'gas'
+        && appState.blanksSelections.b3 === 'escaping';
+      if (correct) {
+        refreshBlankStates(true);
+        setFeedback('good', 'Yes. Those words build the accepted reason.');
+        setNextEnabled(true);
+        checkBtn.disabled = true;
+      } else {
+        attemptCount += 1;
+        if (attemptCount === 1) {
+          setFeedback('bad', 'Check the state first. Then check what the sealed container prevents.');
+        } else {
+          refreshBlankStates(true);
+          setFeedback('bad', 'Green blanks are right. Red blanks need changing.');
+        }
+        loseLife();
+      }
+    });
+
+    refreshBlankStates();
+    refreshBlankBank();
+  }
+
+  function renderScreen10(){
+    renderScreenBase('Recall the key science words', 'Type the missing word.');
+    const targetWords = [
+      {
+        sentence: 'At 30°C, T has {word} and become a gas.',
+        word: 'boiled',
+        prompt: 'Type the missing science word.'
+      },
+      {
+        sentence: 'The sealed container prevents it from {word}.',
+        word: 'escaping',
+        prompt: 'Type the missing science word.'
+      }
+    ];
+    appState.guessWordIndex = 0;
+    appState.guessReveal = 1;
+
+    el.mainArea.innerHTML = `
+      <div class="guess-area">
+        <div class="guess-box">
+          <div class="pill">Penalty-free retrieval</div>
+          <div id="guessSentence" class="sentence"></div>
+          <div id="guessPrompt" class="tiny-note"></div>
+          <div class="guess-input-row">
+            <input id="guessInput" class="guess-input" type="text" autocomplete="off" />
+            <button id="guessCheckBtn" class="check-btn" type="button">Check</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const sentenceEl = document.getElementById('guessSentence');
+    const promptEl = document.getElementById('guessPrompt');
+    const inputEl = document.getElementById('guessInput');
+    const checkBtn = document.getElementById('guessCheckBtn');
+
+    function renderCurrentGuess(){
+      const current = targetWords[appState.guessWordIndex];
+      const word = current.word;
+      const visible = word.slice(0, appState.guessReveal);
+      const masked = visible + '_'.repeat(Math.max(word.length - visible.length, 0));
+      sentenceEl.innerHTML = escapeHtml(current.sentence.replace('{word}', masked));
+      promptEl.textContent = `First letter shown: ${visible[0].toUpperCase()}.`;
+      inputEl.value = '';
+      inputEl.focus();
+    }
+
+    checkBtn.addEventListener('click', () => {
+      const current = targetWords[appState.guessWordIndex];
+      const answer = inputEl.value.trim().toLowerCase();
+      if (answer === current.word) {
+        if (appState.guessWordIndex === targetWords.length - 1) {
+          sentenceEl.innerHTML = 'At 30°C, T has <strong>boiled</strong> and become a <strong>gas</strong>. The sealed container prevents it from <strong>escaping</strong>.';
+          setFeedback('good', 'Well done. You recalled the key science words.');
+          setNextEnabled(true);
+          checkBtn.disabled = true;
+          promptEl.textContent = 'You will use this idea again in one short transfer question.';
+        } else {
+          setFeedback('good', `Yes. ${current.word} is correct.`);
+          appState.guessWordIndex += 1;
+          appState.guessReveal = 1;
+          renderCurrentGuess();
+        }
+      } else {
+        appState.guessReveal = Math.min(current.word.length, appState.guessReveal + 1);
+        renderCurrentGuess();
+        setFeedback('note', 'Try again. One more letter has been shown.');
+      }
+    });
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkBtn.click();
+    });
+
+    renderCurrentGuess();
+  }
+
+  function renderScreen11(){
+    renderSingleCorrectScreen({
+      title: 'Try a new one',
+      instruction: 'Choose the better reason.',
+      introHtml: `
+        <div class="question-card">
+          <p><strong>Substance Q has a boiling point of 18°C.</strong></p>
+          <p>Q is kept in a room at <strong>28°C</strong>. Why is it stored in a sealed bottle?</p>
+        </div>
+      `,
+      options: [
+        {id:'wrong', text:'The sealed bottle stops Q from boiling.'},
+        {id:'right', text:'Q becomes a gas, and the sealed bottle stops it from escaping.'}
+      ],
+      correctId: 'right',
+      correctFeedback: 'Yes. You transferred the same idea to a new substance.',
+      wrongFeedback: 'Think about what happens when the room temperature is above the boiling point.'
+    });
+  }
+
+  function renderScreen12(){
+    renderScreenBase('You are done', 'Tap “Done” to finish.');
+    el.mainArea.innerHTML = `
+      <div class="completion-box">
+        <div class="pill">Finished</div>
+        <h3>You used the boiling point, worked out the state, and explained why sealing is needed.</h3>
+        <div class="tiny-note">Key idea: sealing does not stop the boiling here. It stops the gas from escaping.</div>
+        <button id="doneBtn" class="small-btn" type="button">Done</button>
+      </div>
+    `;
+    document.getElementById('doneBtn').addEventListener('click', () => {
+      setFeedback('good', 'Great work. You have completed this interactive.');
+      setNextEnabled(false);
+    });
+  }
+
+  const renderers = [
+    renderScreen1,
+    renderScreen2,
+    renderScreen3,
+    renderScreen4,
+    renderScreen5,
+    renderScreen6,
+    renderScreen7,
+    renderScreen8,
+    renderScreen9,
+    renderScreen10,
+    renderScreen11,
+    renderScreen12
+  ];
+
+  function renderCurrentScreen(){
+    if (typeof appState.currentCleanup === 'function') appState.currentCleanup();
+    renderers[appState.screenIndex]();
+    if (appState.autoRead) speakCurrentScreen();
+  }
+
+  function restartAll(){
+    if (appState.speechEnabled) window.speechSynthesis.cancel();
+    appState.screenIndex = 0;
+    appState.livesLeft = totalLives;
+    clearFeedback();
+    hideGameOver();
+    updateLives();
+    renderCurrentScreen();
+  }
+
+  el.nextBtn.addEventListener('click', () => {
+    if (el.nextBtn.disabled) return;
+    if (appState.screenIndex < totalScreens - 1) {
+      appState.screenIndex += 1;
+      renderCurrentScreen();
+    }
+  });
+
+  el.readScreenBtn.addEventListener('click', () => speakCurrentScreen());
+  el.restartBtn.addEventListener('click', restartAll);
+  el.gameoverRestart.addEventListener('click', restartAll);
+
+  el.autoReadToggle.addEventListener('change', (e) => {
+    appState.autoRead = e.target.checked;
+    if (!appState.autoRead && appState.speechEnabled) window.speechSynthesis.cancel();
+    if (appState.autoRead) speakCurrentScreen();
+  });
+
+  if (!appState.speechEnabled) {
+    el.readScreenBtn.disabled = true;
+    el.autoReadToggle.disabled = true;
+  }
+
+  updateLives();
+  renderCurrentScreen();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Change in State 10a</title>
+  <style>
+    :root{
+      --bg:#f4fbff;
+      --panel:#ffffff;
+      --ink:#13324a;
+      --muted:#587387;
+      --line:#bfd8e8;
+      --accent:#1f8acb;
+      --accent-2:#51b7e8;
+      --good:#1f9d55;
+      --bad:#c74848;
+      --warn:#e08a00;
+      --shadow:0 10px 28px rgba(17,50,74,0.12);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#eef9ff 0%,#f6fcff 100%);
+      color:var(--ink);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:16px;
+    }
+    .top-strip{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:12px 16px;
+      background:var(--panel);
+      border:2px solid var(--line);
+      border-radius:18px;
+      padding:12px 16px;
+      box-shadow:var(--shadow);
+      margin-bottom:14px;
+    }
+    .top-item{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:40px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:38px;
+      height:38px;
+      padding:0 10px;
+      border-radius:999px;
+      font-weight:700;
+      background:#e8f6ff;
+      border:2px solid #b7dff4;
+      color:#0f628f;
+    }
+    .hearts{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-height:28px;
+    }
+    .heart{
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#ffe8ec;
+      border:2px solid #ffc3cf;
+      font-size:16px;
+    }
+    .heart.off{
+      opacity:0.35;
+      filter:grayscale(1);
+    }
+    .small{
+      font-size:14px;
+      color:var(--muted);
+    }
+    .toggle{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-size:15px;
+      font-weight:700;
+      color:#fff;
+      background:var(--accent);
+      cursor:pointer;
+      box-shadow:0 4px 0 rgba(18,96,138,0.25);
+    }
+    .toggle.off{
+      background:#7d97a8;
+      box-shadow:0 4px 0 rgba(74,91,103,0.22);
+    }
+    .progress{
+      flex:1 1 220px;
+      min-width:220px;
+    }
+    .progress-bar{
+      width:100%;
+      height:14px;
+      border-radius:999px;
+      background:#eaf4fa;
+      border:1px solid #d4e6f2;
+      overflow:hidden;
+      margin-top:5px;
+    }
+    .progress-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      transition:width .35s ease;
+    }
+
+    .screen{
+      display:none;
+      background:var(--panel);
+      border:2px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+    .screen.active{display:block;}
+
+    .title{
+      font-size:34px;
+      line-height:1.15;
+      margin:0 0 8px 0;
+    }
+    .instruction{
+      font-size:28px;
+      line-height:1.25;
+      font-weight:800;
+      color:#0d4f75;
+      background:#eaf8ff;
+      border:2px solid #c6e7f7;
+      border-radius:18px;
+      padding:14px 16px;
+      margin:0 0 18px 0;
+    }
+    .panel{
+      background:#fbfeff;
+      border:2px solid #d6ebf7;
+      border-radius:22px;
+      padding:16px;
+      margin-top:14px;
+    }
+    .two-col{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+      align-items:start;
+    }
+    .question-box{
+      font-size:22px;
+      line-height:1.55;
+      background:#ffffff;
+      border:2px solid #dcecf7;
+      border-radius:18px;
+      padding:16px;
+    }
+    mark{
+      background:#fff0a8;
+      border-radius:6px;
+      padding:0 .12em;
+    }
+
+    .choice-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:14px;
+      margin-top:12px;
+    }
+    .choice{
+      width:100%;
+      border:3px solid #cde6f4;
+      background:#fff;
+      color:var(--ink);
+      border-radius:20px;
+      padding:18px 16px;
+      font-size:24px;
+      line-height:1.3;
+      font-weight:700;
+      text-align:left;
+      cursor:pointer;
+      min-height:92px;
+      box-shadow:0 6px 0 rgba(194,220,235,0.75);
+    }
+    .choice:hover{transform:translateY(-1px)}
+    .choice.selected{border-color:#6dbde7;background:#f0fbff}
+    .choice.correct{border-color:var(--good); background:#eefcf4}
+    .choice.incorrect{border-color:var(--bad); background:#fff2f2}
+    .choice[disabled]{cursor:not-allowed; opacity:.95}
+
+    .feedback{
+      min-height:64px;
+      margin-top:14px;
+      border-radius:18px;
+      padding:14px 16px;
+      font-size:23px;
+      font-weight:700;
+      display:none;
+    }
+    .feedback.show{display:block}
+    .feedback.good{background:#eefcf4; border:2px solid #b7e7c9; color:#17613e}
+    .feedback.bad{background:#fff2f2; border:2px solid #f0c2c2; color:#8d2b2b}
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+      margin-top:16px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 18px;
+      font-size:22px;
+      font-weight:800;
+      color:#fff;
+      background:var(--accent);
+      cursor:pointer;
+      box-shadow:0 5px 0 rgba(18,96,138,0.22);
+    }
+    .btn.secondary{
+      background:#7f94a5;
+      box-shadow:0 5px 0 rgba(78,93,103,0.22);
+    }
+    .btn[disabled]{
+      opacity:.5;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .subtle{
+      color:var(--muted);
+      font-size:18px;
+    }
+
+    details{
+      margin-top:16px;
+      border:2px solid #d7ebf6;
+      border-radius:18px;
+      background:#fff;
+      padding:10px 14px;
+    }
+    details summary{
+      font-size:21px;
+      font-weight:800;
+      cursor:pointer;
+      color:#0f628f;
+      list-style:none;
+    }
+    details summary::-webkit-details-marker{display:none;}
+    details .question-box{margin-top:12px}
+
+    .svg-wrap{
+      width:100%;
+      overflow:auto;
+      background:#fff;
+      border:2px solid #dcecf7;
+      border-radius:18px;
+      padding:10px;
+    }
+    svg text{font-family:Arial, Helvetica, sans-serif}
+
+    .pair-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:12px;
+    }
+    .slot-card{
+      border:3px dashed #aacfe6;
+      border-radius:18px;
+      background:#f7fcff;
+      min-height:88px;
+      padding:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:24px;
+      font-weight:800;
+      color:#376985;
+      text-align:center;
+      cursor:pointer;
+    }
+    .slot-card.done{
+      border-style:solid;
+      background:#eef9ff;
+    }
+    .tag-bank{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:14px;
+    }
+    .tag{
+      min-width:72px;
+      min-height:72px;
+      border-radius:18px;
+      border:3px solid #cde6f4;
+      background:#fff;
+      display:grid;
+      place-items:center;
+      font-size:32px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 5px 0 rgba(194,220,235,0.75);
+      user-select:none;
+    }
+    .tag.used{
+      opacity:.45;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    .chain{
+      display:grid;
+      grid-template-columns:1fr auto 1fr auto 1fr;
+      gap:10px;
+      align-items:center;
+      margin-top:16px;
+    }
+    .chain-slot{
+      min-height:88px;
+      border:3px dashed #aacfe6;
+      border-radius:18px;
+      background:#f8fcff;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:24px;
+      font-weight:800;
+      color:#3d6880;
+      cursor:pointer;
+    }
+    .arrow{
+      font-size:34px;
+      font-weight:900;
+      color:#5499c1;
+      text-align:center;
+    }
+
+    .transfer-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:14px;
+      margin-top:12px;
+    }
+
+    .center{
+      text-align:center;
+    }
+
+    .restart-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(10,33,49,.82);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:999;
+      padding:20px;
+    }
+    .restart-overlay.show{display:flex;}
+    .restart-card{
+      max-width:720px;
+      width:100%;
+      background:#fff;
+      border-radius:26px;
+      padding:28px;
+      border:3px solid #d5eaf6;
+      box-shadow:var(--shadow);
+      text-align:center;
+    }
+    .restart-card h2{
+      font-size:38px;
+      margin:0 0 12px 0;
+      color:#0d4f75;
+    }
+    .restart-card p{
+      font-size:24px;
+      line-height:1.45;
+      margin:10px 0;
+    }
+
+
+    .reference-wrap{
+      margin-top:18px;
+      background:#fafdff;
+      border:2px solid #d7ebf6;
+      border-radius:22px;
+      padding:14px;
+    }
+    .reference-title{
+      font-size:22px;
+      font-weight:800;
+      color:#0f628f;
+      margin:0 0 12px 0;
+    }
+    .reference-grid{
+      display:grid;
+      grid-template-columns:1.15fr 1fr 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .reference-card{
+      background:#fff;
+      border:2px solid #dcecf7;
+      border-radius:18px;
+      padding:12px;
+    }
+    .reference-card h3{
+      margin:0 0 10px 0;
+      font-size:18px;
+      color:#0f628f;
+    }
+    .reference-card .question-box{
+      margin:0;
+      font-size:20px;
+      line-height:1.45;
+      padding:12px;
+    }
+
+    @media (max-width: 900px){
+      .two-col{grid-template-columns:1fr}
+      .transfer-grid{grid-template-columns:1fr}
+      .reference-grid{grid-template-columns:1fr}
+      .chain{grid-template-columns:1fr}
+      .arrow{transform:rotate(90deg)}
+      .pair-grid{grid-template-columns:1fr}
+      .title{font-size:30px}
+      .instruction{font-size:24px}
+      .choice{font-size:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top-strip" aria-label="Top controls">
+      <div class="top-item">
+        <div>
+          <div style="font-size:19px;font-weight:800;">Demerits</div>
+          <div class="hearts" id="hearts"></div>
+        </div>
+      </div>
+      <div class="top-item">
+        <button id="readToggle" class="toggle off" aria-pressed="false">Read-aloud: Off</button>
+      </div>
+      <div class="top-item progress">
+        <div style="font-size:19px;font-weight:800;">Progress</div>
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
+      <div class="top-item">
+        <div class="badge" id="screenBadge">1 / 9</div>
+      </div>
+    </div>
+
+    
+    <!-- Screen 1 -->
+    <section class="screen active" id="screen-1">
+      <h1 class="title">Water left after evaporation</h1>
+      <div class="instruction">Read the question. Then tap <strong>I have read it</strong>.</div>
+      <div class="two-col">
+        <div class="question-box" id="questionText1">
+          Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+          He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+          He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+          Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+        </div>
+        <div>
+          <div class="panel" style="margin-top:0;">
+            <div style="font-size:24px;font-weight:800;color:#0d4f75;margin-bottom:10px;">Containers</div>
+            <div class="svg-wrap" aria-label="Question containers">
+              <svg viewBox="0 0 560 210" width="100%" role="img" aria-label="Three containers A, B and C">
+                <g transform="translate(15,12)">
+                  <g transform="translate(0,18)">
+                    <line x1="42" y1="0" x2="0" y2="102" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="142" y1="0" x2="184" y2="102" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="102" x2="184" y2="102" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="24,70 160,70 142,102 42,102" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="92" y="140" text-anchor="middle" font-size="30" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(214,58)">
+                    <line x1="0" y1="34" x2="0" y2="92" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="192" y1="34" x2="192" y2="92" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="92" x2="192" y2="92" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="68" width="184" height="24" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="96" y="132" text-anchor="middle" font-size="30" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(466,0)">
+                    <line x1="0" y1="0" x2="0" y2="142" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="76" y1="0" x2="76" y2="142" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="142" x2="76" y2="142" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="62" width="68" height="80" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="38" y="180" text-anchor="middle" font-size="30" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="panel">
+            <div style="font-size:24px;font-weight:800;color:#0d4f75;margin-bottom:10px;">Graph</div>
+            <div class="svg-wrap" aria-label="Question graph">
+              <svg viewBox="0 0 420 250" width="100%" role="img" aria-label="Bar graph with three empty label boxes">
+                <g transform="translate(40,195)">
+                  <line x1="20" y1="0" x2="20" y2="-122" stroke="#1c4a67" stroke-width="4"/>
+                  <polygon points="20,-137 12,-122 28,-122" fill="#1c4a67"/>
+                  <line x1="20" y1="0" x2="305" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                  <polygon points="320,0 305,-8 305,8" fill="#1c4a67"/>
+                  <text x="-6" y="-142" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <rect x="58" y="-75" width="40" height="75" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                  <rect x="143" y="-42" width="40" height="42" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                  <rect x="228" y="-106" width="40" height="106" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                  <rect x="51" y="12" width="54" height="38" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  <rect x="136" y="12" width="54" height="38" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  <rect x="221" y="12" width="54" height="38" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" data-next="2">I have read it</button>
+      </div>
+    </section>
+
+
+    <!-- Screen 2 -->
+    <section class="screen" id="screen-2">
+      <h1 class="title">Step 1</h1>
+      <div class="instruction">Tap what is different between the containers.</div>
+      <div class="choice-grid" id="choices-2">
+        <button class="choice" data-value="surface">Exposed surface area of water</button>
+        <button class="choice" data-value="amount">Amount of water at the start</button>
+        <button class="choice" data-value="room">Room temperature</button>
+      </div>
+      <div id="feedback-2" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" disabled id="next-2" data-next="3">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 3 -->
+    <section class="screen" id="screen-3">
+      <h1 class="title">Step 2</h1>
+      <div class="instruction">Tap what the bars show.</div>
+      <div class="choice-grid" id="choices-3">
+        <button class="choice" data-value="left">Volume of water left in each container</button>
+        <button class="choice" data-value="rate">Rate of evaporation in each container</button>
+        <button class="choice" data-value="surface">Exposed surface area of each container</button>
+      </div>
+      <div class="svg-wrap" style="margin-top:14px;">
+        <svg viewBox="0 0 420 220" width="100%" role="img" aria-label="Bar graph only">
+          <g transform="translate(50,165)">
+            <text x="-6" y="-115" font-size="16" fill="#1c4a67">Volume of water left in the container (ml)</text>
+            <line x1="20" y1="0" x2="20" y2="-120" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="20,-135 12,-120 28,-120" fill="#1c4a67"/>
+            <line x1="20" y1="0" x2="300" y2="0" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="315,0 300,-8 300,8" fill="#1c4a67"/>
+            <rect x="60" y="-70" width="40" height="70" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="145" y="-40" width="40" height="40" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="230" y="-100" width="40" height="100" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
+      <div id="feedback-3" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" disabled id="next-3" data-next="4">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 4 -->
+    <section class="screen" id="screen-4">
+      <h1 class="title">Step 3</h1>
+      <div class="instruction">Tap the container with the widest exposed surface. Then tap the one with the narrowest.</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 780 250" width="100%" role="img" aria-label="Containers A, B and C">
+          <g transform="translate(20,25)">
+            <!-- A -->
+            <g>
+              <line x1="50" y1="0" x2="0" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="170" y1="0" x2="220" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="0" y1="120" x2="220" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <polygon points="28,80 192,80 170,120 50,120" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+              <foreignObject x="55" y="145" width="110" height="70">
+                <button xmlns="http://www.w3.org/1999/xhtml" class="choice container-choice" data-id="A" style="width:100%;height:64px;text-align:center;">A</button>
+              </foreignObject>
+            </g>
+            <!-- B -->
+            <g transform="translate(255,35)">
+              <line x1="0" y1="65" x2="0" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="220" y1="65" x2="220" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="0" y1="120" x2="220" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <rect x="4" y="92" width="212" height="28" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+              <foreignObject x="55" y="145" width="110" height="70">
+                <button xmlns="http://www.w3.org/1999/xhtml" class="choice container-choice" data-id="B" style="width:100%;height:64px;text-align:center;">B</button>
+              </foreignObject>
+            </g>
+            <!-- C -->
+            <g transform="translate(585,5)">
+              <line x1="0" y1="0" x2="0" y2="160" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="90" y1="0" x2="90" y2="160" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="0" y1="160" x2="90" y2="160" stroke="#4b6a7e" stroke-width="5"/>
+              <rect x="5" y="65" width="80" height="95" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+              <foreignObject x="-10" y="178" width="110" height="70">
+                <button xmlns="http://www.w3.org/1999/xhtml" class="choice container-choice" data-id="C" style="width:100%;height:64px;text-align:center;">C</button>
+              </foreignObject>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div class="pair-grid">
+        <div class="slot-card" id="slot-widest">Widest exposed surface: ?</div>
+        <div class="slot-card" id="slot-narrowest">Narrowest exposed surface: ?</div>
+      </div>
+      <div class="subtle" style="margin-top:10px;">Tip: Look only at the top water surface touching the air.</div>
+      <div id="feedback-4" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" id="check-4">Check</button>
+        <button class="btn secondary" disabled id="next-4" data-next="5">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    
+    <!-- Screen 5 -->
+    <section class="screen" id="screen-5">
+      <h1 class="title">Step 4</h1>
+      <div class="instruction">Use the surface area evidence. Which container should evaporate the fastest? Which should evaporate the slowest?</div>
+      <div class="pair-grid">
+        <div class="slot-card" id="slot-fastest">Fastest evaporation: ?</div>
+        <div class="slot-card" id="slot-slowest">Slowest evaporation: ?</div>
+      </div>
+      <div class="choice-grid" id="choices-5" style="margin-top:16px;">
+        <button class="choice evap-choice" data-id="A">Container A</button>
+        <button class="choice evap-choice" data-id="B">Container B</button>
+        <button class="choice evap-choice" data-id="C">Container C</button>
+      </div>
+      <div class="subtle" style="margin-top:10px;">More exposed surface area means a faster rate of evaporation.</div>
+      <div id="feedback-5" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" id="check-5">Check</button>
+        <button class="btn secondary" disabled id="next-5" data-next="6">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 6 -->
+    <section class="screen" id="screen-6">
+      <h1 class="title">Step 5</h1>
+      <div class="instruction">Now link the rate of evaporation to the graph. Which bar should match the fastest evaporation? Which should match the slowest evaporation?</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 520 260" width="100%" role="img" aria-label="Bar graph with three bars">
+          <g transform="translate(65,195)">
+            <text x="-15" y="-130" font-size="17" fill="#1c4a67">Volume of water left in the container (ml)</text>
+            <line x1="20" y1="0" x2="20" y2="-120" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="20,-135 12,-120 28,-120" fill="#1c4a67"/>
+            <line x1="20" y1="0" x2="360" y2="0" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="375,0 360,-8 360,8" fill="#1c4a67"/>
+            <rect x="70" y="-78" width="46" height="78" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="170" y="-44" width="46" height="44" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="270" y="-108" width="46" height="108" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="pair-grid" style="margin-top:16px;">
+        <div class="slot-card" id="slot-fast-bar">Fastest evaporation → ?</div>
+        <div class="slot-card" id="slot-slow-bar">Slowest evaporation → ?</div>
+      </div>
+      <div class="choice-grid" id="choices-6" style="margin-top:16px;">
+        <button class="choice bar-choice" data-id="shortest">Shortest bar</button>
+        <button class="choice bar-choice" data-id="middle">Middle bar</button>
+        <button class="choice bar-choice" data-id="tallest">Tallest bar</button>
+      </div>
+      <div class="subtle" style="margin-top:10px;">The graph shows water left, not evaporation rate.</div>
+      <div id="feedback-6" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" id="check-6">Check</button>
+        <button class="btn secondary" disabled id="next-6" data-next="7">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 7 -->
+    <section class="screen" id="screen-7">
+      <h1 class="title">Step 6</h1>
+      <div class="instruction">Place A, B and C under the correct bars. Then tap Check.</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 520 300" width="100%" role="img" aria-label="Bar graph with spaces for letters">
+          <g transform="translate(65,215)">
+            <text x="-15" y="-125" font-size="17" fill="#1c4a67">Volume of water left in the container (ml)</text>
+            <line x1="20" y1="0" x2="20" y2="-135" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="20,-150 12,-135 28,-135" fill="#1c4a67"/>
+            <line x1="20" y1="0" x2="360" y2="0" stroke="#1c4a67" stroke-width="4"/>
+            <polygon points="375,0 360,-8 360,8" fill="#1c4a67"/>
+            <rect x="70" y="-85" width="46" height="85" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="170" y="-50" width="46" height="50" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+            <rect x="270" y="-110" width="46" height="110" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="pair-grid" style="grid-template-columns:repeat(3,1fr); margin-top:16px;">
+        <div class="slot-card graph-slot" data-slot="0">Left bar</div>
+        <div class="slot-card graph-slot" data-slot="1">Middle bar</div>
+        <div class="slot-card graph-slot" data-slot="2">Right bar</div>
+      </div>
+      <div class="tag-bank" id="graph-bank">
+        <div class="tag" data-label="A">A</div>
+        <div class="tag" data-label="B">B</div>
+        <div class="tag" data-label="C">C</div>
+      </div>
+      <div class="subtle" style="margin-top:10px;">Start with B and C. Then the last bar must be A.</div>
+      <div id="feedback-7" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" id="check-7">Check</button>
+        <button class="btn secondary" disabled id="next-7" data-next="8">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 8 -->
+    <section class="screen" id="screen-8">
+      <h1 class="title">Step 7</h1>
+      <div class="instruction">Now solve the question on your own.</div>
+      <div class="two-col">
+        <div class="svg-wrap">
+          <svg viewBox="0 0 500 230" width="100%" role="img" aria-label="Three containers">
+            <g transform="translate(10,15)">
+              <g transform="translate(0,10)">
+                <line x1="40" y1="0" x2="0" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="135" y1="0" x2="175" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="0" y1="95" x2="175" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <polygon points="22,65 152,65 135,95 40,95" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                <text x="85" y="130" text-anchor="middle" font-size="26" font-weight="800">A</text>
+              </g>
+              <g transform="translate(190,45)">
+                <line x1="0" y1="45" x2="0" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="165" y1="45" x2="165" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="0" y1="95" x2="165" y2="95" stroke="#4b6a7e" stroke-width="5"/>
+                <rect x="4" y="73" width="157" height="22" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                <text x="82" y="130" text-anchor="middle" font-size="26" font-weight="800">B</text>
+              </g>
+              <g transform="translate(395,0)">
+                <line x1="0" y1="0" x2="0" y2="140" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="72" y1="0" x2="72" y2="140" stroke="#4b6a7e" stroke-width="5"/>
+                <line x1="0" y1="140" x2="72" y2="140" stroke="#4b6a7e" stroke-width="5"/>
+                <rect x="4" y="56" width="64" height="84" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                <text x="36" y="174" text-anchor="middle" font-size="26" font-weight="800">C</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="svg-wrap">
+            <svg viewBox="0 0 360 280" width="100%" role="img" aria-label="Graph to fill">
+              <g transform="translate(30,210)">
+                <text x="10" y="-165" font-size="16" fill="#1c4a67">Volume of water left</text>
+                <line x1="20" y1="0" x2="20" y2="-140" stroke="#1c4a67" stroke-width="4"/>
+                <polygon points="20,-155 12,-140 28,-140" fill="#1c4a67"/>
+                <line x1="20" y1="0" x2="285" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                <polygon points="300,0 285,-8 285,8" fill="#1c4a67"/>
+                <rect x="55" y="-85" width="40" height="85" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                <rect x="130" y="-50" width="40" height="50" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                <rect x="205" y="-110" width="40" height="110" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+              </g>
+            </svg>
+          </div>
+          <div class="pair-grid" style="grid-template-columns:repeat(3,1fr); margin-top:12px;">
+            <div class="slot-card retry-slot" data-slot="0">Left</div>
+            <div class="slot-card retry-slot" data-slot="1">Middle</div>
+            <div class="slot-card retry-slot" data-slot="2">Right</div>
+          </div>
+          <div class="tag-bank" id="retry-bank">
+            <div class="tag" data-label="A">A</div>
+            <div class="tag" data-label="B">B</div>
+            <div class="tag" data-label="C">C</div>
+          </div>
+        </div>
+      </div>
+      <div id="feedback-8" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" id="check-8">Check</button>
+        <button class="btn secondary" disabled id="next-8" data-next="9">Next</button>
+      </div>
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 9 -->
+    <section class="screen" id="screen-9">
+      <h1 class="title">Transfer check</h1>
+      <div class="instruction">Which new container should have the shortest bar the next day?</div>
+      <div class="transfer-grid" id="choices-9">
+        <button class="choice" data-value="X">
+          <div class="svg-wrap" style="padding:6px; margin-bottom:8px;">
+            <svg viewBox="0 0 180 140" width="100%" role="img" aria-label="Container X">
+              <line x1="28" y1="10" x2="5" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="145" y1="10" x2="168" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="5" y1="110" x2="168" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <polygon points="26,78 147,78 129,110 43,110" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+            </svg>
+          </div>
+          Container X
+        </button>
+        <button class="choice" data-value="Y">
+          <div class="svg-wrap" style="padding:6px; margin-bottom:8px;">
+            <svg viewBox="0 0 180 140" width="100%" role="img" aria-label="Container Y">
+              <line x1="5" y1="55" x2="5" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="170" y1="55" x2="170" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="5" y1="110" x2="170" y2="110" stroke="#4b6a7e" stroke-width="5"/>
+              <rect x="9" y="86" width="157" height="24" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+            </svg>
+          </div>
+          Container Y
+        </button>
+        <button class="choice" data-value="Z">
+          <div class="svg-wrap" style="padding:6px; margin-bottom:8px;">
+            <svg viewBox="0 0 180 140" width="100%" role="img" aria-label="Container Z">
+              <line x1="45" y1="10" x2="45" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="110" y1="10" x2="110" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <line x1="45" y1="120" x2="110" y2="120" stroke="#4b6a7e" stroke-width="5"/>
+              <rect x="49" y="55" width="57" height="65" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+            </svg>
+          </div>
+          Container Z
+        </button>
+      </div>
+      <div id="feedback-9" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button class="btn secondary" disabled id="next-9" data-next="10">Next</button>
+      </div>
+    
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Screen 10 -->
+    <section class="screen" id="screen-10">
+      <h1 class="title">You finished!</h1>
+      <div class="instruction">Done. You used the graph label and the exposed surface area to work out the answer.</div>
+      <div class="panel center">
+        <p style="font-size:26px; line-height:1.45; margin:0 0 12px 0;">
+          Best answer to the original task: <strong>left bar = A, middle bar = B, right bar = C</strong>.
+        </p>
+        <p style="font-size:24px; line-height:1.45; margin:0;">
+          B has the widest exposed surface, so it evaporates fastest and has the least water left.
+          C has the narrowest exposed surface, so it has the most water left.
+        </p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="restartNow">Restart</button>
+      </div>
+    
+
+      <div class="reference-wrap">
+        <div class="reference-title">Question and source pictures</div>
+        <div class="reference-grid">
+          <div class="reference-card">
+            <h3>Question</h3>
+            <div class="question-box">
+              Sam wanted to find out how the <mark>exposed surface area</mark> affects the <mark>rate of evaporation</mark>.<br><br>
+              He filled each of the three containers A, B and C with 100 ml of water and placed them in a room overnight.<br><br>
+              He measured the <mark>amount of water left</mark> in each container the next day and plotted the graph below.<br><br>
+              Fill in the boxes in the graph above with the letters A, B and C to show the amount of water left in each container.
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Containers</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 430 210" width="100%" role="img" aria-label="Containers A, B and C">
+                <g transform="translate(10,10)">
+                  <g transform="translate(0,20)">
+                    <line x1="40" y1="0" x2="8" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="140" y1="0" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="8" y1="90" x2="172" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <polygon points="26,58 154,58 136,90 44,90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="90" y="124" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">A</text>
+                  </g>
+                  <g transform="translate(185,56)">
+                    <line x1="0" y1="30" x2="0" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="150" y1="30" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="90" x2="150" y2="90" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="58" width="142" height="32" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="75" y="125" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">B</text>
+                  </g>
+                  <g transform="translate(360,5)">
+                    <line x1="0" y1="0" x2="0" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="70" y1="0" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <line x1="0" y1="145" x2="70" y2="145" stroke="#4b6a7e" stroke-width="5"/>
+                    <rect x="4" y="55" width="62" height="90" fill="#bfeeff" stroke="#4b6a7e" stroke-width="4"/>
+                    <text x="35" y="178" text-anchor="middle" font-size="24" font-weight="800" fill="#1c4a67">C</text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="reference-card">
+            <h3>Graph</h3>
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 240" width="100%" role="img" aria-label="Bar graph showing water left">
+                <g transform="translate(22,26)">
+                  <text x="18" y="16" font-size="16" font-weight="700" fill="#1c4a67">Volume of water left in the container (ml)</text>
+                  <g transform="translate(20,160)">
+                    <line x1="20" y1="0" x2="20" y2="-110" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="20,-124 12,-110 28,-110" fill="#1c4a67"/>
+                    <line x1="20" y1="0" x2="250" y2="0" stroke="#1c4a67" stroke-width="4"/>
+                    <polygon points="264,0 250,-8 250,8" fill="#1c4a67"/>
+                    <rect x="55" y="-66" width="36" height="66" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="126" y="-36" width="36" height="36" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="197" y="-94" width="36" height="94" fill="#d7dde2" stroke="#1c4a67" stroke-width="3"/>
+                    <rect x="48" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="119" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                    <rect x="190" y="10" width="50" height="34" rx="6" fill="#fff" stroke="#7baecc" stroke-width="3"/>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  
+  </div>
+
+  <div class="restart-overlay" id="restartOverlay" role="dialog" aria-modal="true" aria-label="Restart interactive">
+    <div class="restart-card">
+      <h2>Out of demerits</h2>
+      <p>You used all your demerits, so the whole interactive will restart.</p>
+      <p>Try again. Read the graph label carefully, then connect <strong>more exposed surface area → faster evaporation → less water left</strong>.</p>
+      <button class="btn" id="restartAutoBtn">Restart now</button>
+    </div>
+  </div>
+
+  
+  <script>
+    const totalScreens = 10;
+    let currentScreen = 1;
+    let readAloudOn = false;
+    const maxDemerits = 3;
+    let demeritsLeft = maxDemerits;
+    let currentVoice = null;
+
+    let activePairSlot = null;
+    let widestChoice = null;
+    let narrowestChoice = null;
+
+    let evapFast = null;
+    let evapSlow = null;
+
+    let barLinkFast = null;
+    let barLinkSlow = null;
+
+    let graphActiveSlot = null;
+    let retryActiveSlot = null;
+    let graphAnswer = [null, null, null];
+    let retryAnswer = [null, null, null];
+
+    function $(sel, root=document){ return root.querySelector(sel); }
+    function $all(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+    function updateHearts(){
+      const wrap = $("#hearts");
+      wrap.innerHTML = "";
+      for(let i=0;i<maxDemerits;i++){
+        const d = document.createElement("div");
+        d.className = "heart" + (i < demeritsLeft ? "" : " off");
+        d.textContent = "💧";
+        wrap.appendChild(d);
+      }
+    }
+
+    function updateProgress(){
+      $("#screenBadge").textContent = `${currentScreen} / ${totalScreens}`;
+      const percent = ((currentScreen - 1) / (totalScreens - 1)) * 100;
+      $("#progressFill").style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    }
+
+    function showScreen(n){
+      currentScreen = n;
+      $all(".screen").forEach(s => s.classList.remove("active"));
+      $(`#screen-${n}`).classList.add("active");
+      updateProgress();
+      speakCurrentScreen();
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function setFeedback(screenId, type, msg){
+      const box = $(`#feedback-${screenId}`);
+      box.className = `feedback show ${type}`;
+      box.textContent = msg;
+      if(readAloudOn){ speak(msg); }
+    }
+
+    function clearFeedback(screenId){
+      const box = $(`#feedback-${screenId}`);
+      if(!box) return;
+      box.className = "feedback";
+      box.textContent = "";
+    }
+
+    function enableNext(screenId){
+      const el = $(`#next-${screenId}`);
+      if(el) el.disabled = false;
+    }
+
+    function applyDemerit(){
+      demeritsLeft -= 1;
+      if(demeritsLeft < 0) demeritsLeft = 0;
+      updateHearts();
+      if(demeritsLeft === 0){
+        setTimeout(() => {
+          $("#restartOverlay").classList.add("show");
+          if(readAloudOn){ speak("Out of demerits. The whole interactive will restart."); }
+        }, 500);
+      }
+    }
+
+    function restartAll(){
+      demeritsLeft = maxDemerits;
+      updateHearts();
+      $("#restartOverlay").classList.remove("show");
+      readAloudOn = false;
+      updateReadToggle();
+      resetScreen2();
+      resetScreen3();
+      resetScreen4();
+      resetScreen5();
+      resetScreen6();
+      resetScreen7();
+      resetScreen8();
+      resetScreen9();
+      showScreen(1);
+    }
+
+    function updateReadToggle(){
+      const btn = $("#readToggle");
+      btn.classList.toggle("off", !readAloudOn);
+      btn.textContent = `Read-aloud: ${readAloudOn ? "On" : "Off"}`;
+      btn.setAttribute("aria-pressed", readAloudOn ? "true" : "false");
+    }
+
+    function getVoices(){
+      const voices = speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+      currentVoice = voices.find(v => /en/i.test(v.lang)) || voices[0] || null;
+    }
+
+    function speak(text){
+      if(!readAloudOn || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      if(currentVoice) u.voice = currentVoice;
+      u.rate = 1.0;
+      u.pitch = 1;
+      window.speechSynthesis.speak(u);
+    }
+
+    function speakCurrentScreen(){
+      if(!readAloudOn) return;
+      const screen = $(`#screen-${currentScreen}`);
+      const title = screen.querySelector(".title")?.innerText || "";
+      const instruction = screen.querySelector(".instruction")?.innerText || "";
+      let extra = "";
+      if(currentScreen === 1){
+        extra = $("#questionText1").innerText;
+      }else{
+        const choices = $all(".choice", screen).map(x => x.innerText.trim()).filter(Boolean).join(". ");
+        extra = choices;
+      }
+      speak(`${title}. ${instruction}. ${extra}`);
+    }
+
+    $all("[data-next]").forEach(btn=>{
+      btn.addEventListener("click", () => {
+        const next = Number(btn.dataset.next);
+        showScreen(next);
+      });
+    });
+
+    $("#readToggle").addEventListener("click", ()=>{
+      readAloudOn = !readAloudOn;
+      updateReadToggle();
+      if(readAloudOn){
+        getVoices();
+        speakCurrentScreen();
+      }else if(window.speechSynthesis){
+        window.speechSynthesis.cancel();
+      }
+    });
+
+    if(window.speechSynthesis){
+      window.speechSynthesis.onvoiceschanged = getVoices;
+      getVoices();
+    }
+
+    // Screen 2
+    function resetScreen2(){
+      clearFeedback(2);
+      $("#next-2").disabled = true;
+      $all("#choices-2 .choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice";
+      });
+    }
+    $all("#choices-2 .choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const val = btn.dataset.value;
+        $all("#choices-2 .choice").forEach(b => b.classList.remove("selected","correct","incorrect"));
+        if(val === "surface"){
+          btn.classList.add("correct");
+          setFeedback(2, "good", "Yes. The exposed surface area of the water is the thing that changes.");
+          $all("#choices-2 .choice").forEach(b => b.disabled = true);
+          enableNext(2);
+        }else{
+          btn.classList.add("incorrect");
+          setFeedback(2, "bad", "Look again at the question. All three containers started with the same amount of water.");
+          applyDemerit();
+        }
+      });
+    });
+
+    // Screen 3
+    function resetScreen3(){
+      clearFeedback(3);
+      $("#next-3").disabled = true;
+      $all("#choices-3 .choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice";
+      });
+    }
+    $all("#choices-3 .choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const val = btn.dataset.value;
+        $all("#choices-3 .choice").forEach(b => b.classList.remove("selected","correct","incorrect"));
+        if(val === "left"){
+          btn.classList.add("correct");
+          setFeedback(3, "good", "Yes. The bars show how much water was left in each container.");
+          $all("#choices-3 .choice").forEach(b => b.disabled = true);
+          enableNext(3);
+        }else{
+          btn.classList.add("incorrect");
+          setFeedback(3, "bad", "Check the y-axis label. It tells you what the bars mean.");
+          applyDemerit();
+        }
+      });
+    });
+
+    // Screen 4
+    function refreshSurfaceSlots(){
+      $("#slot-widest").textContent = `Widest exposed surface: ${widestChoice || "?"}`;
+      $("#slot-narrowest").textContent = `Narrowest exposed surface: ${narrowestChoice || "?"}`;
+      $("#slot-widest").classList.toggle("done", !!widestChoice);
+      $("#slot-narrowest").classList.toggle("done", !!narrowestChoice);
+    }
+    $("#slot-widest").addEventListener("click", ()=> activePairSlot = "widest");
+    $("#slot-narrowest").addEventListener("click", ()=> activePairSlot = "narrowest");
+    function resetScreen4(){
+      widestChoice = null;
+      narrowestChoice = null;
+      activePairSlot = null;
+      clearFeedback(4);
+      $("#next-4").disabled = true;
+      $("#slot-widest").style.pointerEvents = "auto";
+      $("#slot-narrowest").style.pointerEvents = "auto";
+      refreshSurfaceSlots();
+      $all(".container-choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice container-choice";
+      });
+    }
+    $all(".container-choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.id;
+        if(!activePairSlot){
+          setFeedback(4, "bad", "First tap the slot you want to fill.");
+          return;
+        }
+        if(activePairSlot === "widest") widestChoice = id;
+        if(activePairSlot === "narrowest") narrowestChoice = id;
+        refreshSurfaceSlots();
+      });
+    });
+    $("#check-4").addEventListener("click", ()=>{
+      if(!widestChoice || !narrowestChoice){
+        setFeedback(4, "bad", "Fill both slots before you check.");
+        return;
+      }
+      if(widestChoice === "B" && narrowestChoice === "C"){
+        setFeedback(4, "good", "Yes. B has the widest exposed surface. C has the narrowest.");
+        $all(".container-choice").forEach(btn => btn.disabled = true);
+        $("#slot-widest").style.pointerEvents = "none";
+        $("#slot-narrowest").style.pointerEvents = "none";
+        enableNext(4);
+      }else{
+        setFeedback(4, "bad", "Look only at the top water surface touching the air, not the container height.");
+        applyDemerit();
+      }
+    });
+
+    // Screen 5
+    function refreshEvapSlots(){
+      $("#slot-fastest").textContent = `Fastest evaporation: ${evapFast || "?"}`;
+      $("#slot-slowest").textContent = `Slowest evaporation: ${evapSlow || "?"}`;
+      $("#slot-fastest").classList.toggle("done", !!evapFast);
+      $("#slot-slowest").classList.toggle("done", !!evapSlow);
+    }
+    $("#slot-fastest").addEventListener("click", ()=> activePairSlot = "fastest");
+    $("#slot-slowest").addEventListener("click", ()=> activePairSlot = "slowest");
+    function resetScreen5(){
+      evapFast = null;
+      evapSlow = null;
+      activePairSlot = null;
+      clearFeedback(5);
+      $("#next-5").disabled = true;
+      refreshEvapSlots();
+      $all(".evap-choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice evap-choice";
+      });
+    }
+    $all(".evap-choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.id;
+        if(!activePairSlot){
+          setFeedback(5, "bad", "First tap the slot you want to fill.");
+          return;
+        }
+        if(activePairSlot === "fastest") evapFast = id;
+        if(activePairSlot === "slowest") evapSlow = id;
+        refreshEvapSlots();
+      });
+    });
+    $("#check-5").addEventListener("click", ()=>{
+      if(!evapFast || !evapSlow){
+        setFeedback(5, "bad", "Fill both slots before you check.");
+        return;
+      }
+      if(evapFast === "B" && evapSlow === "C"){
+        setFeedback(5, "good", "Yes. B evaporates the fastest because it has the widest exposed surface. C evaporates the slowest.");
+        enableNext(5);
+        $all(".evap-choice").forEach(btn => btn.disabled = true);
+      }else{
+        setFeedback(5, "bad", "Use the surface area evidence. Wider exposed surface means faster evaporation.");
+        applyDemerit();
+      }
+    });
+
+    // Screen 6
+    function refreshBarLinkSlots(){
+      $("#slot-fast-bar").textContent = `Fastest evaporation → ${barLinkFast || "?"}`;
+      $("#slot-slow-bar").textContent = `Slowest evaporation → ${barLinkSlow || "?"}`;
+      $("#slot-fast-bar").classList.toggle("done", !!barLinkFast);
+      $("#slot-slow-bar").classList.toggle("done", !!barLinkSlow);
+    }
+    $("#slot-fast-bar").addEventListener("click", ()=> activePairSlot = "fastBar");
+    $("#slot-slow-bar").addEventListener("click", ()=> activePairSlot = "slowBar");
+    function resetScreen6(){
+      barLinkFast = null;
+      barLinkSlow = null;
+      activePairSlot = null;
+      clearFeedback(6);
+      $("#next-6").disabled = true;
+      refreshBarLinkSlots();
+      $all(".bar-choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice bar-choice";
+      });
+    }
+    $all(".bar-choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.id;
+        if(!activePairSlot){
+          setFeedback(6, "bad", "First tap the slot you want to fill.");
+          return;
+        }
+        if(activePairSlot === "fastBar") barLinkFast = id;
+        if(activePairSlot === "slowBar") barLinkSlow = id;
+        refreshBarLinkSlots();
+      });
+    });
+    $("#check-6").addEventListener("click", ()=>{
+      if(!barLinkFast || !barLinkSlow){
+        setFeedback(6, "bad", "Fill both slots before you check.");
+        return;
+      }
+      if(barLinkFast === "shortest" && barLinkSlow === "tallest"){
+        setFeedback(6, "good", "Yes. Faster evaporation leaves less water, so it matches the shortest bar. Slower evaporation leaves more water, so it matches the tallest bar.");
+        enableNext(6);
+        $all(".bar-choice").forEach(btn => btn.disabled = true);
+      }else{
+        setFeedback(6, "bad", "The graph shows water left. Faster evaporation means less water left.");
+        applyDemerit();
+      }
+    });
+
+    // Screen 7
+    function renderGraph(){
+      $all(".graph-slot").forEach((slot, i)=>{
+        slot.textContent = graphAnswer[i] ? `${["Left","Middle","Right"][i]} bar: ${graphAnswer[i]}` : `${["Left","Middle","Right"][i]} bar`;
+        slot.classList.toggle("done", !!graphAnswer[i]);
+      });
+      $all("#graph-bank .tag").forEach(tag=>{
+        tag.classList.toggle("used", graphAnswer.includes(tag.dataset.label));
+      });
+    }
+    function resetScreen7(){
+      graphAnswer = [null, null, null];
+      graphActiveSlot = null;
+      clearFeedback(7);
+      $("#next-7").disabled = true;
+      renderGraph();
+    }
+    $all(".graph-slot").forEach(slot=>{
+      slot.addEventListener("click", ()=> graphActiveSlot = Number(slot.dataset.slot));
+    });
+    $all("#graph-bank .tag").forEach(tag=>{
+      tag.addEventListener("click", ()=>{
+        const label = tag.dataset.label;
+        if(graphActiveSlot === null){
+          setFeedback(7, "bad", "First tap a bar slot.");
+          return;
+        }
+        if(graphAnswer.includes(label)) return;
+        graphAnswer[graphActiveSlot] = label;
+        graphActiveSlot = null;
+        renderGraph();
+      });
+    });
+    $("#check-7").addEventListener("click", ()=>{
+      const correct = ["A","B","C"];
+      if(graphAnswer.includes(null)){
+        setFeedback(7, "bad", "Fill all three bar labels before you check.");
+        return;
+      }
+      if(JSON.stringify(graphAnswer) === JSON.stringify(correct)){
+        setFeedback(7, "good", "Yes. B goes with the shortest bar, C goes with the tallest bar, and A is the remaining bar.");
+        enableNext(7);
+      }else{
+        setFeedback(7, "bad", "Start with B and C first. Then place A in the remaining slot.");
+        applyDemerit();
+      }
+    });
+
+    // Screen 8
+    function renderRetry(){
+      $all(".retry-slot").forEach((slot, i)=>{
+        slot.textContent = retryAnswer[i] ? `${["Left","Middle","Right"][i]}: ${retryAnswer[i]}` : `${["Left","Middle","Right"][i]}`;
+        slot.classList.toggle("done", !!retryAnswer[i]);
+      });
+      $all("#retry-bank .tag").forEach(tag=>{
+        tag.classList.toggle("used", retryAnswer.includes(tag.dataset.label));
+      });
+    }
+    function resetScreen8(){
+      retryAnswer = [null, null, null];
+      retryActiveSlot = null;
+      clearFeedback(8);
+      $("#next-8").disabled = true;
+      renderRetry();
+    }
+    $all(".retry-slot").forEach(slot=>{
+      slot.addEventListener("click", ()=> retryActiveSlot = Number(slot.dataset.slot));
+    });
+    $all("#retry-bank .tag").forEach(tag=>{
+      tag.addEventListener("click", ()=>{
+        const label = tag.dataset.label;
+        if(retryActiveSlot === null){
+          setFeedback(8, "bad", "First tap a bar slot.");
+          return;
+        }
+        if(retryAnswer.includes(label)) return;
+        retryAnswer[retryActiveSlot] = label;
+        retryActiveSlot = null;
+        renderRetry();
+      });
+    });
+    $("#check-8").addEventListener("click", ()=>{
+      const correct = ["A","B","C"];
+      if(retryAnswer.includes(null)){
+        setFeedback(8, "bad", "Fill all three bar labels before you check.");
+        return;
+      }
+      if(JSON.stringify(retryAnswer) === JSON.stringify(correct)){
+        setFeedback(8, "good", "Well done. You matched the bars using exposed surface area, evaporation rate and water left.");
+        enableNext(8);
+      }else{
+        setFeedback(8, "bad", "Use this plan: widest surface → fastest evaporation → least water left.");
+        applyDemerit();
+      }
+    });
+
+    // Screen 9
+    function resetScreen9(){
+      clearFeedback(9);
+      $("#next-9").disabled = true;
+      $all("#choices-9 .choice").forEach(btn=>{
+        btn.disabled = false;
+        btn.className = "choice";
+      });
+    }
+    $all("#choices-9 .choice").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const val = btn.dataset.value;
+        $all("#choices-9 .choice").forEach(b=>b.classList.remove("correct","incorrect"));
+        if(val === "Y"){
+          btn.classList.add("correct");
+          setFeedback(9, "good", "Yes. The widest exposed surface area should give the shortest bar the next day.");
+          $all("#choices-9 .choice").forEach(b => b.disabled = true);
+          enableNext(9);
+        }else{
+          btn.classList.add("incorrect");
+          setFeedback(9, "bad", "Choose the container with the widest water surface touching the air.");
+        }
+      });
+    });
+
+    $("#restartNow").addEventListener("click", restartAll);
+    $("#restartAutoBtn").addEventListener("click", restartAll);
+
+    updateHearts();
+    updateProgress();
+    updateReadToggle();
+    resetScreen2();
+    resetScreen3();
+    resetScreen4();
+    resetScreen5();
+    resetScreen6();
+    resetScreen7();
+    resetScreen8();
+    resetScreen9();
+  </script>
+
+</body>
+</html>
