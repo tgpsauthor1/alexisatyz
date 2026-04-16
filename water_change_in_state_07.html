@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Water Change in State 7</title>
+<style>
+  :root{
+    --bg:#f4f8ff;
+    --panel:#ffffff;
+    --ink:#17324d;
+    --muted:#5b7288;
+    --line:#c9d6e5;
+    --accent:#0e7490;
+    --accent-2:#f59e0b;
+    --good:#177245;
+    --bad:#c2410c;
+    --shadow:0 10px 28px rgba(16, 55, 92, 0.12);
+    --radius:20px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(180deg,#eef6ff 0%, #f8fbff 100%);
+    color:var(--ink);
+  }
+  .wrap{
+    max-width:980px;
+    margin:0 auto;
+    padding:18px 14px 28px;
+  }
+  .top-strip{
+    background:linear-gradient(90deg,#0f3057,#164b7a);
+    color:#fff;
+    border-radius:18px;
+    padding:12px 16px;
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:12px;
+    align-items:center;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .strip-block{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+  }
+  .strip-label{
+    font-size:0.95rem;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .lives{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .life{
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,255,255,.15);
+    border:2px solid rgba(255,255,255,.25);
+    font-size:18px;
+  }
+  .life.off{
+    opacity:.3;
+    filter:grayscale(1);
+  }
+  .progress{
+    font-weight:700;
+    background:rgba(255,255,255,.12);
+    padding:8px 12px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .read-tools{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+  }
+  .tiny-btn{
+    border:none;
+    border-radius:999px;
+    padding:10px 14px;
+    font-size:0.95rem;
+    font-weight:700;
+    cursor:pointer;
+    background:#fff;
+    color:#153a5c;
+    min-height:44px;
+  }
+  .tiny-btn.secondary{
+    background:rgba(255,255,255,.14);
+    color:#fff;
+    border:2px solid rgba(255,255,255,.18);
+  }
+  .card{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:22px;
+  }
+  .title{
+    margin:0 0 8px 0;
+    font-size:1.55rem;
+    line-height:1.2;
+  }
+  .instruction{
+    margin:0 0 16px 0;
+    font-size:1.3rem;
+    line-height:1.35;
+    font-weight:800;
+    color:#0c4a6e;
+  }
+  .small-note{
+    margin:10px 0 0 0;
+    color:var(--muted);
+    font-size:1rem;
+  }
+  .question-card{
+    background:#f8fbff;
+    border:2px solid #bfd6ea;
+    border-radius:18px;
+    padding:18px;
+    margin-top:10px;
+  }
+  .question-text{
+    font-size:1.22rem;
+    line-height:1.45;
+    margin:0;
+  }
+  .hl{
+    background:linear-gradient(180deg,transparent 35%, #fff1b8 35%, #fff1b8 100%);
+    padding:0 .12em;
+    border-radius:4px;
+    font-weight:700;
+  }
+  .source-area{
+    margin-top:16px;
+    display:grid;
+    grid-template-columns:minmax(280px,1fr) minmax(260px, 360px);
+    gap:16px;
+    align-items:start;
+  }
+  .option-grid{
+    display:grid;
+    gap:12px;
+  }
+  .option-grid.two{
+    grid-template-columns:repeat(2, minmax(0,1fr));
+  }
+  .option-grid.three{
+    grid-template-columns:repeat(3, minmax(0,1fr));
+  }
+  .choice{
+    background:#fff;
+    border:2px solid #bad0e2;
+    color:var(--ink);
+    border-radius:18px;
+    padding:16px 16px;
+    min-height:62px;
+    font-size:1.05rem;
+    font-weight:700;
+    text-align:left;
+    cursor:pointer;
+    width:100%;
+  }
+  .choice:hover, .tiny-btn:hover, .action-btn:hover, .slot:hover, .chip:hover{filter:brightness(.98)}
+  .choice.selected, .slot.selected, .chip.selected{
+    border-color:#0c7fa0;
+    background:#e7f8fc;
+    box-shadow:0 0 0 4px rgba(14,116,144,.12);
+  }
+  .choice.correct, .slot.correct{
+    border-color:#1a7f4a;
+    background:#e9f8ef;
+  }
+  .choice.wrong, .slot.wrong{
+    border-color:#d65b16;
+    background:#fff0e8;
+  }
+  .feedback{
+    margin-top:14px;
+    border-radius:16px;
+    padding:14px 16px;
+    font-size:1.04rem;
+    line-height:1.4;
+    display:none;
+  }
+  .feedback.show{display:block}
+  .feedback.good{background:#e9f8ef;color:#165236;border:2px solid #94d4ab}
+  .feedback.bad{background:#fff1e8;color:#9a3a07;border:2px solid #f2b58d}
+  .actions{
+    margin-top:18px;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .action-btn{
+    border:none;
+    border-radius:16px;
+    padding:14px 18px;
+    font-size:1rem;
+    font-weight:800;
+    cursor:pointer;
+    min-height:50px;
+  }
+  .action-btn.primary{
+    background:#0f6f8b;
+    color:#fff;
+  }
+  .action-btn.ghost{
+    background:#edf5fb;
+    color:#23435f;
+    border:2px solid #c3d6e6;
+  }
+  .action-btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+  .match-grid{
+    display:grid;
+    gap:12px;
+  }
+  .match-row{
+    border:2px solid #c8d7e6;
+    border-radius:18px;
+    padding:14px;
+    background:#fbfdff;
+  }
+  .match-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .pill{
+    display:inline-block;
+    background:#e7f3ff;
+    color:#10365e;
+    border:2px solid #c5daf0;
+    border-radius:999px;
+    padding:6px 12px;
+    font-weight:800;
+    font-size:1rem;
+  }
+  .mini-options{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .mini-option{
+    border:2px solid #b7d0e4;
+    background:#fff;
+    border-radius:14px;
+    padding:10px 14px;
+    font-weight:700;
+    cursor:pointer;
+    min-height:46px;
+  }
+  .mini-option.selected{
+    border-color:#0c7fa0;
+    background:#e7f8fc;
+  }
+  .model-wrap{
+    border:2px solid #c7d8e7;
+    border-radius:20px;
+    padding:18px 16px 16px;
+    background:linear-gradient(180deg,#ffffff,#f9fbff);
+  }
+  .model-rail{
+    position:relative;
+    display:grid;
+    grid-template-columns:1fr 10px 1fr 10px 1fr;
+    gap:8px;
+    align-items:stretch;
+    min-height:112px;
+    margin-top:8px;
+  }
+  .region, .slot{
+    border:2px dashed #9bb8d1;
+    border-radius:16px;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    padding:12px;
+    min-height:96px;
+    background:#f6fbff;
+    font-weight:800;
+    cursor:pointer;
+  }
+  .region small, .slot small{display:block;color:var(--muted);font-weight:700;margin-top:4px}
+  .marker{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .marker::before{
+    content:"";
+    position:absolute;
+    width:3px;
+    height:86px;
+    background:#355b7f;
+    border-radius:999px;
+  }
+  .marker span{
+    position:absolute;
+    bottom:-6px;
+    transform:translateY(100%);
+    background:#fff;
+    border:2px solid #c4d7e7;
+    border-radius:999px;
+    padding:4px 10px;
+    font-weight:800;
+    color:#17324d;
+    white-space:nowrap;
+  }
+  .chip-bank{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:18px 0 6px;
+  }
+  .chip{
+    border:2px solid #b4cbdd;
+    background:#fff;
+    border-radius:999px;
+    padding:12px 18px;
+    font-weight:800;
+    cursor:pointer;
+    min-height:50px;
+  }
+  .region-choice-row{
+    display:grid;
+    gap:12px;
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    margin-top:16px;
+  }
+  .region-card{
+    border:2px solid #bfd1e1;
+    border-radius:18px;
+    padding:16px;
+    background:#fff;
+    min-height:110px;
+    cursor:pointer;
+    text-align:center;
+    font-weight:800;
+  }
+  .region-card.selected{border-color:#0c7fa0;background:#e7f8fc}
+  .region-card.correct{border-color:#177245;background:#e9f8ef}
+  .region-card.wrong{border-color:#c2410c;background:#fff0e8}
+  .temp-badge{
+    display:inline-block;
+    border-radius:999px;
+    background:#fff7e5;
+    border:2px solid #f1cf7a;
+    color:#7c5311;
+    padding:10px 14px;
+    font-weight:800;
+    margin-top:8px;
+  }
+  details.question-panel{
+    margin-top:16px;
+    border:2px solid #c8d8e8;
+    border-radius:18px;
+    background:#fbfdff;
+    overflow:hidden;
+  }
+  details.question-panel summary{
+    list-style:none;
+    cursor:pointer;
+    padding:16px 18px;
+    font-weight:800;
+    color:#103b61;
+    background:#eef6ff;
+  }
+  details.question-panel summary::-webkit-details-marker{display:none}
+  .question-panel-body{
+    padding:18px;
+    border-top:2px solid #d7e5f0;
+  }
+  .table-card{
+    border:2px solid #bfd1df;
+    border-radius:18px;
+    overflow:hidden;
+    background:#fff;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:1rem;
+  }
+  th, td{
+    border:1px solid #c8d6e3;
+    padding:10px 8px;
+    text-align:center;
+  }
+  th{
+    background:#eef6fb;
+    font-weight:800;
+  }
+  .original-option{
+    border:2px solid #bfd0df;
+    border-radius:18px;
+    background:#fff;
+    padding:14px;
+    cursor:pointer;
+  }
+  .original-option.selected{border-color:#0c7fa0;background:#e7f8fc}
+  .original-option.correct{border-color:#177245;background:#e9f8ef}
+  .original-option.wrong{border-color:#c2410c;background:#fff0e8}
+  .original-option .label{
+    font-weight:800;
+    margin-bottom:8px;
+  }
+  .completion{
+    text-align:center;
+    padding:14px 8px 4px;
+  }
+  .completion h2{
+    margin:0 0 8px;
+    font-size:1.7rem;
+  }
+  .completion p{
+    font-size:1.1rem;
+    margin:8px auto;
+    max-width:600px;
+    line-height:1.5;
+  }
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(9,25,40,.62);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:50;
+    padding:20px;
+  }
+  .overlay.show{display:flex}
+  .overlay-card{
+    max-width:520px;
+    width:100%;
+    background:#fff;
+    border-radius:24px;
+    box-shadow:0 30px 70px rgba(0,0,0,.25);
+    padding:28px;
+    text-align:center;
+    border:3px solid #f0c8a2;
+  }
+  .overlay-card h2{
+    margin:0 0 10px;
+    font-size:1.8rem;
+  }
+  .overlay-card p{
+    font-size:1.1rem;
+    line-height:1.5;
+    color:#33506a;
+  }
+  .sr-only{
+    position:absolute !important;
+    width:1px !important;
+    height:1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow:hidden !important;
+    clip:rect(0,0,0,0) !important;
+    white-space:nowrap !important;
+    border:0 !important;
+  }
+  @media (max-width: 820px){
+    .top-strip{
+      grid-template-columns:1fr;
+      justify-items:start;
+    }
+    .source-area{
+      grid-template-columns:1fr;
+    }
+    .option-grid.two, .option-grid.three, .region-choice-row{
+      grid-template-columns:1fr;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top-strip" aria-label="Top controls">
+    <div class="strip-block">
+      <span class="strip-label">Careful clicks left:</span>
+      <div class="lives" id="lives" aria-live="polite"></div>
+      <span id="livesText" class="sr-only"></span>
+    </div>
+    <div class="progress" id="progressText">Step 1 of 10</div>
+    <div class="read-tools">
+      <button class="tiny-btn secondary" id="autoReadBtn" type="button" aria-pressed="false">Read-aloud: Off</button>
+      <button class="tiny-btn" id="speakBtn" type="button">Read this screen</button>
+    </div>
+  </header>
+
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<div class="overlay" id="restartOverlay" aria-hidden="true">
+  <div class="overlay-card">
+    <h2>Out of careful clicks</h2>
+    <p>The whole interactive is restarting now. Read closely and try again.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const questionText = {
+    line1: 'Substance X freezes at 63°C and boils at 759°C.',
+    line2: 'Which one of the following shows the correct state of substance X at 70°C and at 500°C?'
+  };
+
+  const originalRows = [
+    { id: 'row1', label: '(1)', at70: 'liquid', at500: 'liquid' },
+    { id: 'row2', label: '(2)', at70: 'liquid', at500: 'gas' },
+    { id: 'row3', label: '(3)', at70: 'solid', at500: 'liquid' },
+    { id: 'row4', label: '(4)', at70: 'solid', at500: 'gas' }
+  ];
+
+  const screens = [
+    { id: 'intro', title: 'Read the question', instruction: 'Read the question. Then tap “I’m ready.”', penalized: false, type: 'intro' },
+    { id: 'meaning', title: 'Match the two key numbers', instruction: 'Put each number in the correct box.', penalized: true, type: 'meaning' },
+    { id: 'build', title: 'Build the model', instruction: 'Place the states in the correct regions.', penalized: true, type: 'build' },
+    { id: 'locate70', title: 'Place 70°C on the model', instruction: 'Tap the correct region for 70°C.', penalized: true, type: 'locate', temp: '70°C', correct: 'middle' },
+    { id: 'state70', title: 'Name the state at 70°C', instruction: 'What is the state at 70°C?', penalized: true, type: 'stateChoice', correct: 'liquid',
+      feedbackGood: 'Yes. 70°C is between the freezing and boiling points, so it is liquid.',
+      feedbackBad: 'Use the model. Do not guess from whether the number feels hot.'
+    },
+    { id: 'locate500', title: 'Place 500°C on the model', instruction: 'Tap the correct region for 500°C.', penalized: true, type: 'locate', temp: '500°C', correct: 'middle' },
+    { id: 'state500', title: 'Name the state at 500°C', instruction: 'What is the state at 500°C?', penalized: true, type: 'stateChoice', correct: 'liquid',
+      feedbackGood: 'Yes. 500°C is still between 63°C and 759°C, so it is liquid.',
+      feedbackBad: 'Check whether 500°C is above the boiling point. It is not.'
+    },
+    { id: 'pair', title: 'Combine both answers', instruction: 'Choose the correct pair of states.', penalized: true, type: 'pair' },
+    { id: 'original', title: 'Answer the original question', instruction: 'Now answer the original question.', penalized: false, type: 'original' },
+    { id: 'transfer', title: 'Try one more', instruction: 'Use the same idea for substance Y.', penalized: false, type: 'transfer' }
+  ];
+
+  const penalizedCount = screens.filter(s => s.penalized).length;
+  const totalLives = Math.max(1, Math.floor(penalizedCount / 2));
+
+  const state = {
+    screenIndex: 0,
+    autoRead: false,
+    questionOpen: false,
+    livesLeft: totalLives,
+    totalLives,
+    overlayOn: false,
+    selections: {},
+    feedback: {},
+    optionOrders: {}
+  };
+
+  const app = document.getElementById('app');
+  const livesEl = document.getElementById('lives');
+  const livesTextEl = document.getElementById('livesText');
+  const progressText = document.getElementById('progressText');
+  const autoReadBtn = document.getElementById('autoReadBtn');
+  const speakBtn = document.getElementById('speakBtn');
+  const overlay = document.getElementById('restartOverlay');
+
+  function shuffle(array) {
+    const copy = array.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function getOrder(key, items, avoidOriginal = null) {
+    if (!state.optionOrders[key]) {
+      let order = shuffle(items);
+      if (avoidOriginal) {
+        let tries = 0;
+        while (tries < 10 && JSON.stringify(order) === JSON.stringify(avoidOriginal)) {
+          order = shuffle(items);
+          tries += 1;
+        }
+      }
+      state.optionOrders[key] = order;
+    }
+    return state.optionOrders[key];
+  }
+
+  function getSelection(id, fallback) {
+    if (!(id in state.selections)) state.selections[id] = fallback;
+    return state.selections[id];
+  }
+
+  function setSelection(id, value) {
+    state.selections[id] = value;
+  }
+
+  function setFeedback(id, kind, text) {
+    state.feedback[id] = { kind, text };
+  }
+
+  function getFeedback(id) {
+    return state.feedback[id] || null;
+  }
+
+  function isScreenComplete(screen) {
+    const sel = state.selections[screen.id];
+    return !!(sel && sel.correct);
+  }
+
+  function renderHeader() {
+    livesEl.innerHTML = '';
+    for (let i = 0; i < state.totalLives; i++) {
+      const span = document.createElement('span');
+      span.className = 'life' + (i < state.livesLeft ? '' : ' off');
+      span.textContent = '🧪';
+      livesEl.appendChild(span);
+    }
+    livesTextEl.textContent = `${state.livesLeft} careful clicks left`;
+    progressText.textContent = `Step ${state.screenIndex + 1} of ${screens.length}`;
+    autoReadBtn.textContent = `Read-aloud: ${state.autoRead ? 'On' : 'Off'}`;
+    autoReadBtn.setAttribute('aria-pressed', String(state.autoRead));
+  }
+
+  function renderQuestionCard(full = false) {
+    const wrapper = document.createElement(full ? 'div' : 'details');
+    if (!full) {
+      wrapper.className = 'question-panel';
+      wrapper.open = state.questionOpen;
+      wrapper.innerHTML = `<summary>Show the full question again</summary>`;
+      wrapper.addEventListener('toggle', () => {
+        state.questionOpen = wrapper.open;
+      });
+    }
+    const body = document.createElement('div');
+    if (!full) body.className = 'question-panel-body';
+
+    const qCard = document.createElement('div');
+    qCard.className = 'question-card';
+    const q1 = document.createElement('p');
+    q1.className = 'question-text';
+    q1.innerHTML = `${questionText.line1}`;
+    const q2 = document.createElement('p');
+    q2.className = 'question-text';
+    q2.style.marginTop = '10px';
+    q2.textContent = questionText.line2;
+    qCard.appendChild(q1);
+    qCard.appendChild(q2);
+    body.appendChild(qCard);
+
+    const sourceArea = document.createElement('div');
+    sourceArea.className = 'source-area';
+    sourceArea.appendChild(buildOriginalTableCard());
+    sourceArea.appendChild(buildMiniStateDiagram());
+    body.appendChild(sourceArea);
+
+    if (full) {
+      wrapper.appendChild(body);
+      return wrapper;
+    }
+    wrapper.appendChild(body);
+    return wrapper;
+  }
+
+  function buildOriginalTableCard() {
+    const box = document.createElement('div');
+    box.className = 'table-card';
+    box.innerHTML = `
+      <table aria-label="Answer table from the question">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:20%">Option</th>
+            <th colspan="2">State of substance X at</th>
+          </tr>
+          <tr>
+            <th>70°C</th>
+            <th>500°C</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${originalRows.map(row => `
+            <tr>
+              <td>${row.label}</td>
+              <td>${row.at70}</td>
+              <td>${row.at500}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    return box;
+  }
+
+  function buildMiniStateDiagram() {
+    const box = document.createElement('div');
+    box.className = 'model-wrap';
+    box.innerHTML = `
+      <div style="font-weight:800; margin-bottom:8px;">Clean model to use</div>
+      <div class="model-rail" aria-hidden="true">
+        <div class="region" style="cursor:default"><div>solid<small>before freezing point</small></div></div>
+        <div class="marker"><span>63°C</span></div>
+        <div class="region" style="cursor:default"><div>liquid<small>between the two points</small></div></div>
+        <div class="marker"><span>759°C</span></div>
+        <div class="region" style="cursor:default"><div>gas<small>after boiling point</small></div></div>
+      </div>
+    `;
+    return box;
+  }
+
+  function buildBaseCard(screen) {
+    const card = document.createElement('section');
+    card.className = 'card';
+    const title = document.createElement('h1');
+    title.className = 'title';
+    title.textContent = screen.title;
+    const instruction = document.createElement('p');
+    instruction.className = 'instruction';
+    instruction.textContent = screen.instruction;
+    card.append(title, instruction);
+    return card;
+  }
+
+  function renderIntro(screen) {
+    const card = buildBaseCard(screen);
+    const qCard = document.createElement('div');
+    qCard.className = 'question-card';
+    qCard.innerHTML = `
+      <p class="question-text">Substance X <span class="hl">freezes at 63°C</span> and <span class="hl">boils at 759°C</span>.</p>
+      <p class="question-text" style="margin-top:10px;">Which one of the following shows the correct state of substance X at <span class="hl">70°C</span> and at <span class="hl">500°C</span>?</p>
+    `;
+    card.appendChild(qCard);
+    card.appendChild(renderQuestionCard(true));
+
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+    const ready = document.createElement('button');
+    ready.type = 'button';
+    ready.className = 'action-btn primary';
+    ready.textContent = 'I’m ready';
+    ready.addEventListener('click', () => {
+      state.selections[screen.id] = { correct: true };
+      nextScreen();
+    });
+    actions.appendChild(document.createElement('div'));
+    actions.appendChild(ready);
+    card.appendChild(actions);
+    return card;
+  }
+
+  function renderMeaning(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { a: null, b: null, correct: false });
+
+    const grid = document.createElement('div');
+    grid.className = 'match-grid';
+
+    [
+      { key: 'a', temp: '63°C' },
+      { key: 'b', temp: '759°C' }
+    ].forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'match-row';
+      row.innerHTML = `<div class="match-head"><span class="pill">${item.temp}</span></div>`;
+      const options = document.createElement('div');
+      options.className = 'mini-options';
+      ['freezing point', 'boiling point'].forEach(label => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mini-option' + (data[item.key] === label ? ' selected' : '');
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          data[item.key] = label;
+          setSelection(screen.id, data);
+          render();
+        });
+        options.appendChild(btn);
+      });
+      row.appendChild(options);
+      grid.appendChild(row);
+    });
+
+    const feedback = renderFeedback(screen.id);
+    const actions = buildCheckAndNext(screen, {
+      checkEnabled: !!(data.a && data.b),
+      onCheck: () => {
+        const ok = data.a === 'freezing point' && data.b === 'boiling point';
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', 'Yes. 63°C is the freezing point. 759°C is the boiling point.');
+        } else {
+          handlePenalty(screen);
+          setFeedback(screen.id, 'bad', 'Check which number goes with freezing and which goes with boiling.');
+        }
+        render();
+      }
+    });
+
+    card.append(grid, feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderBuild(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, {
+      selectedChip: null,
+      left: null,
+      middle: null,
+      right: null,
+      correct: false
+    });
+
+    const note = document.createElement('p');
+    note.className = 'small-note';
+    note.textContent = 'First tap a state chip. Then tap the region where it belongs.';
+    card.appendChild(note);
+
+    const chips = document.createElement('div');
+    chips.className = 'chip-bank';
+    ['solid', 'liquid', 'gas'].forEach(chipText => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip' + (data.selectedChip === chipText ? ' selected' : '');
+      btn.textContent = chipText;
+      btn.disabled = [data.left, data.middle, data.right].includes(chipText);
+      btn.addEventListener('click', () => {
+        data.selectedChip = chipText;
+        setSelection(screen.id, data);
+        render();
+      });
+      chips.appendChild(btn);
+    });
+    card.appendChild(chips);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'model-wrap';
+    wrap.innerHTML = `<div style="font-weight:800; margin-bottom:8px;">Build this model: solid | 63 | liquid | 759 | gas</div>`;
+    const rail = document.createElement('div');
+    rail.className = 'model-rail';
+
+    const regions = [
+      { key: 'left', title: 'Region 1', hint: 'before 63°C' },
+      { key: 'middle', title: 'Region 2', hint: 'between 63°C and 759°C' },
+      { key: 'right', title: 'Region 3', hint: 'after 759°C' }
+    ];
+
+    regions.forEach((region, idx) => {
+      const slot = document.createElement('button');
+      slot.type = 'button';
+      slot.className = 'slot' + (data.selectedSlot === region.key ? ' selected' : '');
+      slot.innerHTML = data[region.key]
+        ? `<div>${data[region.key]}<small>${region.hint}</small></div>`
+        : `<div>${region.title}<small>${region.hint}</small></div>`;
+      slot.addEventListener('click', () => {
+        if (data.selectedChip) {
+          data[region.key] = data.selectedChip;
+          data.selectedChip = null;
+        } else if (data[region.key]) {
+          data.selectedChip = data[region.key];
+          data[region.key] = null;
+        }
+        setSelection(screen.id, data);
+        render();
+      });
+      rail.appendChild(slot);
+
+      if (idx === 0) {
+        const marker1 = document.createElement('div');
+        marker1.className = 'marker';
+        marker1.innerHTML = '<span>63°C</span>';
+        rail.appendChild(marker1);
+      }
+      if (idx === 1) {
+        const marker2 = document.createElement('div');
+        marker2.className = 'marker';
+        marker2.innerHTML = '<span>759°C</span>';
+        rail.appendChild(marker2);
+      }
+    });
+
+    wrap.appendChild(rail);
+    card.appendChild(wrap);
+
+    const feedback = renderFeedback(screen.id);
+    const actions = buildCheckAndNext(screen, {
+      checkEnabled: !!(data.left && data.middle && data.right),
+      onCheck: () => {
+        const ok = data.left === 'solid' && data.middle === 'liquid' && data.right === 'gas';
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', 'Yes. Below freezing point is solid. Between the two points is liquid. Above boiling point is gas.');
+        } else {
+          handlePenalty(screen);
+          setFeedback(screen.id, 'bad', 'Think about what happens before freezing, between the two points, and after boiling.');
+        }
+        render();
+      }
+    });
+
+    card.append(feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderLocate(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { selected: null, correct: false });
+
+    const model = document.createElement('div');
+    model.className = 'model-wrap';
+    model.innerHTML = `<div style="font-weight:800;">Compare ${screen.temp} with both boundary points.</div>`;
+    const badge = document.createElement('div');
+    badge.className = 'temp-badge';
+    badge.textContent = screen.temp;
+    model.appendChild(badge);
+
+    const row = document.createElement('div');
+    row.className = 'region-choice-row';
+
+    const cards = [
+      { key: 'left', title: 'Before 63°C', note: 'left region' },
+      { key: 'middle', title: 'Between 63°C and 759°C', note: 'middle region' },
+      { key: 'right', title: 'After 759°C', note: 'right region' }
+    ];
+
+    cards.forEach(item => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      let cls = 'region-card';
+      if (data.selected === item.key) cls += ' selected';
+      if (data.correct && item.key === screen.correct) cls += ' correct';
+      btn.className = cls;
+      btn.innerHTML = `<div>${item.title}</div><div class="small-note" style="margin-top:8px;">${item.note}</div>`;
+      btn.addEventListener('click', () => {
+        data.selected = item.key;
+        const ok = item.key === screen.correct;
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          const goodText = screen.temp === '70°C'
+            ? 'Yes. 70°C is above 63°C but below 759°C.'
+            : 'Yes. 500°C is above 63°C and still below 759°C.';
+          setFeedback(screen.id, 'good', goodText);
+        } else {
+          setSelection(screen.id, data);
+          handlePenalty(screen);
+          setFeedback(screen.id, 'bad', 'Compare the temperature with both markers, not with just one.');
+        }
+        render();
+      });
+      row.appendChild(btn);
+    });
+
+    model.appendChild(row);
+    const feedback = renderFeedback(screen.id);
+    const actions = buildNextOnly(screen);
+    card.append(model, feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderStateChoice(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { selected: null, correct: false });
+    const order = getOrder(screen.id, ['solid', 'liquid', 'gas'], ['solid', 'liquid', 'gas']);
+
+    const model = buildMiniStateDiagram();
+    const tag = document.createElement('div');
+    tag.className = 'temp-badge';
+    tag.textContent = screen.id === 'state70' ? '70°C is in the middle region' : '500°C is in the middle region';
+    model.appendChild(tag);
+    card.appendChild(model);
+
+    const grid = document.createElement('div');
+    grid.className = 'option-grid three';
+    order.forEach(option => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      let cls = 'choice';
+      if (data.selected === option) cls += ' selected';
+      if (data.correct && option === screen.correct) cls += ' correct';
+      btn.className = cls;
+      btn.textContent = option;
+      btn.addEventListener('click', () => {
+        data.selected = option;
+        const ok = option === screen.correct;
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', screen.feedbackGood);
+        } else {
+          setSelection(screen.id, data);
+          handlePenalty(screen);
+          setFeedback(screen.id, 'bad', screen.feedbackBad);
+        }
+        render();
+      });
+      grid.appendChild(btn);
+    });
+
+    const feedback = renderFeedback(screen.id);
+    const actions = buildNextOnly(screen);
+    card.append(grid, feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderPair(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { selected: null, correct: false });
+    const options = [
+      { id: 'a', text: 'solid at 70°C, liquid at 500°C' },
+      { id: 'b', text: 'liquid at 70°C, liquid at 500°C' },
+      { id: 'c', text: 'liquid at 70°C, gas at 500°C' },
+      { id: 'd', text: 'solid at 70°C, gas at 500°C' }
+    ];
+    const order = getOrder(screen.id, options.map(o => o.id), options.map(o => o.id));
+    const grid = document.createElement('div');
+    grid.className = 'option-grid';
+
+    order.forEach(id => {
+      const option = options.find(o => o.id === id);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      let cls = 'choice';
+      if (data.selected === id) cls += ' selected';
+      if (data.correct && id === 'b') cls += ' correct';
+      btn.className = cls;
+      btn.textContent = option.text;
+      btn.addEventListener('click', () => {
+        data.selected = id;
+        const ok = id === 'b';
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', 'Yes. Both temperatures are in the liquid region.');
+        } else {
+          setSelection(screen.id, data);
+          handlePenalty(screen);
+          setFeedback(screen.id, 'bad', 'Check each temperature one at a time, then match the pair.');
+        }
+        render();
+      });
+      grid.appendChild(btn);
+    });
+
+    const feedback = renderFeedback(screen.id);
+    const actions = buildNextOnly(screen);
+    card.append(grid, feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderOriginal(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { selected: null, correct: false });
+
+    const note = document.createElement('p');
+    note.className = 'small-note';
+    note.textContent = 'Choose the row that matches the states at 70°C and 500°C.';
+    card.appendChild(note);
+
+    const grid = document.createElement('div');
+    grid.className = 'option-grid';
+
+    originalRows.forEach(row => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      let cls = 'original-option';
+      if (data.selected === row.id) cls += ' selected';
+      if (data.correct && row.id === 'row1') cls += ' correct';
+      if (data.selected === row.id && !data.correct) cls += ' wrong';
+      btn.className = cls;
+      btn.innerHTML = `
+        <div class="label">${row.label}</div>
+        <div>${row.at70} at 70°C</div>
+        <div style="margin-top:6px;">${row.at500} at 500°C</div>
+      `;
+      btn.addEventListener('click', () => {
+        data.selected = row.id;
+        const ok = row.id === 'row1';
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', 'Yes. Option 1 matches liquid at 70°C and liquid at 500°C.');
+        } else {
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'bad', 'Check both columns carefully. Do not swap 70°C and 500°C.');
+        }
+        render();
+      });
+      grid.appendChild(btn);
+    });
+
+    const feedback = renderFeedback(screen.id);
+    const actions = buildNextOnly(screen);
+    card.append(grid, feedback, actions, renderQuestionCard(false));
+    return card;
+  }
+
+  function renderTransfer(screen) {
+    const card = buildBaseCard(screen);
+    const data = getSelection(screen.id, { selected: null, correct: false });
+
+    const qCard = document.createElement('div');
+    qCard.className = 'question-card';
+    qCard.innerHTML = `
+      <p class="question-text">Substance Y freezes at <span class="hl">40°C</span> and boils at <span class="hl">180°C</span>.</p>
+      <p class="question-text" style="margin-top:10px;">What is its state at <span class="hl">20°C</span> and at <span class="hl">100°C</span>?</p>
+    `;
+    card.appendChild(qCard);
+
+    const options = [
+      { id: 'a', text: 'solid at 20°C, liquid at 100°C' },
+      { id: 'b', text: 'liquid at 20°C, liquid at 100°C' },
+      { id: 'c', text: 'solid at 20°C, gas at 100°C' },
+      { id: 'd', text: 'gas at 20°C, liquid at 100°C' }
+    ];
+    const order = getOrder(screen.id, options.map(o => o.id), options.map(o => o.id));
+    const grid = document.createElement('div');
+    grid.className = 'option-grid';
+    order.forEach(id => {
+      const option = options.find(o => o.id === id);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      let cls = 'choice';
+      if (data.selected === id) cls += ' selected';
+      if (data.correct && id === 'a') cls += ' correct';
+      btn.className = cls;
+      btn.textContent = option.text;
+      btn.addEventListener('click', () => {
+        data.selected = id;
+        const ok = id === 'a';
+        if (ok) {
+          data.correct = true;
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'good', 'Yes. 20°C is below 40°C, so it is solid. 100°C is between 40°C and 180°C, so it is liquid.');
+        } else {
+          setSelection(screen.id, data);
+          setFeedback(screen.id, 'bad', 'Compare each temperature with the freezing point and boiling point.');
+        }
+        render();
+      });
+      grid.appendChild(btn);
+    });
+
+    const feedback = renderFeedback(screen.id);
+    const actions = document.createElement('div');
+    actions.className = 'actions';
+
+    const restartBtn = document.createElement('button');
+    restartBtn.type = 'button';
+    restartBtn.className = 'action-btn ghost';
+    restartBtn.textContent = 'Restart activity';
+    restartBtn.addEventListener('click', restartAll);
+
+    const finishBtn = document.createElement('button');
+    finishBtn.type = 'button';
+    finishBtn.className = 'action-btn primary';
+    finishBtn.textContent = 'Finish';
+    finishBtn.disabled = !data.correct;
+    finishBtn.addEventListener('click', () => {
+      setSelection(screen.id, { ...data, finished: true, correct: true });
+      render();
+    });
+    actions.append(restartBtn, finishBtn);
+
+    card.append(grid, feedback, actions);
+
+    if (data.finished) {
+      const done = document.createElement('div');
+      done.className = 'completion';
+      done.innerHTML = `
+        <h2>Well done</h2>
+        <p>You used the same model again: below freezing point = solid, between the two points = liquid, above boiling point = gas.</p>
+        <p>You can now restart and practise again if you want another try.</p>
+      `;
+      card.appendChild(done);
+    }
+
+    return card;
+  }
+
+  function renderFeedback(screenId) {
+    const fb = getFeedback(screenId);
+    const box = document.createElement('div');
+    box.className = 'feedback' + (fb ? ' show ' + (fb.kind === 'good' ? 'good' : 'bad') : '');
+    box.textContent = fb ? fb.text : '';
+    return box;
+  }
+
+  function buildCheckAndNext(screen, { checkEnabled, onCheck }) {
+    const wrap = document.createElement('div');
+    wrap.className = 'actions';
+
+    const left = document.createElement('button');
+    left.type = 'button';
+    left.className = 'action-btn ghost';
+    left.textContent = 'Check';
+    left.disabled = !checkEnabled || isScreenComplete(screen);
+    left.addEventListener('click', onCheck);
+
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'action-btn primary';
+    next.textContent = 'Next';
+    next.disabled = !isScreenComplete(screen);
+    next.addEventListener('click', nextScreen);
+
+    wrap.append(left, next);
+    return wrap;
+  }
+
+  function buildNextOnly(screen) {
+    const wrap = document.createElement('div');
+    wrap.className = 'actions';
+    const spacer = document.createElement('div');
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.className = 'action-btn primary';
+    next.textContent = screen.id === 'transfer' ? 'Finish' : 'Next';
+    next.disabled = !isScreenComplete(screen);
+    next.addEventListener('click', nextScreen);
+    wrap.append(spacer, next);
+    return wrap;
+  }
+
+  function nextScreen() {
+    if (state.screenIndex < screens.length - 1) {
+      state.screenIndex += 1;
+      render();
+    }
+  }
+
+  function handlePenalty(screen) {
+    if (!screen.penalized) return;
+    state.livesLeft -= 1;
+    if (state.livesLeft <= 0) {
+      state.livesLeft = 0;
+      renderHeader();
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden', 'false');
+      stopSpeaking();
+      setTimeout(() => {
+        overlay.classList.remove('show');
+        overlay.setAttribute('aria-hidden', 'true');
+        restartAll();
+      }, 1600);
+    }
+  }
+
+  function restartAll() {
+    state.screenIndex = 0;
+    state.questionOpen = false;
+    state.livesLeft = state.totalLives;
+    state.selections = {};
+    state.feedback = {};
+    state.optionOrders = {};
+    render();
+  }
+
+  function stopSpeaking() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function getSpeechText() {
+    const screen = screens[state.screenIndex];
+    let text = `${screen.title}. ${screen.instruction}. `;
+    const fb = getFeedback(screen.id);
+    if (screen.id === 'intro') {
+      text += `${questionText.line1} ${questionText.line2} `;
+    }
+    if (screen.id === 'meaning') {
+      text += '63 degrees Celsius and 759 degrees Celsius. Choose freezing point or boiling point for each number. ';
+    }
+    if (screen.id === 'build') {
+      text += 'Place solid, liquid, and gas into the correct regions. ';
+    }
+    if (screen.id === 'locate70') text += 'Choose before 63 degrees Celsius, between 63 and 759 degrees Celsius, or after 759 degrees Celsius. ';
+    if (screen.id === 'state70') text += 'Options are solid, liquid, and gas. ';
+    if (screen.id === 'locate500') text += 'Choose before 63 degrees Celsius, between 63 and 759 degrees Celsius, or after 759 degrees Celsius. ';
+    if (screen.id === 'state500') text += 'Options are solid, liquid, and gas. ';
+    if (screen.id === 'pair') text += 'Choose the pair of states for 70 degrees Celsius and 500 degrees Celsius. ';
+    if (screen.id === 'original') text += 'Choose the row that matches the original question. ';
+    if (screen.id === 'transfer') text += 'Substance Y freezes at 40 degrees Celsius and boils at 180 degrees Celsius. Choose the pair of states at 20 degrees Celsius and 100 degrees Celsius. ';
+    if (fb) text += `Feedback: ${fb.text}`;
+    return text;
+  }
+
+  function speakCurrentScreen() {
+    stopSpeaking();
+    if (!('speechSynthesis' in window)) return;
+    const utterance = new SpeechSynthesisUtterance(getSpeechText());
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  autoReadBtn.addEventListener('click', () => {
+    state.autoRead = !state.autoRead;
+    renderHeader();
+    if (state.autoRead) speakCurrentScreen();
+    else stopSpeaking();
+  });
+
+  speakBtn.addEventListener('click', () => {
+    speakCurrentScreen();
+  });
+
+  function render() {
+    renderHeader();
+    const screen = screens[state.screenIndex];
+    app.innerHTML = '';
+    let card;
+    if (screen.type === 'intro') card = renderIntro(screen);
+    if (screen.type === 'meaning') card = renderMeaning(screen);
+    if (screen.type === 'build') card = renderBuild(screen);
+    if (screen.type === 'locate') card = renderLocate(screen);
+    if (screen.type === 'stateChoice') card = renderStateChoice(screen);
+    if (screen.type === 'pair') card = renderPair(screen);
+    if (screen.type === 'original') card = renderOriginal(screen);
+    if (screen.type === 'transfer') card = renderTransfer(screen);
+    app.appendChild(card);
+
+    if (state.autoRead) {
+      setTimeout(speakCurrentScreen, 120);
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
