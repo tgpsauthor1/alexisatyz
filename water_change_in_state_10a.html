@@ -203,19 +203,35 @@
     
     .choice[disabled]{cursor:not-allowed; opacity:.95}
 
+    .surface-choice-panel{
+      margin-top:14px;
+      background:#fff;
+      border:2px solid #dcecf7;
+      border-radius:18px;
+      padding:14px;
+    }
+    .surface-choice-label{
+      font-size:20px;
+      font-weight:800;
+      color:#275c7b;
+      margin-bottom:10px;
+    }
     .surface-choice-row{
       display:grid;
       grid-template-columns:repeat(3, minmax(120px, 1fr));
       gap:14px;
-      margin-top:14px;
     }
-    .surface-choice-row .choice{
+    .surface-pick-btn{
       text-align:center;
-      min-height:78px;
+      min-height:88px;
       justify-self:stretch;
+      font-size:26px;
+      font-weight:800;
     }
     .screen4-svg-choice{
       display:none !important;
+      visibility:hidden !important;
+      pointer-events:none !important;
     }
 
     .feedback{
@@ -738,7 +754,7 @@
     <!-- Screen 4 -->
     <section class="screen" id="screen-4">
       <h1 class="title">Step 3</h1>
-      <div class="instruction">Tap a slot first. Then tap a container button below to fill it.</div>
+      <div class="instruction">Tap a slot first. Then tap one of the big buttons below to fill it.</div>
       <div class="svg-wrap">
         <svg viewBox="0 0 780 250" width="100%" role="img" aria-label="Containers A, B and C">
           <g transform="translate(20,25)">
@@ -775,10 +791,13 @@
           </g>
         </svg>
       </div>
-      <div class="surface-choice-row" aria-label="Choose container letters">
-        <button class="choice container-choice" data-id="A">Container A</button>
-        <button class="choice container-choice" data-id="B">Container B</button>
-        <button class="choice container-choice" data-id="C">Container C</button>
+      <div class="surface-choice-panel" aria-label="Choose container letters">
+        <div class="surface-choice-label">Tap one of these buttons after you tap a slot:</div>
+        <div class="surface-choice-row">
+          <button class="choice surface-pick-btn" data-id="A">Container A</button>
+          <button class="choice surface-pick-btn" data-id="B">Container B</button>
+          <button class="choice surface-pick-btn" data-id="C">Container C</button>
+        </div>
       </div>
       <div class="pair-grid">
         <div class="slot-card" id="slot-widest">Widest exposed surface: ?</div>
@@ -1735,12 +1754,12 @@
       $("#slot-widest").style.pointerEvents = "auto";
       $("#slot-narrowest").style.pointerEvents = "auto";
       refreshSurfaceSlots();
-      $all(".container-choice").forEach(btn=>{
+      $all(".surface-pick-btn").forEach(btn=>{
         btn.disabled = false;
-        btn.className = "choice container-choice";
+        btn.className = "choice surface-pick-btn";
       });
     }
-    $all(".container-choice").forEach(btn=>{
+    $all(".surface-pick-btn").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const id = btn.dataset.id;
         if(!activePairSlot){
@@ -1759,7 +1778,7 @@
       }
       if(widestChoice === "B" && narrowestChoice === "C"){
         setFeedback(4, "good", "Yes. B has the widest exposed surface. C has the narrowest.");
-        $all(".container-choice").forEach(btn => btn.disabled = true);
+        $all(".surface-pick-btn").forEach(btn => btn.disabled = true);
         $("#slot-widest").style.pointerEvents = "none";
         $("#slot-narrowest").style.pointerEvents = "none";
         enableNext(4);
