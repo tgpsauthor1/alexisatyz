@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    TEACHER NOTE:
+    This is a single-file checkpoint quiz for a YouTube video.
+
+    To edit the quiz manually:
+    1. Find the QUIZ ARRAY in the <script> section near the bottom of this file.
+    2. Each quiz item has:
+       - time: checkpoint time in seconds
+       - timestamp: a friendly label shown to the learner
+       - question: the question text
+       - options: answer choices with labels
+       - correct: the correct option label, such as "A", "B", or "C"
+    3. Save the file, then open it in a browser and test every checkpoint.
+
+    Privacy note:
+    This page does not collect names, emails, scores, analytics, or device data.
+    It does not store results. It only loads the YouTube IFrame Player API so the
+    video can pause and resume at checkpoints.
+
+    Anti-skipping note:
+    The page hides YouTube controls where possible and checks playback often.
+    YouTube embeds cannot be perfectly locked down, but this file returns learners
+    to the allowed segment if they try to skip ahead past unanswered questions.
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkpoint Video Quiz</title>
+  <style>
+    :root {
+      --bg: #f7fbff;
+      --panel: #ffffff;
+      --text: #14213d;
+      --muted: #536170;
+      --primary: #2358d4;
+      --primary-dark: #173b91;
+      --green: #0f8a4b;
+      --yellow: #fff3b0;
+      --orange: #c25700;
+      --border: #c9d8f0;
+      --shadow: rgba(20, 33, 61, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, #dff1ff 0, transparent 34%),
+        linear-gradient(180deg, #f7fbff 0%, #eef6ff 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      width: min(1100px, 94vw);
+      margin: 0 auto;
+      padding: 24px 0 36px;
+    }
+
+    header {
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 12px 28px var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      line-height: 1.5;
+    }
+
+    .video-card {
+      background: var(--panel);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 12px 28px var(--shadow);
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    #player {
+      width: 100%;
+      height: 100%;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: #edf5ff;
+      border: 2px solid #d5e5ff;
+      font-size: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    .small-note {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .start-screen,
+    .quiz-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 20, 38, 0.78);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 10;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .start-card,
+    .quiz-card {
+      width: min(760px, 96vw);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 28px;
+      border: 4px solid #ffffff;
+      box-shadow: 0 22px 80px rgba(0, 0, 0, 0.35);
+      padding: clamp(22px, 4vw, 38px);
+      text-align: center;
+    }
+
+    .start-card h2,
+    .quiz-card h2 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      margin: 0 0 12px;
+    }
+
+    .start-card p,
+    .quiz-card p {
+      font-size: clamp(1.08rem, 2vw, 1.3rem);
+      line-height: 1.5;
+      margin: 8px 0;
+    }
+
+    .big-button,
+    .answer-button {
+      border: 0;
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: 0 7px 0 rgba(0, 0, 0, 0.18);
+      transform: translateY(0);
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .big-button:active,
+    .answer-button:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+    }
+
+    .big-button {
+      margin-top: 18px;
+      background: var(--primary);
+      color: #fff;
+      font-size: clamp(1.1rem, 2.2vw, 1.45rem);
+      padding: 18px 28px;
+    }
+
+    .big-button:hover,
+    .big-button:focus {
+      background: var(--primary-dark);
+      outline: 4px solid #bdd2ff;
+      outline-offset: 3px;
+    }
+
+    .progress-pill {
+      display: inline-block;
+      background: #e8f0ff;
+      color: var(--primary-dark);
+      border: 2px solid #c9dcff;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
+      font-size: 1rem;
+    }
+
+    .time-pill {
+      display: inline-block;
+      background: var(--yellow);
+      color: #5c4100;
+      border: 2px solid #f4d35e;
+      border-radius: 999px;
+      padding: 6px 12px;
+      margin-top: 8px;
+      font-weight: 800;
+    }
+
+    .question-text {
+      font-size: clamp(1.25rem, 2.5vw, 1.7rem);
+      font-weight: 800;
+      line-height: 1.35;
+      margin: 10px 0 18px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .answer-button {
+      width: 100%;
+      text-align: left;
+      background: #f3f8ff;
+      color: var(--text);
+      border: 3px solid #b9d0f5;
+      padding: 18px;
+      font-size: clamp(1.08rem, 2vw, 1.3rem);
+      line-height: 1.35;
+    }
+
+    .answer-button:hover,
+    .answer-button:focus {
+      background: #e4efff;
+      border-color: var(--primary);
+      outline: 4px solid #bdd2ff;
+      outline-offset: 2px;
+    }
+
+    .answer-label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      min-height: 42px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      margin-right: 12px;
+      font-weight: 900;
+    }
+
+    .feedback {
+      min-height: 54px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      font-size: clamp(1.08rem, 2vw, 1.28rem);
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .feedback.good {
+      color: #064b2a;
+      background: #dcfce7;
+      border: 2px solid #88d4a8;
+    }
+
+    .feedback.try {
+      color: #5f2d00;
+      background: #fff1db;
+      border: 2px solid #f7c271;
+    }
+
+    .privacy {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    noscript {
+      display: block;
+      background: #fff3cd;
+      border: 2px solid #d6a300;
+      border-radius: 16px;
+      padding: 16px;
+      margin: 16px 0;
+      font-weight: 700;
+      color: #4a3600;
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: 96vw;
+        padding-top: 12px;
+      }
+
+      header,
+      .video-card {
+        border-radius: 18px;
+      }
+
+      .start-card,
+      .quiz-card {
+        border-radius: 22px;
+      }
+
+      .answer-button {
+        padding: 16px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Checkpoint Video Quiz</h1>
+      <p class="subtitle">Watch the video. When a question pops up, choose the correct answer to keep going.</p>
+    </header>
+
+    <noscript>
+      This quiz needs JavaScript so it can pause the video and show questions.
+    </noscript>
+
+    <main class="video-card" aria-label="Video quiz area">
+      <div class="video-wrap">
+        <div id="player"></div>
+      </div>
+
+      <div class="status-bar" aria-live="polite">
+        <div class="badge">⭐ Progress: <span id="progressText">Ready to begin</span></div>
+        <div class="small-note" id="statusText">Press Start Lesson when the video is ready.</div>
+      </div>
+    </main>
+
+    <p class="privacy">
+      Privacy-friendly classroom file: no names, emails, scores, analytics, logins, or saved results.
+    </p>
+  </div>
+
+  <div class="start-screen" id="startScreen" role="dialog" aria-modal="true" aria-labelledby="startTitle">
+    <div class="start-card">
+      <h2 id="startTitle">Ready to learn?</h2>
+      <p>The video will pause for friendly checkpoint questions.</p>
+      <p>Answer correctly to continue. If you miss one, we’ll rewatch that part together.</p>
+      <button class="big-button" id="startButton" type="button">Start Lesson ▶</button>
+      <p class="small-note" id="readyNote">Loading video player...</p>
+    </div>
+  </div>
+
+  <div class="quiz-modal hidden" id="quizModal" role="dialog" aria-modal="true" aria-labelledby="questionText">
+    <div class="quiz-card">
+      <div class="progress-pill" id="questionProgress">Question 1 of 10</div>
+      <h2>Checkpoint Question</h2>
+      <div class="time-pill" id="questionTime">0:00</div>
+      <div class="question-text" id="questionText"></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback" aria-live="assertive"></div>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    // =========================
+    // QUIZ ARRAY - edit here
+    // =========================
+    const quiz = [
+    {
+      time: 56,
+      timestamp: "0:56",
+      question: "To start using agent capabilities, which mode must be activated in the tools menu?",
+      options: [
+        { label: "A", text: "Pro mode" },
+        { label: "B", text: "Agent mode" },
+        { label: "C", text: "Automation mode" }
+      ],
+      correct: "B"
+    },
+    {
+      time: 135,
+      timestamp: "2:15",
+      question: "What does the presentation agent use to build slides beyond just training data?",
+      options: [
+        { label: "A", text: "Live research" },
+        { label: "B", text: "External templates" },
+        { label: "C", text: "Pre-written slide decks" }
+      ],
+      correct: "A"
+    },
+    {
+      time: 268,
+      timestamp: "4:28",
+      question: "What is a primary benefit of using the data analysis specialist instead of manual Excel work?",
+      options: [
+        { label: "A", text: "Faster speeds" },
+        { label: "B", text: "Better visualization" },
+        { label: "C", text: "Interactive dashboards" }
+      ],
+      correct: "C"
+    },
+    {
+      time: 308,
+      timestamp: "5:08",
+      question: "What is a unique capability of the Instantly Reply Agent for cold outreach?",
+      options: [
+        { label: "A", text: "Responds 24/7" },
+        { label: "B", text: "Learns from product info" },
+        { label: "C", text: "Handles hundreds of replies daily" }
+      ],
+      correct: "B"
+    },
+    {
+      time: 399,
+      timestamp: "6:39",
+      question: "What file type should you use to provide a baseline for the competitor intelligence agent?",
+      options: [
+        { label: "A", text: "A PDF file" },
+        { label: "B", text: "A Google sheet" },
+        { label: "C", text: "A text document" }
+      ],
+      correct: "B"
+    },
+    {
+      time: 496,
+      timestamp: "8:16",
+      question: "What does the content creation agent combine to produce high-quality articles?",
+      options: [
+        { label: "A", text: "Deep research and generation" },
+        { label: "B", text: "SEO optimization and writing" },
+        { label: "C", text: "Keyword analysis and content drafting" }
+      ],
+      correct: "A"
+    },
+    {
+      time: 542,
+      timestamp: "9:02",
+      question: "What is the main advantage of the fifth agent mentioned in the video?",
+      options: [
+        { label: "A", text: "It is free" },
+        { label: "B", text: "It builds apps" },
+        { label: "C", text: "It creates app prototypes without coding" }
+      ],
+      correct: "C"
+    },
+    {
+      time: 675,
+      timestamp: "11:15",
+      question: "What does the sixth agent provide beyond simple outreach?",
+      options: [
+        { label: "A", text: "Email lists" },
+        { label: "B", text: "Market research" },
+        { label: "C", text: "Genuine personalized messages" }
+      ],
+      correct: "C"
+    },
+    {
+      time: 736,
+      timestamp: "12:16",
+      question: "What type of analysis does the seventh agent provide for entrepreneurs?",
+      options: [
+        { label: "A", text: "Basic logic" },
+        { label: "B", text: "Strategic planning" },
+        { label: "C", text: "Consultant-quality analysis" }
+      ],
+      correct: "C"
+    },
+    {
+      time: 783,
+      timestamp: "13:03",
+      question: "What is a recommended first step when you begin implementing these agents?",
+      options: [
+        { label: "A", text: "Start small" },
+        { label: "B", text: "Automate everything" },
+        { label: "C", text: "Select one agent for your biggest bottleneck" }
+      ],
+      correct: "C"
+    }
+    ];
+
+    const videoId = "USRfRv34HmQ";
+    const totalQuestions = quiz.length;
+
+    let player;
+    let playerReady = false;
+    let monitorTimer = null;
+
+    let nextQuestionIndex = 0;
+    let questionOpen = false;
+    let highestAllowedTime = 0;
+    let lastReturnNoticeAt = 0;
+
+    const FORWARD_PADDING_SECONDS = 1.6;
+    const SEEK_TOLERANCE_SECONDS = 2.4;
+    const AFTER_CHECKPOINT_SECONDS = 0.5;
+
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
+    const readyNote = document.getElementById("readyNote");
+    const quizModal = document.getElementById("quizModal");
+    const questionProgress = document.getElementById("questionProgress");
+    const questionTime = document.getElementById("questionTime");
+    const questionText = document.getElementById("questionText");
+    const answers = document.getElementById("answers");
+    const feedback = document.getElementById("feedback");
+    const progressText = document.getElementById("progressText");
+    const statusText = document.getElementById("statusText");
+
+    startButton.disabled = true;
+    startButton.style.opacity = "0.65";
+    startButton.style.cursor = "not-allowed";
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        videoId: videoId,
+        host: "https://www.youtube-nocookie.com",
+        playerVars: {
+          playsinline: 1,
+          rel: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          iv_load_policy: 3
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      playerReady = true;
+      readyNote.textContent = "Video is ready.";
+      statusText.textContent = "Press Start Lesson to begin.";
+      startButton.disabled = false;
+      startButton.style.opacity = "1";
+      startButton.style.cursor = "pointer";
+      updateProgressText();
+    }
+
+    function onPlayerStateChange(event) {
+      if (!playerReady) return;
+
+      if (questionOpen && event.data === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      }
+
+      if (event.data === YT.PlayerState.ENDED) {
+        progressText.textContent = "Lesson complete";
+        statusText.textContent = "Great work! You reached the end of the video.";
+      }
+    }
+
+    startButton.addEventListener("click", function () {
+      if (!playerReady) return;
+
+      startScreen.classList.add("hidden");
+      highestAllowedTime = Math.max(highestAllowedTime, FORWARD_PADDING_SECONDS);
+      player.seekTo(0, true);
+      player.playVideo();
+      updateProgressText();
+      startMonitor();
+    });
+
+    function startMonitor() {
+      if (monitorTimer) return;
+
+      monitorTimer = window.setInterval(function () {
+        if (!playerReady || !player) return;
+
+        if (questionOpen) {
+          player.pauseVideo();
+          return;
+        }
+
+        const currentTime = safeCurrentTime();
+        const nextQuestion = quiz[nextQuestionIndex];
+
+        if (currentTime > highestAllowedTime + SEEK_TOLERANCE_SECONDS) {
+          returnToAllowedPoint();
+          return;
+        }
+
+        if (nextQuestion && currentTime >= nextQuestion.time - 0.15) {
+          openQuestion(nextQuestionIndex);
+          return;
+        }
+
+        const nextLimit = nextQuestion ? nextQuestion.time : getVideoDurationOrInfinity();
+        highestAllowedTime = Math.max(
+          highestAllowedTime,
+          Math.min(currentTime + FORWARD_PADDING_SECONDS, nextLimit)
+        );
+      }, 250);
+    }
+
+    function safeCurrentTime() {
+      try {
+        return player.getCurrentTime() || 0;
+      } catch (error) {
+        return 0;
+      }
+    }
+
+    function getVideoDurationOrInfinity() {
+      try {
+        return player.getDuration() || Number.POSITIVE_INFINITY;
+      } catch (error) {
+        return Number.POSITIVE_INFINITY;
+      }
+    }
+
+    function returnToAllowedPoint() {
+      const now = Date.now();
+      const returnTime = Math.max(0, highestAllowedTime - 0.4);
+
+      player.pauseVideo();
+      player.seekTo(returnTime, true);
+
+      if (now - lastReturnNoticeAt > 1800) {
+        statusText.textContent = "Let’s stay with the lesson. Keep watching to unlock the next question.";
+        lastReturnNoticeAt = now;
+      }
+
+      window.setTimeout(function () {
+        if (!questionOpen) player.playVideo();
+      }, 350);
+    }
+
+    function openQuestion(index) {
+      const item = quiz[index];
+
+      questionOpen = true;
+      player.pauseVideo();
+
+      try {
+        player.seekTo(item.time, true);
+      } catch (error) {
+        // If seeking is unavailable for a moment, the question still works.
+      }
+
+      questionProgress.textContent = "Question " + (index + 1) + " of " + totalQuestions;
+      questionTime.textContent = item.timestamp;
+      questionText.textContent = item.question;
+      feedback.textContent = "";
+      feedback.className = "feedback";
+      answers.innerHTML = "";
+
+      item.options.forEach(function (option) {
+        const button = document.createElement("button");
+        button.className = "answer-button";
+        button.type = "button";
+        button.setAttribute("aria-label", option.label + ": " + option.text);
+
+        const label = document.createElement("span");
+        label.className = "answer-label";
+        label.textContent = option.label;
+
+        const text = document.createElement("span");
+        text.textContent = option.text;
+
+        button.appendChild(label);
+        button.appendChild(text);
+
+        button.addEventListener("click", function () {
+          handleAnswer(option.label);
+        });
+
+        answers.appendChild(button);
+      });
+
+      quizModal.classList.remove("hidden");
+      statusText.textContent = "Answer the checkpoint question to continue.";
+      updateProgressText();
+
+      const firstButton = answers.querySelector("button");
+      if (firstButton) firstButton.focus();
+    }
+
+    function handleAnswer(selectedLabel) {
+      const item = quiz[nextQuestionIndex];
+      const buttons = answers.querySelectorAll("button");
+
+      buttons.forEach(function (button) {
+        button.disabled = true;
+      });
+
+      if (selectedLabel === item.correct) {
+        feedback.textContent = "Great job! Keep watching. 🌟";
+        feedback.className = "feedback good";
+
+        const resumeTime = item.time + AFTER_CHECKPOINT_SECONDS;
+        nextQuestionIndex += 1;
+        highestAllowedTime = Math.max(highestAllowedTime, resumeTime + FORWARD_PADDING_SECONDS);
+
+        window.setTimeout(function () {
+          closeQuestion();
+          player.seekTo(resumeTime, true);
+          player.playVideo();
+          updateProgressText();
+        }, 950);
+      } else {
+        feedback.textContent = "Good try. Let’s watch that part again. 👀";
+        feedback.className = "feedback try";
+
+        const reviewTime = getReviewStartTime(nextQuestionIndex);
+
+        window.setTimeout(function () {
+          closeQuestion();
+          highestAllowedTime = reviewTime + FORWARD_PADDING_SECONDS;
+          player.seekTo(reviewTime, true);
+          player.playVideo();
+          updateProgressText();
+          statusText.textContent = "Watch this part again, then try the question once more.";
+        }, 1500);
+      }
+    }
+
+    function closeQuestion() {
+      quizModal.classList.add("hidden");
+      answers.innerHTML = "";
+      feedback.textContent = "";
+      feedback.className = "feedback";
+      questionOpen = false;
+    }
+
+    function getReviewStartTime(index) {
+      const currentCheckpoint = quiz[index].time;
+
+      for (let i = index - 1; i >= 0; i -= 1) {
+        if (quiz[i].time < currentCheckpoint) {
+          return quiz[i].time + AFTER_CHECKPOINT_SECONDS;
+        }
+      }
+
+      return 0;
+    }
+
+    function updateProgressText() {
+      if (nextQuestionIndex >= totalQuestions) {
+        progressText.textContent = totalQuestions + " of " + totalQuestions + " questions answered";
+      } else {
+        progressText.textContent = nextQuestionIndex + " of " + totalQuestions + " questions answered";
+      }
+    }
+
+    window.addEventListener("keydown", function (event) {
+      if (questionOpen && (event.code === "Space" || event.key === " ")) {
+        event.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>
