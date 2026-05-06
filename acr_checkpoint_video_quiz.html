@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--
+    Teacher note:
+    This is a single-file checkpoint quiz for a YouTube video.
+    To edit the quiz manually, search for QUIZ_ITEMS in the script below.
+    Each quiz item has:
+      time: checkpoint time in seconds,
+      timestamp: teacher-friendly display time,
+      question: the question text,
+      options: answer choices with labels,
+      correct: the correct option label, such as "A", "B", or "C".
+
+    The page does not collect student names, emails, scores, analytics, or personal data.
+    It does not use localStorage, cookies from this page script, or external tracking scripts.
+    It must load the YouTube IFrame Player API to play the video and pause at checkpoints.
+    YouTube embeds cannot be perfectly locked down, but this player hides controls where possible,
+    disables keyboard controls, pauses at required questions, and returns students if they try
+    to skip ahead past unanswered checkpoints.
+  -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkpoint Video Quiz</title>
+  <style>
+    :root {
+      --bg: #f7fbff;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #15803d;
+      --warning: #b45309;
+      --danger: #b91c1c;
+      --border: #cbd5e1;
+      --shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, #dbeafe 0, transparent 34rem),
+        radial-gradient(circle at top right, #dcfce7 0, transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      width: min(1100px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 42px;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.86);
+      border: 2px solid rgba(203, 213, 225, 0.8);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.05;
+      color: #0f172a;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .video-card,
+    .status-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
+    }
+
+    #player {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .status-card {
+      padding: 18px;
+    }
+
+    .status-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #eff6ff;
+      color: #1e40af;
+      border: 2px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .progress-label {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .bar {
+      width: 100%;
+      height: 18px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2563eb, #22c55e);
+      transition: width 240ms ease;
+    }
+
+    .teacher-safe {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .main-button {
+      border: 0;
+      border-radius: 18px;
+      background: var(--primary);
+      color: white;
+      min-height: 54px;
+      padding: 14px 20px;
+      font-size: 1.12rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+    }
+
+    .main-button:hover,
+    .main-button:focus-visible {
+      background: var(--primary-dark);
+      outline: 4px solid #bfdbfe;
+      outline-offset: 2px;
+    }
+
+    .secondary-button {
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      background: white;
+      color: var(--text);
+      min-height: 54px;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .secondary-button:hover,
+    .secondary-button:focus-visible {
+      outline: 4px solid #e0e7ff;
+      outline-offset: 2px;
+    }
+
+    .quiz-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+
+    .quiz-overlay.open {
+      display: flex;
+    }
+
+    .quiz-card {
+      width: min(760px, 100%);
+      background: white;
+      border-radius: 30px;
+      border: 3px solid #bfdbfe;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      padding: clamp(20px, 4vw, 34px);
+    }
+
+    .quiz-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .quiz-count {
+      color: #1e40af;
+      background: #eff6ff;
+      border: 2px solid #bfdbfe;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .quiz-time {
+      color: #3f3f46;
+      background: #f4f4f5;
+      border: 2px solid #e4e4e7;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .quiz-question {
+      margin: 0 0 18px;
+      font-size: clamp(1.45rem, 4vw, 2.15rem);
+      line-height: 1.22;
+      color: #111827;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer-button {
+      width: 100%;
+      text-align: left;
+      border: 3px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 22px;
+      padding: 16px;
+      min-height: 70px;
+      cursor: pointer;
+      font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+      font-weight: 800;
+      color: #111827;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+
+    .answer-button:hover,
+    .answer-button:focus-visible {
+      transform: translateY(-1px);
+      border-color: #2563eb;
+      background: #eff6ff;
+      outline: 4px solid #dbeafe;
+      outline-offset: 1px;
+    }
+
+    .answer-label {
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #dbeafe;
+      color: #1e40af;
+      font-weight: 1000;
+    }
+
+    .answer-button.correct {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .answer-button.wrong {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .feedback {
+      min-height: 38px;
+      margin-top: 16px;
+      font-size: clamp(1.1rem, 3vw, 1.35rem);
+      font-weight: 900;
+      line-height: 1.35;
+    }
+
+    .feedback.good {
+      color: var(--success);
+    }
+
+    .feedback.try {
+      color: var(--warning);
+    }
+
+    .small-note {
+      margin-top: 10px;
+      color: #52525b;
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+
+    .skip-message {
+      display: none;
+      margin-top: 12px;
+      border: 2px solid #fde68a;
+      background: #fffbeb;
+      color: #92400e;
+      border-radius: 18px;
+      padding: 12px;
+      font-weight: 800;
+    }
+
+    .skip-message.show {
+      display: block;
+    }
+
+    @media (min-width: 880px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) 340px;
+        align-items: start;
+      }
+
+      .status-card {
+        position: sticky;
+        top: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>Checkpoint Video Quiz</h1>
+      <p class="subtitle">Watch the video. When a checkpoint appears, choose the best answer to keep going. Mistakes are okay — the video will help you review!</p>
+    </header>
+
+    <section class="layout" aria-label="Video quiz area">
+      <div class="video-card">
+        <div class="video-wrap">
+          <div id="player" aria-label="YouTube video player"></div>
+        </div>
+      </div>
+
+      <aside class="status-card" aria-label="Quiz progress">
+        <div class="status-top">
+          <span class="pill">🌟 Keep going!</span>
+          <span class="progress-label" id="progressText">Question 0 of 10</span>
+        </div>
+        <div class="bar" aria-hidden="true">
+          <div class="bar-fill" id="progressBar"></div>
+        </div>
+
+        <div class="controls">
+          <button class="main-button" id="playButton" type="button">▶ Start / Continue</button>
+          <button class="secondary-button" id="restartButton" type="button">↺ Restart</button>
+        </div>
+
+        <div class="skip-message" id="skipMessage">Please watch this part before answering the next question.</div>
+
+        <p class="teacher-safe">Privacy note: this page does not ask for student information and does not save answers or scores.</p>
+      </aside>
+    </section>
+  </main>
+
+  <div class="quiz-overlay" id="quizOverlay" role="dialog" aria-modal="true" aria-labelledby="questionText">
+    <div class="quiz-card">
+      <div class="quiz-meta">
+        <span class="quiz-count" id="quizCount">Question 1 of 10</span>
+        <span class="quiz-time" id="quizTime">Checkpoint</span>
+      </div>
+      <h2 class="quiz-question" id="questionText"></h2>
+      <div class="answers" id="answerList"></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <div class="small-note">Choose an answer to continue. You can try again after reviewing the video.</div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const VIDEO_ID = "LHz12nwlbLA";
+    const QUIZ_ITEMS = [
+  {
+    "time": 95,
+    "timestamp": "1:35",
+    "question": "Who is the research psychologist credited with the ACR concept?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Dr. Shelly Gable"
+      },
+      {
+        "label": "B",
+        "text": "Dr. Russ Belt, Zenat and Gun"
+      },
+      {
+        "label": "C",
+        "text": "A Master Resilience Trainer in the U.S. Army"
+      }
+    ],
+    "correct": "A"
+  },
+  {
+    "time": 131,
+    "timestamp": "2:11",
+    "question": "Which axis determines if a response is supportive or unsupportive?",
+    "options": [
+      {
+        "label": "A",
+        "text": "The passive axis"
+      },
+      {
+        "label": "B",
+        "text": "The constructive axis"
+      },
+      {
+        "label": "C",
+        "text": "The active/passive axis"
+      }
+    ],
+    "correct": "B"
+  },
+  {
+    "time": 180,
+    "timestamp": "3:00",
+    "question": "According to the research, which response style is the only one to build connection?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Passive-Constructive"
+      },
+      {
+        "label": "B",
+        "text": "Active-Constructive"
+      },
+      {
+        "label": "C",
+        "text": "Active-Destructive"
+      }
+    ],
+    "correct": "B"
+  },
+  {
+    "time": 208,
+    "timestamp": "3:28",
+    "question": "Which of the following describes the Passive-Constructive response style?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Being silent"
+      },
+      {
+        "label": "B",
+        "text": "Ignoring the news"
+      },
+      {
+        "label": "C",
+        "text": "Responding with \"oh that's nice dear\" before changing the subject"
+      }
+    ],
+    "correct": "C"
+  },
+  {
+    "time": 275,
+    "timestamp": "4:35",
+    "question": "What characterizes a Passive-Destructive response?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Sarcasm"
+      },
+      {
+        "label": "B",
+        "text": "Apathy and silence"
+      },
+      {
+        "label": "C",
+        "text": "One-upping the speaker's experience with your own"
+      }
+    ],
+    "correct": "C"
+  },
+  {
+    "time": 352,
+    "timestamp": "5:52",
+    "question": "What is a hallmark of an Active-Destructive response?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Being mean"
+      },
+      {
+        "label": "B",
+        "text": "Ignoring the person"
+      },
+      {
+        "label": "C",
+        "text": "Squashing the good news with anxiety or worry"
+      }
+    ],
+    "correct": "C"
+  },
+  {
+    "time": 465,
+    "timestamp": "7:45",
+    "question": "What should you do if you feel anxious about someone's good news?",
+    "options": [
+      {
+        "label": "A",
+        "text": "Stay quiet"
+      },
+      {
+        "label": "B",
+        "text": "Discuss it immediately"
+      },
+      {
+        "label": "C",
+        "text": "Save the concern for after the celebration"
+      }
+    ],
+    "correct": "C"
+  },
+  {
+    "time": 575,
+    "timestamp": "9:35",
+    "question": "How does the speaker characterize someone sharing good news with you?",
+    "options": [
+      {
+        "label": "A",
+        "text": "As a test"
+      },
+      {
+        "label": "B",
+        "text": "Like a gift"
+      },
+      {
+        "label": "C",
+        "text": "An invitation for connection"
+      }
+    ],
+    "correct": "B"
+  },
+  {
+    "time": 655,
+    "timestamp": "10:55",
+    "question": "What is a key benefit of practicing Active-Constructive Responding?",
+    "options": [
+      {
+        "label": "A",
+        "text": "It is fast"
+      },
+      {
+        "label": "B",
+        "text": "It builds trust"
+      },
+      {
+        "label": "C",
+        "text": "It creates more positive drama"
+      }
+    ],
+    "correct": "B"
+  },
+  {
+    "time": 935,
+    "timestamp": "15:35",
+    "question": "What is the ultimate goal of using the ACR skill?",
+    "options": [
+      {
+        "label": "A",
+        "text": "To be liked"
+      },
+      {
+        "label": "B",
+        "text": "To build resilience"
+      },
+      {
+        "label": "C",
+        "text": "To get the person to stop talking"
+      }
+    ],
+    "correct": "B"
+  }
+];
+
+    const CHECK_INTERVAL_MS = 250;
+    const SAME_TIME_TOLERANCE = 0.75;
+    const SEEK_JUMP_TOLERANCE = 2.25;
+    const REVIEW_OFFSET_SECONDS = 0.6;
+    const RESUME_OFFSET_SECONDS = 0.45;
+
+    let player = null;
+    let nextQuestionIndex = 0;
+    let pendingQuestionIndex = null;
+    let lastObservedTime = 0;
+    let lastSafeTime = 0;
+    let checkTimer = null;
+    let skipMessageTimer = null;
+    let playerReady = false;
+
+    const overlay = document.getElementById("quizOverlay");
+    const quizCount = document.getElementById("quizCount");
+    const quizTime = document.getElementById("quizTime");
+    const questionText = document.getElementById("questionText");
+    const answerList = document.getElementById("answerList");
+    const feedback = document.getElementById("feedback");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+    const playButton = document.getElementById("playButton");
+    const restartButton = document.getElementById("restartButton");
+    const skipMessage = document.getElementById("skipMessage");
+
+    function loadYouTubeAPI() {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    window.onYouTubeIframeAPIReady = function () {
+      player = new YT.Player("player", {
+        videoId: VIDEO_ID,
+        host: "https://www.youtube-nocookie.com",
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          modestbranding: 1,
+          playsinline: 1,
+          rel: 0
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      });
+    };
+
+    function onPlayerReady() {
+      playerReady = true;
+      updateProgress();
+      startCheckpointWatcher();
+    }
+
+    function onPlayerStateChange() {
+      if (pendingQuestionIndex !== null && playerReady) {
+        player.pauseVideo();
+      }
+    }
+
+    function startCheckpointWatcher() {
+      if (checkTimer) {
+        clearInterval(checkTimer);
+      }
+      checkTimer = setInterval(checkPlayback, CHECK_INTERVAL_MS);
+    }
+
+    function getCurrentTimeSafe() {
+      if (!playerReady || !player || typeof player.getCurrentTime !== "function") {
+        return 0;
+      }
+      return player.getCurrentTime() || 0;
+    }
+
+    function checkPlayback() {
+      if (!playerReady || pendingQuestionIndex !== null) {
+        if (pendingQuestionIndex !== null && playerReady) {
+          player.pauseVideo();
+        }
+        return;
+      }
+
+      const currentTime = getCurrentTimeSafe();
+      const delta = currentTime - lastObservedTime;
+      const nextQuestion = QUIZ_ITEMS[nextQuestionIndex];
+
+      if (!nextQuestion) {
+        lastObservedTime = currentTime;
+        lastSafeTime = currentTime;
+        return;
+      }
+
+      const checkpoint = nextQuestion.time;
+
+      if (currentTime < checkpoint - 0.1) {
+        lastSafeTime = currentTime;
+      }
+
+      if (currentTime >= checkpoint - 0.05) {
+        const jumpedPastCheckpoint = delta > SEEK_JUMP_TOLERANCE && lastObservedTime < checkpoint - 0.2;
+        if (jumpedPastCheckpoint && currentTime > checkpoint + 0.35) {
+          const returnTime = Math.max(0, Math.min(lastSafeTime, checkpoint - 1));
+          player.seekTo(returnTime, true);
+          showSkipMessage();
+          lastObservedTime = returnTime;
+          return;
+        }
+
+        showQuestion(nextQuestionIndex);
+        lastObservedTime = checkpoint;
+        return;
+      }
+
+      lastObservedTime = currentTime;
+    }
+
+    function showSkipMessage() {
+      skipMessage.classList.add("show");
+      clearTimeout(skipMessageTimer);
+      skipMessageTimer = setTimeout(() => {
+        skipMessage.classList.remove("show");
+      }, 2500);
+    }
+
+    function showQuestion(index) {
+      const item = QUIZ_ITEMS[index];
+      if (!item || pendingQuestionIndex !== null) {
+        return;
+      }
+
+      pendingQuestionIndex = index;
+      player.pauseVideo();
+
+      quizCount.textContent = `Question ${index + 1} of ${QUIZ_ITEMS.length}`;
+      quizTime.textContent = `Checkpoint: ${item.timestamp}`;
+      questionText.textContent = item.question;
+      feedback.textContent = "";
+      feedback.className = "feedback";
+      answerList.innerHTML = "";
+
+      item.options.forEach((option) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "answer-button";
+        button.dataset.label = option.label;
+        button.innerHTML = `
+          <span class="answer-label">${escapeHTML(option.label)}</span>
+          <span>${escapeHTML(option.text)}</span>
+        `;
+        button.addEventListener("click", () => handleAnswer(option.label));
+        answerList.appendChild(button);
+      });
+
+      overlay.classList.add("open");
+      updateProgress();
+
+      const firstButton = answerList.querySelector("button");
+      if (firstButton) {
+        setTimeout(() => firstButton.focus(), 50);
+      }
+    }
+
+    function handleAnswer(selectedLabel) {
+      if (pendingQuestionIndex === null) {
+        return;
+      }
+
+      const index = pendingQuestionIndex;
+      const item = QUIZ_ITEMS[index];
+      const isCorrect = selectedLabel === item.correct;
+      const buttons = Array.from(answerList.querySelectorAll(".answer-button"));
+
+      buttons.forEach((button) => {
+        button.disabled = true;
+        if (button.dataset.label === item.correct) {
+          button.classList.add("correct");
+        }
+        if (button.dataset.label === selectedLabel && !isCorrect) {
+          button.classList.add("wrong");
+        }
+      });
+
+      if (isCorrect) {
+        feedback.textContent = "Great job! Let’s keep watching. 🎉";
+        feedback.className = "feedback good";
+
+        setTimeout(() => {
+          pendingQuestionIndex = null;
+          nextQuestionIndex += 1;
+          overlay.classList.remove("open");
+          updateProgress();
+
+          const following = QUIZ_ITEMS[nextQuestionIndex];
+          if (following && following.time <= item.time + SAME_TIME_TOLERANCE) {
+            showQuestion(nextQuestionIndex);
+            return;
+          }
+
+          const resumeTime = item.time + RESUME_OFFSET_SECONDS;
+          player.seekTo(resumeTime, true);
+          lastObservedTime = resumeTime;
+          lastSafeTime = resumeTime;
+          player.playVideo();
+        }, 950);
+
+        return;
+      }
+
+      feedback.textContent = "Good try. Let’s watch that part again, then you can try once more. 💪";
+      feedback.className = "feedback try";
+
+      setTimeout(() => {
+        const reviewTime = getReviewStartTime(index);
+        pendingQuestionIndex = null;
+        overlay.classList.remove("open");
+        player.seekTo(reviewTime, true);
+        lastObservedTime = reviewTime;
+        lastSafeTime = reviewTime;
+        player.playVideo();
+      }, 1350);
+    }
+
+    function getReviewStartTime(index) {
+      if (index <= 0) {
+        return 0;
+      }
+      const previousCheckpoint = QUIZ_ITEMS[index - 1].time;
+      return Math.max(0, previousCheckpoint + REVIEW_OFFSET_SECONDS);
+    }
+
+    function updateProgress() {
+      const completed = Math.min(nextQuestionIndex, QUIZ_ITEMS.length);
+      progressText.textContent = `Question ${completed} of ${QUIZ_ITEMS.length}`;
+      const percent = QUIZ_ITEMS.length ? (completed / QUIZ_ITEMS.length) * 100 : 100;
+      progressBar.style.width = `${percent}%`;
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    playButton.addEventListener("click", () => {
+      if (!playerReady) {
+        return;
+      }
+
+      if (pendingQuestionIndex !== null) {
+        player.pauseVideo();
+        return;
+      }
+
+      player.playVideo();
+    });
+
+    restartButton.addEventListener("click", () => {
+      if (!playerReady) {
+        return;
+      }
+
+      nextQuestionIndex = 0;
+      pendingQuestionIndex = null;
+      lastObservedTime = 0;
+      lastSafeTime = 0;
+      overlay.classList.remove("open");
+      skipMessage.classList.remove("show");
+      player.seekTo(0, true);
+      player.pauseVideo();
+      updateProgress();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (overlay.classList.contains("open") && event.key === "Escape") {
+        event.preventDefault();
+      }
+    });
+
+    loadYouTubeAPI();
+  </script>
+</body>
+</html>
