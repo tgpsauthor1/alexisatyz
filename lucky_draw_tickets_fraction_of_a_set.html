@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Lucky-draw Tickets Fraction Builder</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --ink: #182230;
+      --muted: #596579;
+      --line: #cfd8e6;
+      --navy: #17233b;
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --amber-soft: #fff2cc;
+      --green-soft: #dcfce7;
+      --danger: #b42318;
+      --shadow: 0 10px 24px rgba(24, 34, 48, 0.12);
+      --radius: 24px;
+      --ticket: 48px;
+      font-family: "Aptos", "Calibri", "Arial", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(219, 234, 254, 0.9), transparent 34rem),
+        var(--bg);
+      color: var(--ink);
+      touch-action: manipulation;
+    }
+
+    button, input { font: inherit; }
+    button { touch-action: manipulation; }
+
+    .app {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .hero {
+      background: var(--navy);
+      color: #ffffff;
+      border-radius: 0 0 28px 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 16px 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 4vw, 2.4rem);
+      line-height: 1.1;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: #dbeafe;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.35;
+    }
+
+    .top-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .small-btn {
+      border: 2px solid #ffffff;
+      background: #ffffff;
+      color: var(--navy);
+      border-radius: 999px;
+      min-height: 44px;
+      padding: 9px 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .small-btn.dark {
+      background: transparent;
+      color: #ffffff;
+      border-color: #9fb2cc;
+    }
+
+    .question-box {
+      margin-top: 14px;
+      background: #ffffff;
+      color: var(--ink);
+      border-radius: 20px;
+      padding: 14px;
+      border: 2px solid #c7d2fe;
+      display: grid;
+      gap: 10px;
+    }
+
+    .question-box[hidden] { display: none; }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .note {
+      border: 2px solid var(--line);
+      border-left-width: 10px;
+      border-radius: 16px;
+      padding: 10px;
+      background: #ffffff;
+      min-height: 100px;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1.05rem;
+    }
+
+    .note p {
+      margin: 0;
+      font-size: 0.98rem;
+      line-height: 1.35;
+      color: #334155;
+    }
+
+    .red-edge { border-left-color: #dc2626; }
+    .blue-edge { border-left-color: #2563eb; }
+    .green-edge { border-left-color: #16a34a; }
+    .yellow-edge { border-left-color: #ca8a04; }
+
+    .progress {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .step-pill {
+      min-height: 50px;
+      border-radius: 16px;
+      border: 2px solid var(--line);
+      background: #ffffff;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      font-weight: 900;
+      padding: 8px;
+      line-height: 1.1;
+    }
+
+    .step-pill.active {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .step-pill.done {
+      background: var(--green-soft);
+      border-color: #22c55e;
+      color: #14532d;
+    }
+
+    .big-card {
+      margin-top: 16px;
+      background: var(--card);
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(14px, 2vw, 22px);
+      overflow: hidden;
+    }
+
+    .team-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 3px solid #e2e8f0;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+
+    .team-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .colour-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      border: 3px solid rgba(0,0,0,0.2);
+      flex: 0 0 auto;
+    }
+
+    .colour-dot.red { background:#fee2e2; border-color:#dc2626; }
+    .colour-dot.blue { background:#dbeafe; border-color:#2563eb; }
+    .colour-dot.green { background:#dcfce7; border-color:#16a34a; }
+    .colour-dot.yellow { background:#fef3c7; border-color:#ca8a04; }
+
+    .team-title h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.1;
+    }
+
+    .team-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .action {
+      background: var(--blue-soft);
+      border: 3px solid #60a5fa;
+      border-radius: 22px;
+      padding: 16px;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      font-weight: 900;
+      line-height: 1.18;
+      margin-bottom: 14px;
+    }
+
+    .tip {
+      background: var(--amber-soft);
+      border: 2px solid #f6c85f;
+      border-radius: 18px;
+      padding: 12px 14px;
+      color: #713f12;
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      font-weight: 750;
+      line-height: 1.35;
+      margin-bottom: 16px;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .team-choice {
+      min-height: 180px;
+      border: 4px solid var(--line);
+      border-radius: 24px;
+      padding: 14px;
+      text-align: left;
+      background: #ffffff;
+      cursor: pointer;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .team-choice.selected {
+      border-color: var(--navy);
+      box-shadow: inset 0 0 0 4px rgba(23,35,59,0.1);
+    }
+
+    .team-choice h3 {
+      margin: 0;
+      font-size: 1.28rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .team-choice p {
+      margin: 0;
+      color: #334155;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .team-choice .mini {
+      margin-top: auto;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.25;
+    }
+
+    .ticket-maker {
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .count-panel {
+      border: 3px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .big-number {
+      display: grid;
+      place-items: center;
+      min-height: 130px;
+      border-radius: 22px;
+      background: #ffffff;
+      border: 3px solid var(--line);
+      font-size: clamp(3rem, 9vw, 5.4rem);
+      font-weight: 950;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .big-btn {
+      min-height: 64px;
+      border-radius: 18px;
+      border: 3px solid var(--navy);
+      background: #ffffff;
+      color: var(--navy);
+      font-size: 1.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      padding: 10px;
+    }
+
+    .big-btn.primary {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .big-btn.blue {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .big-btn.soft {
+      border-color: #94a3b8;
+      color: #334155;
+    }
+
+    .big-btn.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .big-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .visual-bank {
+      border: 3px dashed #94a3b8;
+      background: #ffffff;
+      border-radius: 24px;
+      min-height: 220px;
+      padding: 14px;
+    }
+
+    .visual-bank h3,
+    .group-area h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .tickets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: flex-start;
+      align-content: flex-start;
+      min-height: 70px;
+    }
+
+    .ticket {
+      width: var(--ticket);
+      height: var(--ticket);
+      border-radius: 50%;
+      border: 3px solid #92400e;
+      background:
+        radial-gradient(circle at 65% 33%, #fff7ed 0 7px, transparent 8px),
+        linear-gradient(135deg, #fde68a, #f59e0b);
+      color: #3b2604;
+      font-weight: 950;
+      display: inline-grid;
+      place-items: center;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.16);
+      position: relative;
+    }
+
+    .ticket.selected {
+      outline: 6px solid #38bdf8;
+      outline-offset: 3px;
+    }
+
+    .ticket.drag-source {
+      opacity: 0.25;
+    }
+
+    .ticket.ghost {
+      position: fixed;
+      z-index: 99999;
+      pointer-events: none;
+      opacity: 0.95;
+      transform: scale(1.08);
+    }
+
+    .denom-choices {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(90px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .denom-btn {
+      min-height: 104px;
+      border-radius: 22px;
+      border: 4px solid var(--line);
+      background: #ffffff;
+      cursor: pointer;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      font-weight: 950;
+      color: var(--navy);
+    }
+
+    .denom-btn .main-num {
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+
+    .denom-btn .label {
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .denom-btn.selected {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .denom-btn.selected .label {
+      color: #dbeafe;
+    }
+
+    .more-row {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .number-input {
+      width: 120px;
+      min-height: 54px;
+      border: 3px solid var(--line);
+      border-radius: 16px;
+      padding: 8px 12px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .share-layout {
+      display: grid;
+      grid-template-columns: minmax(210px, 280px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .drop-zone {
+      border: 3px dashed #94a3b8;
+      border-radius: 24px;
+      padding: 14px;
+      background: #ffffff;
+      min-height: 170px;
+      transition: transform 0.12s, background 0.12s, border-color 0.12s;
+    }
+
+    .drop-zone.ready {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      transform: scale(1.01);
+    }
+
+    .drop-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-weight: 950;
+      font-size: 1.15rem;
+    }
+
+    .groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 12px;
+    }
+
+    .group-box {
+      min-height: 190px;
+      border: 4px dashed #94a3b8;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 12px;
+      transition: transform 0.12s, background 0.12s, border-color 0.12s;
+    }
+
+    .group-box.ready {
+      background: #e0f2fe;
+      border-color: #0284c7;
+      transform: scale(1.01);
+    }
+
+    .group-box.packed {
+      border-style: solid;
+      border-color: var(--navy);
+      background: linear-gradient(135deg, #dbeafe, #ffffff 70%);
+    }
+
+    .packed-toggle {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 16px;
+      border: 3px solid var(--navy);
+      background: #ffffff;
+      color: var(--navy);
+      font-size: 1.05rem;
+      font-weight: 950;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .group-box.packed .packed-toggle {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.35;
+      padding: 8px 0;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-top: 3px solid #e2e8f0;
+      margin-top: 18px;
+      padding-top: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      border: 3px solid var(--line);
+      border-left-width: 12px;
+      border-radius: 22px;
+      padding: 12px;
+      background: #ffffff;
+      min-height: 160px;
+    }
+
+    .summary-card h3 {
+      margin: 0 0 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 1.18rem;
+    }
+
+    .summary-card p {
+      margin: 6px 0;
+      color: #334155;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: var(--navy);
+      color: #ffffff;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 900;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s, transform 0.15s;
+      box-shadow: var(--shadow);
+      z-index: 100000;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    button:hover,
+    button:focus-visible,
+    input:focus-visible {
+      outline: 5px solid rgba(14, 165, 233, 0.32);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 900px) {
+      .notes,
+      .team-grid,
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+
+      .ticket-maker,
+      .share-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .progress {
+        grid-template-columns: repeat(5, minmax(70px, 1fr));
+        overflow-x: auto;
+      }
+
+      .step-pill {
+        min-width: 86px;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .notes,
+      .team-grid,
+      .summary-grid,
+      .denom-choices {
+        grid-template-columns: 1fr;
+      }
+
+      .team-banner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+
+      :root { --ticket: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>Lucky-draw Tickets Builder</h1>
+      <p>Make the ticket model. You do the thinking — the app will not tell you the answer.</p>
+      <div class="top-buttons">
+        <button class="small-btn" id="toggleQuestion" type="button" aria-expanded="true">Hide notes</button>
+        <button class="small-btn dark" id="readScreen" type="button">🔊 Read screen</button>
+        <button class="small-btn dark" id="stopRead" type="button">Stop</button>
+      </div>
+      <section class="question-box" id="questionBox" aria-label="Question notes">
+        <div class="notes">
+          <article class="note red-edge"><strong>Red Team</strong><p>Packed <sup>1</sup>&frasl;<sub>4</sub> of 16 tickets.</p></article>
+          <article class="note blue-edge"><strong>Blue Team</strong><p>Packed <sup>2</sup>&frasl;<sub>8</sub> of 16 tickets.</p></article>
+          <article class="note green-edge"><strong>Green Team</strong><p>Packed 10 tickets. <sup>2</sup>&frasl;<sub>3</sub> of the tickets were left unpacked.</p></article>
+          <article class="note yellow-edge"><strong>Yellow Team</strong><p>Packed <sup>2</sup>&frasl;<sub>3</sub> of its tickets. 8 tickets were left unpacked.</p></article>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <main class="app">
+    <nav class="progress" id="progress" aria-label="Step progress"></nav>
+    <section class="big-card" id="screen" aria-live="polite"></section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const teams = {
+      red: { name: "Red Team", dot: "red", edge: "red-edge", note: "Packed 1/4 of 16 tickets." },
+      blue: { name: "Blue Team", dot: "blue", edge: "blue-edge", note: "Packed 2/8 of 16 tickets." },
+      green: { name: "Green Team", dot: "green", edge: "green-edge", note: "Packed 10 tickets. 2/3 of the tickets were left unpacked." },
+      yellow: { name: "Yellow Team", dot: "yellow", edge: "yellow-edge", note: "Packed 2/3 of its tickets. 8 tickets were left unpacked." }
+    };
+
+    const stepLabels = [
+      ["team", "Team"],
+      ["tickets", "Tickets"],
+      ["groups", "Groups"],
+      ["share", "Share"],
+      ["packed", "Packed"]
+    ];
+
+    const state = {
+      activeTeam: "red",
+      step: "team",
+      selectedTicketId: null,
+      nextTicketId: 1,
+      data: {}
+    };
+
+    for (const key of Object.keys(teams)) {
+      state.data[key] = { tickets: [], denominator: null, packed: new Set() };
+    }
+
+    const screen = document.getElementById("screen");
+    const progress = document.getElementById("progress");
+    const questionBox = document.getElementById("questionBox");
+    const toggleQuestion = document.getElementById("toggleQuestion");
+    const toast = document.getElementById("toast");
+
+    let toastTimer = null;
+    let dragging = null;
+
+    function escapeHTML(v) {
+      return String(v).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+    }
+
+    function teamKeys() { return ["red", "blue", "green", "yellow"]; }
+    function currentTeam() { return state.data[state.activeTeam]; }
+    function currentMeta() { return teams[state.activeTeam]; }
+    function stepIndex() { return stepLabels.findIndex(([id]) => id === state.step); }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    function ticketsAt(team, location) {
+      return team.tickets.filter(t => t.location === location);
+    }
+
+    function render() {
+      renderProgress();
+      if (state.step === "team") renderTeamScreen();
+      if (state.step === "tickets") renderTicketsScreen();
+      if (state.step === "groups") renderGroupsScreen();
+      if (state.step === "share") renderShareScreen();
+      if (state.step === "packed") renderPackedScreen();
+    }
+
+    function renderProgress() {
+      const idx = stepIndex();
+      progress.innerHTML = stepLabels.map(([id, label], i) => `
+        <div class="step-pill ${id === state.step ? "active" : i < idx ? "done" : ""}">
+          <span>${i + 1}</span><span>${escapeHTML(label)}</span>
+        </div>`).join("");
+    }
+
+    function bannerHTML() {
+      const meta = currentMeta();
+      return `
+        <div class="team-banner">
+          <div class="team-title">
+            <span class="colour-dot ${meta.dot}"></span>
+            <div>
+              <h2>${escapeHTML(meta.name)}</h2>
+              <p>${escapeHTML(meta.note)}</p>
+            </div>
+          </div>
+          <button class="small-btn" style="border-color:#17233b;" data-action="read-team" type="button">🔊 Read team</button>
+        </div>`;
+    }
+
+    function navHTML({back = true, next = true, nextText = "Next"} = {}) {
+      return `
+        <div class="nav-row">
+          <button class="big-btn soft" type="button" data-action="back" ${back ? "" : "disabled"}>← Back</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="big-btn danger" type="button" data-action="reset-team">Reset team</button>
+            <button class="big-btn blue" type="button" data-action="next" ${next ? "" : "disabled"}>${escapeHTML(nextText)} →</button>
+          </div>
+        </div>`;
+    }
+
+    function renderTeamScreen() {
+      screen.innerHTML = `
+        <div class="action">Choose one team to build.</div>
+        <div class="tip">Pick a team. Build its total tickets, equal groups, and packed groups. Then come back for another team.</div>
+        <div class="team-grid">
+          ${teamKeys().map(key => {
+            const meta = teams[key];
+            const d = state.data[key];
+            const total = d.tickets.length;
+            const denom = d.denominator ? `${d.denominator} groups` : "groups not chosen";
+            const packed = d.packed.size ? `${d.packed.size} packed marked` : "none packed marked";
+            return `
+              <button class="team-choice ${key === state.activeTeam ? "selected" : ""}" type="button" data-team="${key}">
+                <h3><span class="colour-dot ${meta.dot}"></span>${escapeHTML(meta.name)}</h3>
+                <p>${escapeHTML(meta.note)}</p>
+                <div class="mini">${total} tickets • ${escapeHTML(denom)} • ${escapeHTML(packed)}</div>
+              </button>`;
+          }).join("")}
+        </div>
+        <div class="nav-row">
+          <button class="big-btn danger" type="button" data-action="reset-all">Reset all</button>
+          <button class="big-btn blue" type="button" data-action="next">Build this team →</button>
+        </div>`;
+    }
+
+    function renderTicketsScreen() {
+      const team = currentTeam();
+      const total = team.tickets.length;
+      screen.innerHTML = `
+        ${bannerHTML()}
+        <div class="action">Step 1: Make the total number of tickets for this team.</div>
+        <div class="tip">Use the question notes. Add only the tickets you want in this team’s whole amount.</div>
+        <div class="ticket-maker">
+          <section class="count-panel" aria-label="Ticket counter">
+            <div class="big-number" aria-live="polite">${total}</div>
+            <div class="button-grid">
+              <button class="big-btn primary" type="button" data-add="1">+1 ticket</button>
+              <button class="big-btn primary" type="button" data-add="5">+5 tickets</button>
+              <button class="big-btn soft" type="button" data-remove="1" ${total === 0 ? "disabled" : ""}>−1 ticket</button>
+              <button class="big-btn danger" type="button" data-clear-tickets ${total === 0 ? "disabled" : ""}>Clear</button>
+            </div>
+          </section>
+          <section class="visual-bank">
+            <h3>Tickets made</h3>
+            <div class="tickets">${renderTickets(ticketsAt(team, "bank").concat(team.tickets.filter(t => t.location !== "bank")), false)}</div>
+          </section>
+        </div>
+        ${navHTML({nextText:"Choose groups"})}`;
+    }
+
+    function renderGroupsScreen() {
+      const team = currentTeam();
+      const quick = [2, 3, 4, 8];
+      screen.innerHTML = `
+        ${bannerHTML()}
+        <div class="action">Step 2: Choose the number of equal groups.</div>
+        <div class="tip">The denominator tells how many equal groups the whole is split into. Choose the number you want to show.</div>
+        <div class="denom-choices">${quick.map(n => denomButtonHTML(n)).join("")}</div>
+        <div class="more-row">
+          <span style="font-weight:950;font-size:1.1rem;">Other number of groups:</span>
+          <input class="number-input" id="customDenom" type="number" min="1" max="20" inputmode="numeric" value="${team.denominator && !quick.includes(team.denominator) ? team.denominator : ""}" aria-label="Other number of groups">
+          <button class="big-btn soft" type="button" data-action="use-custom-denom">Use this</button>
+        </div>
+        <div class="tip" style="margin-top:16px;">Changing the groups sends all tickets back to the ticket bank.</div>
+        ${navHTML({nextText:"Share tickets"})}`;
+    }
+
+    function denomButtonHTML(n) {
+      const selected = currentTeam().denominator === n;
+      return `
+        <button class="denom-btn ${selected ? "selected" : ""}" type="button" data-denom="${n}" aria-pressed="${selected ? "true" : "false"}">
+          <span class="main-num">${n}</span><span class="label">groups</span>
+        </button>`;
+    }
+
+    function renderShareScreen() {
+      const team = currentTeam();
+      const denom = team.denominator;
+      if (!denom) {
+        screen.innerHTML = `${bannerHTML()}<div class="action">Choose the number of groups first.</div><div class="tip">Go back to Step 2 and choose the denominator.</div>${navHTML({next:false})}`;
+        return;
+      }
+
+      const bank = ticketsAt(team, "bank");
+      screen.innerHTML = `
+        ${bannerHTML()}
+        <div class="action">Step 3: Drag tickets into the groups.</div>
+        <div class="tip">Make equal groups if that matches your model. You can drag a ticket, or tap a ticket and then tap a group.</div>
+        <div class="share-layout">
+          <section class="drop-zone" data-drop="bank" aria-label="Ticket bank">
+            <div class="drop-title"><span>Ticket bank</span><span>${bank.length}</span></div>
+            <div class="tickets">${bank.length ? renderTickets(bank, true) : '<div class="empty">No tickets here.</div>'}</div>
+          </section>
+          <section><div class="groups">${Array.from({length: denom}, (_, i) => groupHTML(i, false)).join("")}</div></section>
+        </div>
+        ${navHTML({nextText:"Mark packed groups"})}`;
+    }
+
+    function groupHTML(i, markMode) {
+      const team = currentTeam();
+      const location = `group-${i}`;
+      const groupTickets = ticketsAt(team, location);
+      const isPacked = team.packed.has(i);
+      return `
+        <section class="group-box ${isPacked ? "packed" : ""}" data-drop="${location}" aria-label="Group ${i + 1}">
+          <div class="drop-title"><span>Group ${i + 1}</span><span>${groupTickets.length}</span></div>
+          ${markMode ? `<button class="packed-toggle" type="button" data-packed="${i}" aria-pressed="${isPacked ? "true" : "false"}">${isPacked ? "✓ Packed" : "Mark packed"}</button>` : ""}
+          <div class="tickets">${groupTickets.length ? renderTickets(groupTickets, !markMode) : '<div class="empty">Drop tickets here.</div>'}</div>
+        </section>`;
+    }
+
+    function renderPackedScreen() {
+      const team = currentTeam();
+      const denom = team.denominator;
+      if (!denom) {
+        screen.innerHTML = `${bannerHTML()}<div class="action">Choose the number of groups first.</div><div class="tip">Go back to Step 2 and choose the denominator.</div>${navHTML({next:false})}`;
+        return;
+      }
+
+      screen.innerHTML = `
+        ${bannerHTML()}
+        <div class="action">Step 4: Mark the groups that were packed.</div>
+        <div class="tip">Tap “Mark packed” on any group you think belongs to the packed amount.</div>
+        <div class="groups">${Array.from({length: denom}, (_, i) => groupHTML(i, true)).join("")}</div>
+        <div class="tip" style="margin-top:16px;">When you are ready, use your own model to compare the teams.</div>
+        <div class="summary-grid" style="margin-top:12px;">${summaryCards()}</div>
+        <div class="nav-row">
+          <button class="big-btn soft" type="button" data-action="back">← Back</button>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="big-btn danger" type="button" data-action="reset-team">Reset team</button>
+            <button class="big-btn blue" type="button" data-action="team-screen">Choose another team</button>
+          </div>
+        </div>`;
+    }
+
+    function renderTickets(tickets, draggable) {
+      if (!tickets.length) return '<div class="empty">No tickets yet.</div>';
+      return tickets.map((t, index) => `
+        <button class="ticket ${state.selectedTicketId === t.id ? "selected" : ""}" type="button" data-ticket="${t.id}" aria-label="Ticket ${index + 1}${draggable ? ". Drag it, or tap to select." : "."}">${index + 1}</button>`).join("");
+    }
+
+    function summaryCards() {
+      return teamKeys().map(key => {
+        const meta = teams[key];
+        const d = state.data[key];
+        const placed = d.tickets.filter(t => t.location !== "bank").length;
+        const denom = d.denominator ? `${d.denominator} group${d.denominator === 1 ? "" : "s"}` : "No groups";
+        const packed = d.packed.size ? Array.from(d.packed).sort((a,b)=>a-b).map(n => `G${n+1}`).join(", ") : "None";
+        return `
+          <article class="summary-card ${meta.edge}">
+            <h3><span class="colour-dot ${meta.dot}"></span>${escapeHTML(meta.name)}</h3>
+            <p>Total: ${d.tickets.length}</p>
+            <p>${escapeHTML(denom)}</p>
+            <p>Placed: ${placed}</p>
+            <p>Packed: ${escapeHTML(packed)}</p>
+          </article>`;
+      }).join("");
+    }
+
+    function setStep(id) {
+      state.step = id;
+      state.selectedTicketId = null;
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function nextStep() {
+      const ids = stepLabels.map(s => s[0]);
+      const idx = ids.indexOf(state.step);
+      if (idx < ids.length - 1) setStep(ids[idx + 1]);
+    }
+
+    function backStep() {
+      const ids = stepLabels.map(s => s[0]);
+      const idx = ids.indexOf(state.step);
+      if (idx > 0) setStep(ids[idx - 1]);
+    }
+
+    function addTickets(amount) {
+      const d = currentTeam();
+      for (let i = 0; i < amount; i++) d.tickets.push({ id: state.nextTicketId++, location: "bank" });
+      render();
+    }
+
+    function removeTicket() {
+      const d = currentTeam();
+      if (!d.tickets.length) return;
+      let idx = d.tickets.findIndex(t => t.location === "bank");
+      if (idx === -1) idx = d.tickets.length - 1;
+      const removed = d.tickets.splice(idx, 1)[0];
+      if (state.selectedTicketId === removed.id) state.selectedTicketId = null;
+      render();
+    }
+
+    function setDenom(n) {
+      if (!Number.isFinite(n) || n < 1) { showToast("Choose at least 1 group."); return; }
+      if (n > 20) { showToast("Use 20 groups or fewer so the screen stays clear."); return; }
+      const d = currentTeam();
+      if (d.denominator !== n) {
+        d.denominator = n;
+        d.packed.clear();
+        d.tickets.forEach(t => t.location = "bank");
+        state.selectedTicketId = null;
+        showToast("Groups changed. Tickets moved back to the bank.");
+      }
+      render();
+    }
+
+    function clearTickets() {
+      const d = currentTeam();
+      d.tickets = [];
+      d.packed.clear();
+      state.selectedTicketId = null;
+      render();
+    }
+
+    function resetTeam() {
+      state.data[state.activeTeam] = { tickets: [], denominator: null, packed: new Set() };
+      state.selectedTicketId = null;
+      render();
+      showToast("This team has been reset.");
+    }
+
+    function resetAll() {
+      for (const key of teamKeys()) state.data[key] = { tickets: [], denominator: null, packed: new Set() };
+      state.selectedTicketId = null;
+      render();
+      showToast("All teams have been reset.");
+    }
+
+    function moveTicket(id, location) {
+      const d = currentTeam();
+      const ticket = d.tickets.find(t => t.id === id);
+      if (!ticket) return;
+      if (location.startsWith("group-") && !d.denominator) return;
+      ticket.location = location;
+      state.selectedTicketId = null;
+      render();
+    }
+
+    function readText(text) {
+      if (!("speechSynthesis" in window)) {
+        showToast("Read-aloud is not available in this browser.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.92;
+      window.speechSynthesis.speak(u);
+    }
+
+    function currentScreenText() {
+      const meta = currentMeta();
+      const d = currentTeam();
+      const base = `${meta.name}. ${meta.note}.`;
+      if (state.step === "team") return "Choose one team to build. Pick a team, then build this team.";
+      if (state.step === "tickets") return `${base} Step 1. Make the total number of tickets for this team. You currently have ${d.tickets.length} tickets.`;
+      if (state.step === "groups") return `${base} Step 2. Choose the number of equal groups.`;
+      if (state.step === "share") return `${base} Step 3. Drag tickets into the groups. Make equal groups if that matches your model.`;
+      if (state.step === "packed") return `${base} Step 4. Mark the groups that were packed.`;
+      return base;
+    }
+
+    document.addEventListener("click", (e) => {
+      const teamBtn = e.target.closest("[data-team]");
+      if (teamBtn) {
+        state.activeTeam = teamBtn.dataset.team;
+        state.selectedTicketId = null;
+        render();
+        return;
+      }
+
+      const actionEl = e.target.closest("[data-action]");
+      if (actionEl) {
+        const action = actionEl.dataset.action;
+        if (action === "next") nextStep();
+        if (action === "back") backStep();
+        if (action === "team-screen") setStep("team");
+        if (action === "reset-team") resetTeam();
+        if (action === "reset-all") resetAll();
+        if (action === "read-team") readText(`${currentMeta().name}. ${currentMeta().note}`);
+        if (action === "use-custom-denom") setDenom(Number(document.getElementById("customDenom").value));
+        return;
+      }
+
+      const addEl = e.target.closest("[data-add]");
+      if (addEl) { addTickets(Number(addEl.dataset.add)); return; }
+
+      const removeEl = e.target.closest("[data-remove]");
+      if (removeEl) { removeTicket(); return; }
+
+      if (e.target.closest("[data-clear-tickets]")) { clearTickets(); return; }
+
+      const denomEl = e.target.closest("[data-denom]");
+      if (denomEl) { setDenom(Number(denomEl.dataset.denom)); return; }
+
+      const packedEl = e.target.closest("[data-packed]");
+      if (packedEl) {
+        const group = Number(packedEl.dataset.packed);
+        const d = currentTeam();
+        if (d.packed.has(group)) d.packed.delete(group);
+        else d.packed.add(group);
+        render();
+        return;
+      }
+
+      const ticketEl = e.target.closest("[data-ticket]");
+      const dropEl = e.target.closest("[data-drop]");
+      if (dropEl && !ticketEl && state.selectedTicketId !== null) moveTicket(state.selectedTicketId, dropEl.dataset.drop);
+    });
+
+    document.addEventListener("pointerdown", (e) => {
+      const ticketEl = e.target.closest("[data-ticket]");
+      if (!ticketEl || state.step === "tickets" || state.step === "packed") return;
+      e.preventDefault();
+
+      const rect = ticketEl.getBoundingClientRect();
+      dragging = {
+        id: Number(ticketEl.dataset.ticket),
+        pointerId: e.pointerId,
+        sourceEl: ticketEl,
+        startX: e.clientX,
+        startY: e.clientY,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        moved: false,
+        ghost: ticketEl.cloneNode(true)
+      };
+
+      dragging.ghost.classList.add("ghost");
+      dragging.ghost.classList.remove("selected");
+      dragging.ghost.style.left = rect.left + "px";
+      dragging.ghost.style.top = rect.top + "px";
+      document.body.appendChild(dragging.ghost);
+      ticketEl.classList.add("drag-source");
+      ticketEl.setPointerCapture(e.pointerId);
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging || e.pointerId !== dragging.pointerId) return;
+      e.preventDefault();
+
+      if (Math.abs(e.clientX - dragging.startX) > 6 || Math.abs(e.clientY - dragging.startY) > 6) dragging.moved = true;
+      dragging.ghost.style.left = (e.clientX - dragging.offsetX) + "px";
+      dragging.ghost.style.top = (e.clientY - dragging.offsetY) + "px";
+
+      document.querySelectorAll(".ready").forEach(el => el.classList.remove("ready"));
+      dragging.ghost.style.display = "none";
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      dragging.ghost.style.display = "";
+      const drop = target ? target.closest("[data-drop]") : null;
+      if (drop) drop.classList.add("ready");
+    }, { passive: false });
+
+    window.addEventListener("pointerup", (e) => {
+      if (!dragging || e.pointerId !== dragging.pointerId) return;
+      e.preventDefault();
+
+      const id = dragging.id;
+      const moved = dragging.moved;
+      dragging.sourceEl.classList.remove("drag-source");
+      if (dragging.ghost && dragging.ghost.parentElement) dragging.ghost.parentElement.removeChild(dragging.ghost);
+      document.querySelectorAll(".ready").forEach(el => el.classList.remove("ready"));
+
+      const x = e.clientX;
+      const y = e.clientY;
+      dragging = null;
+
+      if (!moved) {
+        state.selectedTicketId = state.selectedTicketId === id ? null : id;
+        render();
+        return;
+      }
+
+      const target = document.elementFromPoint(x, y);
+      const drop = target ? target.closest("[data-drop]") : null;
+      if (drop) moveTicket(id, drop.dataset.drop);
+      else render();
+    }, { passive: false });
+
+    window.addEventListener("pointercancel", () => {
+      if (!dragging) return;
+      if (dragging.ghost && dragging.ghost.parentElement) dragging.ghost.parentElement.removeChild(dragging.ghost);
+      dragging = null;
+      render();
+    });
+
+    toggleQuestion.addEventListener("click", () => {
+      const hidden = questionBox.hasAttribute("hidden");
+      if (hidden) {
+        questionBox.removeAttribute("hidden");
+        toggleQuestion.textContent = "Hide notes";
+        toggleQuestion.setAttribute("aria-expanded", "true");
+      } else {
+        questionBox.setAttribute("hidden", "");
+        toggleQuestion.textContent = "Show notes";
+        toggleQuestion.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    document.getElementById("readScreen").addEventListener("click", () => readText(currentScreenText()));
+    document.getElementById("stopRead").addEventListener("click", () => {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    });
+
+    render();
+  </script>
+</body>
+</html>
